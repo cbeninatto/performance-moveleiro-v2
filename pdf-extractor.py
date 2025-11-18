@@ -20,7 +20,7 @@ The app will read all products and output clean **CSV** and **XLSX** files with:
 - Month and year
 - Quantity and value (Brazilian formatting converted to float)
 - **Client code** and **client name**
-- **Sales representative** (code + name)
+- **Sales representative code** and **sales representative name**
 - **Client State and City** (joined from `clientes_relatorio_faturamento.csv`)
 - **Categoria** (using the official Performance Moveleiro mapping)
     """
@@ -45,7 +45,7 @@ def br_to_float(s: str) -> float:
 
 
 # -------------------------------------------------------
-# LOAD CATEGORY MAP CSV
+# LOAD CATEGORY MAP CSV (no caching to always pick new rules)
 # -------------------------------------------------------
 def load_category_map():
     df = pd.read_csv("data/categorias_map.csv")
@@ -54,6 +54,7 @@ def load_category_map():
     df["prioridade"] = df["prioridade"].astype(int)
     df = df.sort_values("prioridade")
     return df
+
 
 CATEGORY_MAP = load_category_map()
 
@@ -208,10 +209,12 @@ if uploaded_file is not None:
                                 "Valor": br_to_float(val_str),
                                 "Mes": int(current_mes),
                                 "Ano": int(current_ano),
-                                # separate code + name
+                                # client code + name separated
                                 "ClienteCodigo": cli_code.strip(),
                                 "Cliente": cli_name.strip(),  # name only
-                                "Representante": f"{rep_code}-{rep_name}",
+                                # rep code + name separated
+                                "RepresentanteCodigo": rep_code,
+                                "Representante": rep_name,   # name only
                             }
                             records.append(record)
                         except Exception as e:
@@ -270,16 +273,17 @@ if uploaded_file is not None:
                 "Mes",
                 "Ano",
                 "ClienteCodigo",
-                "Cliente",     # name only
+                "Cliente",              # client name
                 "Estado",
                 "Cidade",
-                "Representante",
+                "RepresentanteCodigo",  # rep code
+                "Representante",        # rep name
                 "Categoria",
             ]
         ]
 
         st.success(
-            f"✅ Extraction finished — {len(df)} rows "
+            f"✅ Extraction finished — {len[df]} rows "
             f"({df['Codigo'].nunique()} unique products)."
         )
         st.dataframe(df.head(50))
@@ -310,7 +314,7 @@ if uploaded_file is not None:
         )
 
         st.info(
-            "📊 Files are ready (including **ClienteCodigo**, "
-            "**Cliente** (name), **Estado**, **Cidade**, "
-            "**Representante** and **Categoria**)."
+            "📊 Files are ready (including **ClienteCodigo**, **Cliente**, "
+            "**Estado**, **Cidade**, **RepresentanteCodigo**, **Representante** "
+            "and **Categoria**)."
         )

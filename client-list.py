@@ -6,43 +6,42 @@ from io import BytesIO
 import time
 
 # -----------------------------
-# Configuração básica da página
+# Page configuration
 # -----------------------------
 st.set_page_config(
-    page_title="Base de Clientes - Extrator",
+    page_title="Client Base Extractor",
     page_icon="📇",
     layout="wide"
 )
 
-st.title("📇 Extrator de Base de Clientes (Estado / Cidade / Cliente)")
+st.title("📇 Client List Extractor (State / City / Client)")
 
 st.markdown("""
-Envie o **PDF da lista de clientes** (relatório de faturamento por cliente, 
-agrupado por **Estado → Cidade → Cliente**) e o sistema vai extrair uma base 
-estruturada com:
+Upload the **client list PDF** (billing report grouped by **Estado → Cidade → Cliente**)  
+and this app will build a clean client base with:
 
-- Código e nome do **Estado**
-- Código e nome da **Cidade**
-- Código e nome do **Cliente**
-- Quantidade e Faturamento deste relatório (opcional para uso em dashboards)
+- State code + name
+- City code + name
+- Client code + name
+- Quantity and Billing (Valor) from the report
 
-No final você poderá baixar os dados em **CSV** e **XLSX**.  
-Sugestão de nome de arquivo para o repositório:  
-`data/clientes_relatorio_faturamento.csv`
+The output CSV is meant to be saved in:
+
+`performance-moveleiro-v2/data/clientes_relatorio_faturamento.csv`
 """)
 
 # -----------------------------
-# Funções auxiliares
+# Helpers
 # -----------------------------
 
-# Regex para linhas de cliente (seguindo o padrão do PDF enviado)
+# Regex for CLIENTE line
 CLIENTE_PATTERN = re.compile(
     r'^CLIENTE\s*:\s*(-?\d+)\s*-\s*(.+?)\s+(-?[\d\.]+,\d{4})\s+'
     r'(-?\d{1,3},\d{2})%\s+(-?[\d\.]+,\d{2})\s+(-?\d{1,3},\d{2})%$'
 )
 
 def parse_br_number(s: str):
-    """Converte número no formato brasileiro para float (ex: '75.940,0000' -> 75940.0)."""
+    """Convert Brazilian-formatted number to float (e.g. '75.940,0000' -> 75940.0)."""
     if s is None:
         return None
     s = s.strip().replace('.', '').replace('%', '')
@@ -56,7 +55,7 @@ def parse_br_number(s: str):
 
 def extract_clientes_from_pdf(file) -> pd.DataFrame:
     """
-    Lê o PDF no formato do relatório enviado e extrai:
+    Parse the PDF in the format you provided and extract:
     Estado, Cidade, Cliente, Quantidade, %Quantidade, Valor, %Valor.
     """
     rows = []
@@ -69,7 +68,7 @@ def extract_clientes_from_pdf(file) -> pd.DataFrame:
         cidade_cod = None
         cidade_nome = None
 
-        progress = st.progress(0, text=f"Processando 0/{total_pages} páginas...")
+        progress = st.progress(0, text=f"Processing 0/{total_pages} pages...")
 
         for page_index, page in enumerate(pdf.pages, start=1):
             text = page.extract_text() or ""
@@ -78,18 +77,21 @@ def extract_clientes_from_pdf(file) -> pd.DataFrame:
                 if not line:
                     continue
 
-                # Ignorar cabeçalhos gerais
+                # Skip general headers
                 if line == "RELATÓRIO DE FATURAMENTO":
                     continue
                 if line.startswith("Quantidade % Quantidade Valor % Valor"):
                     continue
-                if line.startswith("Subtotal CIDADE") or line.startswith("Subtotal ESTADO") or line.startswith("Total Geral"):
+                if (
+                    line.startswith("Subtotal CIDADE")
+                    or line.startswith("Subtotal ESTADO")
+                    or line.startswith("Total Geral")
+                ):
                     continue
 
-                # Linha de ESTADO
+                # ESTADO line
                 if line.startswith("ESTADO:"):
                     rest = line[len("ESTADO:"):].strip()
-                    # Em geral é algo como "23-RIO DE JANEIRO"
                     if "Subtotal" in rest:
                         rest = rest.split("Subtotal")[0].strip()
                     if "-" in rest:
@@ -100,10 +102,9 @@ def extract_clientes_from_pdf(file) -> pd.DataFrame:
                         estado_nome = rest
                     continue
 
-                # Linha de CIDADE
+                # CIDADE line
                 if line.startswith("CIDADE:"):
                     rest = line[len("CIDADE:"):].strip()
-                    # Às vezes vem com "Quantidade % Quantidade Valor % Valor" no final
                     rest = rest.split(" Quantidade")[0].strip()
                     if "-" in rest:
                         cidade_cod_str, cidade_nome = rest.split("-", 1)
@@ -113,12 +114,11 @@ def extract_clientes_from_pdf(file) -> pd.DataFrame:
                         cidade_nome = rest
                     continue
 
-                # Linha de CLIENTE
+                # CLIENTE line
                 if line.startswith("CLIENTE"):
                     m = CLIENTE_PATTERN.match(line)
                     if not m:
-                        # Se algum padrão fugir da regra, simplesmente pula.
-                        # (Podemos logar aqui se você quiser debugar depois)
+                        # If pattern doesn't match, skip this line silently
                         continue
 
                     (
@@ -145,12 +145,12 @@ def extract_clientes_from_pdf(file) -> pd.DataFrame:
 
             progress.progress(
                 page_index / total_pages,
-                text=f"Processando {page_index}/{total_pages} páginas..."
+                text=f"Processing {page_index}/{total_pages} pages..."
             )
 
     df = pd.DataFrame(rows)
 
-    # Ordena exatamente na lógica do relatório: Estado > Cidade > Cliente
+    # Sort exactly like the report: Estado > Cidade > Cliente
     sort_cols = ["EstadoNome", "CidadeNome", "ClienteNome"]
     existing_sort_cols = [c for c in sort_cols if c in df.columns]
     if existing_sort_cols:
@@ -159,75 +159,95 @@ def extract_clientes_from_pdf(file) -> pd.DataFrame:
     return df
 
 def make_download_links(df: pd.DataFrame):
-    """Cria buffers de CSV e XLSX para download."""
-    # CSV (UTF-8 com BOM para Excel PT-BR)
+    """Create CSV and (optionally) XLSX buffers for download."""
+    # CSV (UTF-8 with BOM for Excel PT-BR)
     csv_bytes = df.to_csv(index=False).encode("utf-8-sig")
 
-    # XLSX
-    xlsx_buffer = BytesIO()
-    with pd.ExcelWriter(xlsx_buffer, engine="xlsxwriter") as writer:
-        df.to_excel(writer, index=False, sheet_name="Clientes")
-    xlsx_buffer.seek(0)
+    xlsx_buffer = None
+    try:
+        # Try to create an XLSX file using xlsxwriter
+        xlsx_buffer = BytesIO()
+        with pd.ExcelWriter(xlsx_buffer, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="Clientes")
+        xlsx_buffer.seek(0)
+    except Exception:
+        # If xlsxwriter is not installed, we simply skip XLSX export
+        xlsx_buffer = None
 
     return csv_bytes, xlsx_buffer
 
 
 # -----------------------------
-# Interface principal
+# Main UI
 # -----------------------------
 uploaded_file = st.file_uploader(
-    "📎 Envie o PDF da lista de clientes (relatório por Estado/Cidade/Cliente)",
+    "📎 Upload the client list PDF (grouped by Estado/Cidade/Cliente)",
     type=["pdf"]
 )
 
 if uploaded_file is not None:
-    st.info("Arquivo carregado. Clique em **Extrair dados** para processar o PDF.")
+    st.info("File uploaded. Click **Extract data** to process the PDF.")
 
-    if st.button("📤 Extrair dados"):
+    if st.button("📤 Extract data"):
         start = time.time()
         try:
-            with st.spinner("Lendo PDF e extraindo base de clientes..."):
+            with st.spinner("Reading PDF and extracting client base..."):
                 df_clientes = extract_clientes_from_pdf(uploaded_file)
+
+            # Drop percentage columns from the exported dataset
+            export_df = df_clientes.drop(
+                columns=["PercQuantidade", "PercValor"], errors="ignore"
+            )
 
             elapsed = time.time() - start
 
             st.success(
-                f"Extração concluída com sucesso! "
-                f"Foram encontrados **{len(df_clientes)} registros de clientes** "
-                f"em **{df_clientes['EstadoNome'].nunique()} estados** e "
-                f"**{df_clientes['CidadeNome'].nunique()} cidades** "
-                f"(tempo: {elapsed:.1f}s)."
+                f"Extraction completed! "
+                f"Found **{len(export_df)} client records** "
+                f"in **{export_df['EstadoNome'].nunique()} states** and "
+                f"**{export_df['CidadeNome'].nunique()} cities** "
+                f"(time: {elapsed:.1f}s)."
             )
 
-            st.subheader("Prévia dos dados extraídos")
-            st.dataframe(df_clientes.head(200))
+            st.subheader("Preview of extracted data")
+            st.dataframe(export_df.head(200))
 
-            csv_bytes, xlsx_buffer = make_download_links(df_clientes)
+            csv_bytes, xlsx_buffer = make_download_links(export_df)
 
             col1, col2 = st.columns(2)
             with col1:
                 st.download_button(
-                    "⬇️ Baixar CSV (clientes_relatorio_faturamento.csv)",
+                    "⬇️ Download CSV (clientes_relatorio_faturamento.csv)",
                     data=csv_bytes,
                     file_name="clientes_relatorio_faturamento.csv",
                     mime="text/csv",
                 )
             with col2:
-                st.download_button(
-                    "⬇️ Baixar XLSX (clientes_relatorio_faturamento.xlsx)",
-                    data=xlsx_buffer,
-                    file_name="clientes_relatorio_faturamento.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
+                if xlsx_buffer is not None:
+                    st.download_button(
+                        "⬇️ Download XLSX (clientes_relatorio_faturamento.xlsx)",
+                        data=xlsx_buffer,
+                        file_name="clientes_relatorio_faturamento.xlsx",
+                        mime=(
+                            "application/vnd.openxmlformats-officedocument."
+                            "spreadsheetml.sheet"
+                        ),
+                    )
+                else:
+                    st.info(
+                        "XLSX export not available. "
+                        "To enable it, install the `xlsxwriter` package:\n\n"
+                        "`pip install xlsxwriter`"
+                    )
 
             st.markdown("""
-            > 🔁 Depois de baixar, coloque o arquivo em  
-            > `performance-moveleiro-v2/data/clientes_relatorio_faturamento.csv`  
-            > para ser consumido pelos outros dashboards/apps.
+> After downloading, place the CSV in  
+> `performance-moveleiro-v2/data/clientes_relatorio_faturamento.csv`  
+> so your other dashboards/apps can consume it.
             """)
 
         except Exception as e:
-            st.error(f"Erro ao processar o PDF: {e}")
+            st.error(f"Error processing PDF: {e}")
 
 else:
-    st.warning("Nenhum arquivo foi enviado ainda. Faça o upload do PDF para começar.")
+    st.warning("No file uploaded yet. Please upload the PDF to begin.")

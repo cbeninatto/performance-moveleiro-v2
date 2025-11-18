@@ -2,21 +2,26 @@ categoria,prioridade,pattern
 Rodizios,1,RODIZIO
 Rodizios,1,RODÍZIO
 Rodizios,1,RODIZIO TRANSPARENTE
+
 Pulsadores,2,PULSADOR
+Acessórios,2,KIT EXTENSOR
+Acessórios,2,CAPA
+
 Dobradiças,3,DOBRADIÇA
 Dobradiças,3,DOBRADICA
+
 Articuladores,4,ARTICULADOR
 Articuladores,4,SUPORTE ARTICULADOR
 Articuladores,4,PISTAO
 Articuladores,4,PISTÃO
 Articuladores,4,MULTISTOP
+
 Acessórios,5,CABIDEIRO
 Acessórios,5,REGUA LED
 Acessórios,5,RÉGUA LED
 Acessórios,5,BARRA
 Acessórios,5,TORRE
-Acessórios,5,KIT EXTENSOR
-Acessórios,5,CAPA
+
 Corrediça Telescópica,6,SLIM MV119
 Corrediça Telescópica,6,TRILHO LIGHT
 Corrediça Telescópica,6,TRILHO LIFE
@@ -27,6 +32,7 @@ Corrediça Telescópica,6,TRILHO TELE
 Corrediça Telescópica,6,TRILHO MINI LIGHT LIFE
 Corrediça Telescópica,6,27MM MV119
 Corrediça Telescópica,6,27MM
+
 Corrediça Oculta,7,ESCOND
 Corrediça Oculta,7,DREAM BOX
 Corrediça Oculta,7,OPENBOX

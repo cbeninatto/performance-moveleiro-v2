@@ -283,8 +283,8 @@ if uploaded_file is not None:
         ]
 
         st.success(
-            f"✅ Extraction finished — {len[df]} rows "
-            f"({df['Codigo'].nunique()} unique products)."
+            f"✅ Extraction finished — {len(df)} rows "
+             f"({df['Codigo'].nunique()} unique products)."
         )
         st.dataframe(df.head(50))
 

@@ -19,7 +19,7 @@ The app will read all products and output clean **CSV** and **XLSX** files with:
 - Product code and description
 - Month and year
 - Quantity and value (Brazilian formatting converted to float)
-- **Client** (code + name)
+- **Client code** and **client name**
 - **Sales representative** (code + name)
 - **Client State and City** (joined from `clientes_relatorio_faturamento.csv`)
 - **Categoria** (using the official Performance Moveleiro mapping)
@@ -31,9 +31,8 @@ uploaded_file = st.file_uploader("📤 Choose the billing PDF file", type="pdf")
 # -------------------------------------------------------
 # SETTINGS
 # -------------------------------------------------------
-# For now you can keep this as 1 to debug only the first page.
-# Set to None to process the entire PDF when everything looks good.
-MAX_PAGES = None  # or 1 for testing
+# Set to 1 to test only the first page; set to None to process the full PDF.
+MAX_PAGES = None
 
 # -------------------------------------------------------
 # UTILS
@@ -69,14 +68,12 @@ def load_client_geo_map():
     """
     Loads clientes_relatorio_faturamento.csv and returns a
     simplified mapping: ClienteCodigo -> EstadoNome, CidadeNome.
-    We auto-detect the delimiter (comma, semicolon, tab).
+    Auto-detects delimiter.
     """
     df = pd.read_csv("data/clientes_relatorio_faturamento.csv", sep=None, engine="python")
-    # Normalize types and strip spaces
     df["ClienteCodigo"] = df["ClienteCodigo"].astype(str).str.strip()
     df["EstadoNome"] = df["EstadoNome"].astype(str).str.strip()
     df["CidadeNome"] = df["CidadeNome"].astype(str).str.strip()
-    # Drop duplicates on ClienteCodigo, keep first
     df = df[["ClienteCodigo", "EstadoNome", "CidadeNome"]].drop_duplicates(
         subset=["ClienteCodigo"]
     )
@@ -100,29 +97,25 @@ def map_categoria(desc: str) -> str:
 # -------------------------------------------------------
 # REGEX DEFINITIONS FOR PDF PARSING
 # -------------------------------------------------------
-# Example:
-# PRODUTO: 9587-DOBRADICA 45° COM PISTAO ...
+# PRODUTO: 9587-DOBRADICA 45° ...
 prod_header_re = re.compile(
     r"^\s*PRODUTO:\s*(\d+)\s*-\s*(.+)$",
     re.IGNORECASE,
 )
 
-# Example:
 # MÊS: 10/2025-Outubro de 2025
 mes_re = re.compile(
     r"^\s*MÊS\s*:\s*(\d{2})/(\d{4})",
     re.IGNORECASE,
 )
 
-# Example:
 # REPRESENTANTE: 4593-OPENFIELD BENTO
 rep_re = re.compile(
     r"^\s*REPRESENTANTE:\s*(\d+)\s*-\s*(.+)$",
     re.IGNORECASE,
 )
 
-# Example:
-# CLIENTE : 8819 - AMBIENTAL MOVEIS PLANEJADOS LTDA 50,0000 100,00% 275,50 100,00%
+# CLIENTE : 8819 - AMBIENTAL MOVEIS ... 50,0000 100,00% 275,50 100,00%
 cliente_line_re = re.compile(
     r"^\s*CLIENTE\s*:\s*(\d+)\s*-\s*(.+?)\s+([\d\.\,]+)\s+[\d\.\,]+%\s+([\d\.\,]+)\s+[\d\.\,]+%\s*$",
     re.IGNORECASE,
@@ -149,7 +142,7 @@ if uploaded_file is not None:
         progress_bar = st.progress(0)
         status_text = st.empty()
 
-        # Context variables that change as we move through the PDF
+        # Context variables
         current_code = None
         current_desc = None
         current_mes = None
@@ -169,7 +162,7 @@ if uploaded_file is not None:
                 if not line:
                     continue
 
-                # 1) PRODUCT HEADER (reset month and rep context)
+                # 1) PRODUCT HEADER (reset month and rep)
                 m = prod_header_re.match(line)
                 if m:
                     current_code = m.group(1).strip()
@@ -180,7 +173,7 @@ if uploaded_file is not None:
                     rep_name = None
                     continue
 
-                # 2) MONTH / YEAR (reset rep context for new month)
+                # 2) MONTH / YEAR (reset rep)
                 m = mes_re.match(line)
                 if m:
                     current_mes, current_ano = m.groups()
@@ -201,7 +194,6 @@ if uploaded_file is not None:
                 if m:
                     cli_code, cli_name, qty_str, val_str = m.groups()
 
-                    # We only add a row if the necessary context is available
                     if (
                         current_code
                         and current_desc is not None
@@ -218,12 +210,13 @@ if uploaded_file is not None:
                                 "Valor": br_to_float(val_str),
                                 "Mes": int(current_mes),
                                 "Ano": int(current_ano),
-                                "Cliente": f"{cli_code.strip()} - {cli_name.strip()}",
+                                # separate code + name
+                                "ClienteCodigo": cli_code.strip(),
+                                "Cliente": cli_name.strip(),  # name only
                                 "Representante": f"{rep_code}-{rep_name}",
                             }
                             records.append(record)
                         except Exception as e:
-                            # Skip bad lines but continue processing
                             print(f"Error parsing line: {line} -> {e}")
                     continue
 
@@ -243,26 +236,17 @@ if uploaded_file is not None:
     else:
         df = pd.DataFrame(records)
 
-        # ---------------------------------------------------
-        # ENRICH WITH CLIENT GEO (Estado / Cidade)
-        # ---------------------------------------------------
-        # Extract ClienteCodigo from "CODE - NAME"
-        df["ClienteCodigo"] = (
-            df["Cliente"]
-            .astype(str)
-            .str.split("-", n=1)
-            .str[0]
-            .str.strip()
-        )
+        # ---------------------------
+        # ENRICH WITH ESTADO / CIDADE
+        # ---------------------------
+        df["ClienteCodigo"] = df["ClienteCodigo"].astype(str).str.strip()
 
-        # Merge with client geo map
         df = df.merge(
             CLIENT_GEO_MAP,
             on="ClienteCodigo",
             how="left",
         )
 
-        # Rename to simpler column names for output
         df.rename(
             columns={
                 "EstadoNome": "Estado",
@@ -271,12 +255,14 @@ if uploaded_file is not None:
             inplace=True,
         )
 
-        # ---------------------------------------------------
+        # ---------------------------
         # APPLY CATEGORY LOGIC
-        # ---------------------------------------------------
+        # ---------------------------
         df["Categoria"] = df["Descricao"].apply(map_categoria)
 
-        # Reorder columns to official schema
+        # ---------------------------
+        # FINAL COLUMN ORDER
+        # ---------------------------
         df = df[
             [
                 "Codigo",
@@ -285,12 +271,12 @@ if uploaded_file is not None:
                 "Valor",
                 "Mes",
                 "Ano",
-                "Cliente",
+                "ClienteCodigo",
+                "Cliente",     # name only
                 "Estado",
                 "Cidade",
                 "Representante",
                 "Categoria",
-                "ClienteCodigo",  # keep for debugging / future use
             ]
         ]
 
@@ -326,6 +312,7 @@ if uploaded_file is not None:
         )
 
         st.info(
-            "📊 Files are ready (including **Cliente**, **Estado**, "
-            "**Cidade**, **Representante** and **Categoria** columns)."
+            "📊 Files are ready (including **ClienteCodigo**, "
+            "**Cliente** (name), **Estado**, **Cidade**, "
+            "**Representante** and **Categoria**)."
         )

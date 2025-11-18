@@ -21,6 +21,7 @@ The app will read all products and output clean **CSV** and **XLSX** files with:
 - Quantity and value (Brazilian formatting converted to float)
 - **Client** (code + name)
 - **Sales representative** (code + name)
+- **Client State and City** (joined from `clientes_relatorio_faturamento.csv`)
 - **Categoria** (using the official Performance Moveleiro mapping)
     """
 )
@@ -30,9 +31,9 @@ uploaded_file = st.file_uploader("📤 Choose the billing PDF file", type="pdf")
 # -------------------------------------------------------
 # SETTINGS
 # -------------------------------------------------------
-# For now we only scan the first page so you can validate the logic.
-# When everything looks good, set MAX_PAGES = None to process the whole PDF.
-MAX_PAGES = None
+# For now you can keep this as 1 to debug only the first page.
+# Set to None to process the entire PDF when everything looks good.
+MAX_PAGES = None  # or 1 for testing
 
 # -------------------------------------------------------
 # UTILS
@@ -58,6 +59,31 @@ def load_category_map():
 
 
 CATEGORY_MAP = load_category_map()
+
+
+# -------------------------------------------------------
+# LOAD CLIENT GEO MAP (Estado / Cidade)
+# -------------------------------------------------------
+@st.cache_data
+def load_client_geo_map():
+    """
+    Loads clientes_relatorio_faturamento.csv and returns a
+    simplified mapping: ClienteCodigo -> EstadoNome, CidadeNome.
+    We auto-detect the delimiter (comma, semicolon, tab).
+    """
+    df = pd.read_csv("data/clientes_relatorio_faturamento.csv", sep=None, engine="python")
+    # Normalize types and strip spaces
+    df["ClienteCodigo"] = df["ClienteCodigo"].astype(str).str.strip()
+    df["EstadoNome"] = df["EstadoNome"].astype(str).str.strip()
+    df["CidadeNome"] = df["CidadeNome"].astype(str).str.strip()
+    # Drop duplicates on ClienteCodigo, keep first
+    df = df[["ClienteCodigo", "EstadoNome", "CidadeNome"]].drop_duplicates(
+        subset=["ClienteCodigo"]
+    )
+    return df
+
+
+CLIENT_GEO_MAP = load_client_geo_map()
 
 
 # -------------------------------------------------------
@@ -217,8 +243,56 @@ if uploaded_file is not None:
     else:
         df = pd.DataFrame(records)
 
-        # Apply category logic
+        # ---------------------------------------------------
+        # ENRICH WITH CLIENT GEO (Estado / Cidade)
+        # ---------------------------------------------------
+        # Extract ClienteCodigo from "CODE - NAME"
+        df["ClienteCodigo"] = (
+            df["Cliente"]
+            .astype(str)
+            .str.split("-", n=1)
+            .str[0]
+            .str.strip()
+        )
+
+        # Merge with client geo map
+        df = df.merge(
+            CLIENT_GEO_MAP,
+            on="ClienteCodigo",
+            how="left",
+        )
+
+        # Rename to simpler column names for output
+        df.rename(
+            columns={
+                "EstadoNome": "Estado",
+                "CidadeNome": "Cidade",
+            },
+            inplace=True,
+        )
+
+        # ---------------------------------------------------
+        # APPLY CATEGORY LOGIC
+        # ---------------------------------------------------
         df["Categoria"] = df["Descricao"].apply(map_categoria)
+
+        # Reorder columns to official schema
+        df = df[
+            [
+                "Codigo",
+                "Descricao",
+                "Quantidade",
+                "Valor",
+                "Mes",
+                "Ano",
+                "Cliente",
+                "Estado",
+                "Cidade",
+                "Representante",
+                "Categoria",
+                "ClienteCodigo",  # keep for debugging / future use
+            ]
+        ]
 
         st.success(
             f"✅ Extraction finished — {len(df)} rows "
@@ -252,6 +326,6 @@ if uploaded_file is not None:
         )
 
         st.info(
-            "📊 Files are ready (including **Cliente**, "
-            "**Representante** and **Categoria** columns)."
+            "📊 Files are ready (including **Cliente**, **Estado**, "
+            "**Cidade**, **Representante** and **Categoria** columns)."
         )

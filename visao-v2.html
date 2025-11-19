@@ -1,4 +1,3 @@
-<!-- my-new-graph.html | Performance Moveleiro v2 - Faturamento/Volume com Filtros -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -21,7 +20,6 @@
   <style>
     :root {
       --bg-body: #050608;
-      --bg-body-alt: #111827;
       --bg-card: #ffffff;
       --bg-chip: #111827;
       --text-main: #111827;
@@ -49,34 +47,27 @@
     }
 
     body { display: flex; flex-direction: column; }
-
-    .page {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    .page { min-height: 100vh; display: flex; flex-direction: column; }
 
     /* Top bar */
     .top-bar {
-      background: #000000;
+      background: #000;
       color: var(--text-invert);
       border-bottom: 2px solid var(--accent-gold);
       padding: 10px 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
       position: sticky;
       top: 0;
       z-index: 20;
     }
-
     .top-bar-inner {
       max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      align-items: baseline;
       justify-content: space-between;
       gap: 12px;
+      align-items: baseline;
     }
-
     .top-bar-title {
       font-size: 1.05rem;
       font-weight: 600;
@@ -85,102 +76,84 @@
       color: var(--accent-gold);
       white-space: nowrap;
     }
-
     .top-bar-sub {
       font-size: 0.75rem;
-      color: rgba(249, 250, 251, 0.75);
+      color: rgba(249,250,251,0.75);
       margin-top: 2px;
     }
-
     .top-bar-updated {
       font-size: 0.75rem;
-      color: rgba(249, 250, 251, 0.75);
+      color: rgba(249,250,251,0.75);
       white-space: nowrap;
     }
-
     .top-bar-updated span {
       font-weight: 500;
       color: var(--accent-gold-soft);
     }
 
-    /* Content wrapper */
+    /* Content */
     .content {
       flex: 1;
       padding: 22px 14px 28px;
       display: flex;
       justify-content: center;
     }
+    .content-inner { width: 100%; max-width: 1200px; }
 
-    .content-inner {
-      width: 100%;
-      max-width: 1200px;
-    }
-
-    /* Card layout */
+    /* Card */
     .card {
       background: var(--bg-card);
       border-radius: var(--radius-card);
       box-shadow: var(--shadow-soft);
       overflow: hidden;
-      border: 1px solid rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15,23,42,0.05);
     }
-
     .card-header {
-      background: #000000;
+      background: #000;
       color: var(--text-invert);
       padding: 10px 18px;
       border-left: 4px solid var(--accent-gold);
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: 10px;
-    }
-
-    .card-header-left { display: flex; flex-direction: column; gap: 2px; }
-
-    .card-header-right {
-      display: flex;
       align-items: center;
-      gap: 10px;
       flex-wrap: wrap;
-      justify-content: flex-end;
     }
-
+    .card-header-left { display: flex; flex-direction: column; gap: 2px; }
     .card-title {
       font-size: 0.95rem;
       font-weight: 600;
-      letter-spacing: 0.02em;
       text-transform: uppercase;
+      letter-spacing: 0.02em;
     }
-
     .card-header-pill {
       font-size: 0.7rem;
       padding: 3px 9px;
       border-radius: 999px;
-      border: 1px solid rgba(249, 250, 251, 0.16);
-      color: rgba(249, 250, 251, 0.8);
+      border: 1px solid rgba(249,250,251,0.16);
+      color: rgba(249,250,251,0.8);
       display: inline-flex;
       align-items: center;
       gap: 4px;
       background: linear-gradient(
         135deg,
-        rgba(245, 185, 95, 0.25),
-        rgba(15, 23, 42, 0.3)
+        rgba(245,185,95,0.25),
+        rgba(15,23,42,0.3)
       );
     }
+    .card-header-right { display: flex; gap: 10px; flex-wrap: wrap; }
 
     .metric-toggle {
       display: inline-flex;
       border-radius: 999px;
-      border: 1px solid rgba(248, 250, 252, 0.18);
+      border: 1px solid rgba(248,250,252,0.18);
       overflow: hidden;
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(15,23,42,0.5);
     }
-
     .toggle-btn {
       border: none;
       background: transparent;
-      color: rgba(248, 250, 252, 0.8);
+      color: rgba(248,250,252,0.8);
       padding: 4px 10px;
       font-size: 0.72rem;
       font-weight: 500;
@@ -193,7 +166,6 @@
       transition: background var(--transition-fast),
         color var(--transition-fast), transform 80ms ease-out;
     }
-
     .toggle-btn.active {
       background: var(--accent-gold);
       color: #111827;
@@ -202,10 +174,10 @@
 
     .card-body {
       padding: 14px 16px 18px;
-      background: radial-gradient(circle at top left, #f9fafb 0, #e5e7eb 32%, #f3f4f6 100%);
+      background: radial-gradient(circle at top left,#f9fafb 0,#e5e7eb 32%,#f3f4f6 100%);
     }
 
-    /* Filters row */
+    /* Filters */
     .filters-row {
       display: flex;
       flex-wrap: wrap;
@@ -213,19 +185,13 @@
       align-items: flex-end;
       margin-bottom: 10px;
     }
-
-    .filters-row-secondary {
-      margin-bottom: 14px;
-      margin-top: 4px;
-    }
-
+    .filters-row-secondary { margin: 4px 0 14px; }
     .filters-group {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
     }
-
     .filters-label {
       font-size: 0.72rem;
       text-transform: uppercase;
@@ -233,17 +199,10 @@
       color: var(--text-muted);
       font-weight: 600;
     }
-
-    /* Range buttons */
-    .range-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
+    .range-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
     .range-btn {
       border-radius: var(--radius-pill);
-      border: 1px solid rgba(15, 23, 42, 0.14);
+      border: 1px solid rgba(15,23,42,0.14);
       padding: 4px 10px;
       font-size: 0.72rem;
       font-weight: 500;
@@ -259,41 +218,20 @@
         color var(--transition-fast), border-color var(--transition-fast),
         box-shadow var(--transition-fast), transform 90ms ease-out;
     }
-
-    .range-btn span { font-size: 0.72rem; }
-
-    .range-btn:hover {
-      background: #020617;
-      box-shadow: 0 0 0 1px rgba(245, 185, 95, 0.3);
-      transform: translateY(-0.5px);
-    }
-
     .range-btn.active {
       background: var(--accent-gold);
       color: #111827;
       border-color: var(--accent-gold);
-      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.5);
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.5);
     }
-
-    .range-btn.active span { color: #111827; }
-
-    /* Custom range */
     .custom-range {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       align-items: flex-end;
     }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 120px;
-    }
-
+    .field-group { display: flex; flex-direction: column; gap: 3px; min-width: 120px; }
     .field-group.small { min-width: 140px; }
-
     .field-label {
       font-size: 0.7rem;
       text-transform: uppercase;
@@ -301,11 +239,8 @@
       color: var(--text-muted);
       font-weight: 600;
     }
-
     select {
       appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
       border-radius: 8px;
       border: 1px solid var(--border-subtle);
       padding: 5px 26px 5px 8px;
@@ -316,133 +251,76 @@
         #ffffff;
       color: #111827;
     }
-
     select:focus {
       outline: none;
       border-color: var(--accent-gold);
-      box-shadow: 0 0 0 1px rgba(245, 185, 95, 0.6);
+      box-shadow: 0 0 0 1px rgba(245,185,95,0.6);
     }
-
     .btn-small {
       border-radius: 999px;
-      border: 1px solid rgba(15, 23, 42, 0.14);
+      border: 1px solid rgba(15,23,42,0.14);
       padding: 4px 10px;
       font-size: 0.72rem;
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      background: linear-gradient(
-        135deg,
-        var(--accent-gold),
-        var(--accent-gold-soft)
-      );
+      background: linear-gradient(135deg,var(--accent-gold),var(--accent-gold-soft));
       color: #111827;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      transition: filter var(--transition-fast),
-        transform 90ms ease-out, box-shadow var(--transition-fast);
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
     }
-
     .btn-small.secondary {
       background: #111827;
       color: #f9fafb;
       box-shadow: none;
     }
 
-    .btn-small:hover {
-      filter: brightness(1.03);
-      transform: translateY(-0.6px);
-      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
-    }
-
-    .btn-small.secondary:hover {
-      box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.1);
-    }
-
     /* Metrics */
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3,minmax(0,1fr));
       gap: 10px;
       margin-bottom: 16px;
     }
-
     .metric-card {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255,255,255,0.85);
       border-radius: 12px;
-      border: 1px solid rgba(15, 23, 42, 0.07);
+      border: 1px solid rgba(15,23,42,0.07);
       padding: 7px 10px;
       display: flex;
       flex-direction: column;
       gap: 2px;
-      position: relative;
-      overflow: hidden;
     }
-
-    .metric-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at top left,
-          rgba(245, 185, 95, 0.14),
-          transparent 60%);
-      pointer-events: none;
-    }
-
     .metric-label {
       font-size: 0.7rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--text-muted);
       font-weight: 600;
-      z-index: 1;
     }
-
     .metric-value {
       font-size: 1rem;
       font-weight: 600;
       color: #0f172a;
-      z-index: 1;
     }
-
-    .metric-sub {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      z-index: 1;
-    }
-
-    .metric-pill {
-      font-size: 0.7rem;
-      border-radius: 999px;
-      padding: 1px 7px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(15, 23, 42, 0.03);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      margin-left: 4px;
-    }
+    .metric-sub { font-size: 0.7rem; color: var(--text-muted); }
 
     /* Chart */
     .chart-wrapper {
       border-radius: 14px;
-      border: 1px solid rgba(148, 163, 184, 0.3);
+      border: 1px solid rgba(148,163,184,0.3);
       background: radial-gradient(circle at top,
-          rgba(15, 23, 42, 0.06) 0,
-          rgba(15, 23, 42, 0.02) 45%,
-          rgba(255, 255, 255, 1) 100%);
+        rgba(15,23,42,0.06) 0,
+        rgba(15,23,42,0.02) 45%,
+        rgba(255,255,255,1) 100%);
       padding: 6px;
     }
+    .chart { width: 100%; height: 520px; }
 
-    .chart {
-      width: 100%;
-      height: 520px;
-    }
-
-    /* Status text */
+    /* Status */
     .status-line {
       margin-top: 6px;
       font-size: 0.7rem;
@@ -450,58 +328,36 @@
       display: flex;
       justify-content: space-between;
       gap: 8px;
-      align-items: center;
       flex-wrap: wrap;
+      align-items: center;
     }
-
     .status-pill {
       border-radius: 999px;
       padding: 2px 8px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(15, 23, 42, 0.03);
+      border: 1px solid rgba(15,23,42,0.08);
+      background: rgba(15,23,42,0.03);
       font-size: 0.7rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: var(--text-muted);
     }
 
-    /* Responsive */
     @media (max-width: 900px) {
-      .card-body { padding: 12px 12px 16px; }
       .chart { height: 440px; }
-      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metrics-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
-
     @media (max-width: 640px) {
-      .top-bar-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      .top-bar-inner { flex-direction: column; align-items: flex-start; }
       .content { padding: 14px 10px 18px; }
-      .filters-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
+      .filters-row { flex-direction: column; align-items: stretch; }
       .chart { height: 380px; }
       .metrics-grid { grid-template-columns: 1fr; }
-      .card-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .card-header-right { justify-content: flex-start; }
+      .card-header { flex-direction: column; align-items: flex-start; }
     }
-
     @media (max-width: 480px) {
-      .top-bar { padding-inline: 12px; }
-      .card-body { padding: 10px 10px 14px; }
       .chart { height: 340px; }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <!-- TOP BAR -->
     <header class="top-bar">
       <div class="top-bar-inner">
         <div>
@@ -514,7 +370,6 @@
       </div>
     </header>
 
-    <!-- MAIN CONTENT -->
     <main class="content">
       <div class="content-inner">
         <section class="card">
@@ -536,9 +391,8 @@
           </header>
 
           <div class="card-body">
-            <!-- PERIOD FILTERS -->
+            <!-- Period filters -->
             <div class="filters-row">
-              <!-- Range buttons -->
               <div class="filters-group">
                 <div class="filters-label">Período</div>
                 <div class="range-buttons" id="rangeButtons">
@@ -550,14 +404,13 @@
                 </div>
               </div>
 
-              <!-- Custom range -->
               <div class="custom-range">
                 <div class="field-group">
-                  <label for="fromPeriod" class="field-label">De</label>
+                  <label class="field-label" for="fromPeriod">De</label>
                   <select id="fromPeriod"></select>
                 </div>
                 <div class="field-group">
-                  <label for="toPeriod" class="field-label">Até</label>
+                  <label class="field-label" for="toPeriod">Até</label>
                   <select id="toPeriod"></select>
                 </div>
                 <button class="btn-small" id="applyCustom">Aplicar</button>
@@ -565,34 +418,31 @@
               </div>
             </div>
 
-            <!-- DIMENSION FILTERS -->
+            <!-- Dimension filters -->
             <div class="filters-row filters-row-secondary">
               <div class="filters-group">
                 <div class="filters-label">Filtros</div>
 
                 <div class="field-group small">
-                  <label for="filterClient" class="field-label">Cliente</label>
+                  <label class="field-label" for="filterClient">Cliente</label>
                   <select id="filterClient"></select>
                 </div>
-
                 <div class="field-group small">
-                  <label for="filterRep" class="field-label">Representante</label>
+                  <label class="field-label" for="filterRep">Representante</label>
                   <select id="filterRep"></select>
                 </div>
-
                 <div class="field-group small">
-                  <label for="filterState" class="field-label">Estado</label>
+                  <label class="field-label" for="filterState">Estado</label>
                   <select id="filterState"></select>
                 </div>
-
                 <div class="field-group small">
-                  <label for="filterCategory" class="field-label">Categoria</label>
+                  <label class="field-label" for="filterCategory">Categoria</label>
                   <select id="filterCategory"></select>
                 </div>
               </div>
             </div>
 
-            <!-- METRICS -->
+            <!-- Metrics -->
             <div class="metrics-grid">
               <div class="metric-card">
                 <div class="metric-label">Variação Total</div>
@@ -605,21 +455,17 @@
                 <div class="metric-sub" id="metricMeanSub">Faturamento médio mensal</div>
               </div>
               <div class="metric-card">
-                <div class="metric-label">
-                  Volatilidade
-                  <span class="metric-pill">Desvio padrão %</span>
-                </div>
+                <div class="metric-label">Volatilidade</div>
                 <div class="metric-value" id="metricVol">--</div>
-                <div class="metric-sub">Da variação mensal</div>
+                <div class="metric-sub">Desvio padrão da variação mensal</div>
               </div>
             </div>
 
-            <!-- CHART -->
+            <!-- Chart -->
             <div class="chart-wrapper">
               <div id="chart" class="chart"></div>
             </div>
 
-            <!-- STATUS -->
             <div class="status-line">
               <div id="statusInfo">Carregando dados...</div>
               <div class="status-pill" id="statusRange">Período: --</div>
@@ -632,16 +478,15 @@
 
   <script>
     const CSV_PATH = "data/relatorio_faturamento.csv";
-
     const ARIZONA_PALETTE = [
-      "#264653", "#287271", "#2a9d8f",
-      "#e9c46a", "#f4a261", "#ee8959", "#e76f51"
+      "#264653","#287271","#2a9d8f",
+      "#e9c46a","#f4a261","#ee8959","#e76f51"
     ];
 
     const state = {
       rows: [],
       allKeysSorted: [],
-      keyToLabel: new Map(),  // "YYYY-MM" -> "MMM AA"
+      keyToLabel: new Map(), // "YYYY-MM" -> "MMM AA"
       range: "ALL",
       customFrom: null,
       customTo: null,
@@ -653,172 +498,131 @@
       filterCategory: "ALL"
     };
 
-    // ---- Helpers ----
-    function formatCurrencyBRL(v) {
-      if (!isFinite(v)) return "--";
-      return v.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    }
-
-    function formatNumberBR(v) {
-      if (!isFinite(v)) return "--";
-      return v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
-    }
-
-    function formatPercent(v) {
-      if (!isFinite(v)) return "--";
-      return v.toLocaleString("pt-BR", {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1
-      }) + "%";
-    }
-
     function labelFromKey(key) {
-      const [y, mStr] = key.split("-");
-      const m = parseInt(mStr, 10);
+      const [y,mStr] = key.split("-");
+      const m = parseInt(mStr,10);
       const shortYear = y.slice(-2);
       const months = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
-      return (months[m - 1] || mStr) + " " + shortYear;
+      return (months[m-1] || mStr) + " " + shortYear;
     }
-
+    function formatCurrencyBRL(v) {
+      if (!isFinite(v)) return "--";
+      return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+    }
+    function formatNumberBR(v) {
+      if (!isFinite(v)) return "--";
+      return v.toLocaleString("pt-BR",{maximumFractionDigits:0});
+    }
+    function formatPercent(v) {
+      if (!isFinite(v)) return "--";
+      return v.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1}) + "%";
+    }
     function detectDelimiter(text) {
-      const sample = text.slice(0, 1000);
-      const commas = (sample.match(/,/g) || []).length;
-      const semis = (sample.match(/;/g) || []).length;
-      return semis > commas ? ";" : ",";
+      const sample = text.slice(0,1000);
+      const commas = (sample.match(/,/g)||[]).length;
+      const semis  = (sample.match(/;/g)||[]).length;
+      return semis>commas?";":",";
+    }
+    function uniqueSorted(arr) {
+      return Array.from(new Set(arr)).sort((a,b)=>a.localeCompare(b,"pt-BR"));
     }
 
-    function uniqueSorted(values) {
-      return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, "pt-BR"));
-    }
-
-    // ---- Data load ----
     function loadCSV() {
-      fetch(CSV_PATH, { cache: "no-cache" })
-        .then(res => {
-          if (!res.ok) throw new Error("Erro ao carregar CSV");
-          return res.text();
+      fetch(CSV_PATH,{cache:"no-cache"})
+        .then(r => {
+          if (!r.ok) throw new Error("erro");
+          return r.text();
         })
         .then(text => {
           const delimiter = detectDelimiter(text);
-          Papa.parse(text, {
-            header: true,
-            skipEmptyLines: true,
+          Papa.parse(text,{
+            header:true,
+            skipEmptyLines:true,
             delimiter,
-            complete: (results) => processData(results.data || []),
-            error: (err) => {
-              console.error(err);
-              document.getElementById("statusInfo").textContent =
-                "Erro ao processar o CSV.";
-            }
+            complete:(res)=>processData(res.data||[])
           });
         })
         .catch(err => {
           console.error(err);
-          document.getElementById("statusInfo").textContent =
-            "Erro ao carregar o arquivo de dados.";
+          document.getElementById("statusInfo").textContent = "Erro ao carregar dados.";
         });
     }
 
     function processData(rows) {
-      if (!rows.length) {
-        document.getElementById("statusInfo").textContent = "Nenhum dado encontrado.";
-        return;
-      }
-
       const keySet = new Set();
       const keyToLabel = new Map();
       const normalized = [];
 
       for (const row of rows) {
-        const ano = parseInt(row["Ano"], 10);
-        const mes = parseInt(row["Mes"], 10);
+        const ano = parseInt(row["Ano"],10);
+        const mes = parseInt(row["Mes"],10);
         if (!ano || !mes) continue;
 
-        const key = `${ano}-${String(mes).padStart(2, "0")}`;
+        const key = `${ano}-${String(mes).padStart(2,"0")}`;
         const label = labelFromKey(key);
         keySet.add(key);
-        if (!keyToLabel.has(key)) keyToLabel.set(key, label);
+        if (!keyToLabel.has(key)) keyToLabel.set(key,label);
 
-        const rawValor = (row["Valor"] ?? "0").toString().replace(",", ".");
-        const rawQtd   = (row["Quantidade"] ?? "0").toString().replace(",", ".");
+        const rawValor = (row["Valor"] ?? "0").toString().replace(",",".");
+        const rawQtd   = (row["Quantidade"] ?? "0").toString().replace(",",".");
         const valor = parseFloat(rawValor);
         const quantidade = parseFloat(rawQtd);
 
-        const categoria =
-          (row["Categoria"] || "").toString().trim() || "Sem Categoria";
-        const cliente =
-          (row["Cliente"] || "").toString().trim() || "Sem Cliente";
-        const representante =
-          (row["Representante"] || "").toString().trim() || "Sem Representante";
-        const estado =
-          (row["Estado"] || "").toString().trim() || "Sem Estado";
+        const categoria = (row["Categoria"] || "").toString().trim() || "Sem Categoria";
+        const cliente   = (row["Cliente"] || "").toString().trim()   || "Sem Cliente";
+        const rep       = (row["Representante"] || "").toString().trim() || "Sem Representante";
+        const estado    = (row["Estado"] || "").toString().trim()    || "Sem Estado";
 
         normalized.push({
-          key,
-          label,
-          ano,
-          mes,
-          categoria,
-          cliente,
-          representante,
-          estado,
-          valor: isNaN(valor) ? 0 : valor,
-          quantidade: isNaN(quantidade) ? 0 : quantidade
+          key,label,ano,mes,
+          categoria,cliente,representante:rep,estado,
+          valor:isNaN(valor)?0:valor,
+          quantidade:isNaN(quantidade)?0:quantidade
         });
       }
 
-      const allKeysSorted = Array.from(keySet).sort();
-      if (!allKeysSorted.length) {
-        document.getElementById("statusInfo").textContent = "Nenhum dado válido para exibir.";
+      const keysSorted = Array.from(keySet).sort();
+      if (!keysSorted.length) {
+        document.getElementById("statusInfo").textContent = "Nenhum dado encontrado.";
         return;
       }
 
       state.rows = normalized;
-      state.allKeysSorted = allKeysSorted;
+      state.allKeysSorted = keysSorted;
       state.keyToLabel = keyToLabel;
 
       initUI();
       updateAll();
     }
 
-    // ---- UI init ----
     function initUI() {
-      const fromSelect = document.getElementById("fromPeriod");
-      const toSelect = document.getElementById("toPeriod");
-      fromSelect.innerHTML = "";
-      toSelect.innerHTML = "";
+      const fromSel = document.getElementById("fromPeriod");
+      const toSel   = document.getElementById("toPeriod");
+      fromSel.innerHTML = "";
+      toSel.innerHTML   = "";
 
       state.allKeysSorted.forEach(key => {
         const label = state.keyToLabel.get(key) || labelFromKey(key);
-        const opt1 = document.createElement("option");
-        opt1.value = key;
-        opt1.textContent = label;
-        fromSelect.appendChild(opt1);
-
-        const opt2 = document.createElement("option");
-        opt2.value = key;
-        opt2.textContent = label;
-        toSelect.appendChild(opt2);
+        const o1 = document.createElement("option");
+        o1.value = key; o1.textContent = label; fromSel.appendChild(o1);
+        const o2 = document.createElement("option");
+        o2.value = key; o2.textContent = label; toSel.appendChild(o2);
       });
 
-      fromSelect.value = state.allKeysSorted[0];
-      toSelect.value   = state.allKeysSorted[state.allKeysSorted.length - 1];
-      state.customFrom = fromSelect.value;
-      state.customTo   = toSelect.value;
+      fromSel.value = state.allKeysSorted[0];
+      toSel.value   = state.allKeysSorted[state.allKeysSorted.length-1];
+      state.customFrom = fromSel.value;
+      state.customTo   = toSel.value;
 
-      const lastKey = state.allKeysSorted[state.allKeysSorted.length - 1];
+      const lastKey = state.allKeysSorted[state.allKeysSorted.length-1];
       document.getElementById("updatedAt").textContent =
         state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
 
-      const rangeButtons = document.querySelectorAll("#rangeButtons .range-btn");
-      rangeButtons.forEach(btn => {
+      // range buttons
+      document.querySelectorAll("#rangeButtons .range-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          rangeButtons.forEach(b => b.classList.remove("active"));
+          document.querySelectorAll("#rangeButtons .range-btn")
+            .forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
           state.range = btn.dataset.range || "ALL";
           updateAll();
@@ -826,63 +630,65 @@
       });
 
       document.getElementById("applyCustom").addEventListener("click", () => {
-        const fromVal = fromSelect.value;
-        const toVal   = toSelect.value;
-        if (!fromVal || !toVal) return;
+        const fromVal = fromSel.value;
+        const toVal   = toSel.value;
         const all = state.allKeysSorted;
-        const fromIdx = all.indexOf(fromVal);
-        const toIdx   = all.indexOf(toVal);
-        if (fromIdx === -1 || toIdx === -1 || fromIdx > toIdx) {
+        const fi = all.indexOf(fromVal);
+        const ti = all.indexOf(toVal);
+        if (fi === -1 || ti === -1 || fi > ti) {
           alert("Selecione um intervalo De/Até válido.");
           return;
         }
         state.customFrom = fromVal;
         state.customTo   = toVal;
-        state.range      = "CUSTOM";
-        rangeButtons.forEach(b => b.classList.remove("active"));
+        state.range = "CUSTOM";
+        document.querySelectorAll("#rangeButtons .range-btn")
+          .forEach(b => b.classList.remove("active"));
         updateAll();
       });
 
       document.getElementById("resetCustom").addEventListener("click", () => {
-        rangeButtons.forEach(b => {
-          if (b.dataset.range === "ALL") b.classList.add("active");
-          else b.classList.remove("active");
-        });
-        fromSelect.value = state.allKeysSorted[0];
-        toSelect.value   = state.allKeysSorted[state.allKeysSorted.length - 1];
-        state.customFrom = fromSelect.value;
-        state.customTo   = toSelect.value;
-        state.range      = "ALL";
+        fromSel.value = state.allKeysSorted[0];
+        toSel.value   = state.allKeysSorted[state.allKeysSorted.length-1];
+        state.customFrom = fromSel.value;
+        state.customTo   = toSel.value;
+        state.range = "ALL";
+        document.querySelectorAll("#rangeButtons .range-btn")
+          .forEach(b => {
+            b.classList.toggle("active", b.dataset.range === "ALL");
+          });
         updateAll();
       });
 
-      // filter change handlers
+      // filter events
       document.getElementById("filterClient").addEventListener("change", e => {
         state.filterClient = e.target.value;
-        onFiltersChanged();
+        updateFilterOptions();
+        updateAll();
       });
       document.getElementById("filterRep").addEventListener("change", e => {
         state.filterRep = e.target.value;
-        onFiltersChanged();
+        updateFilterOptions();
+        updateAll();
       });
       document.getElementById("filterState").addEventListener("change", e => {
         state.filterState = e.target.value;
-        onFiltersChanged();
+        updateFilterOptions();
+        updateAll();
       });
       document.getElementById("filterCategory").addEventListener("change", e => {
         state.filterCategory = e.target.value;
-        updateAll(); // category doesn't change other select options
+        updateAll();
       });
 
       // toggle
-      const toggle = document.getElementById("measureToggle");
-      const toggleBtns = toggle.querySelectorAll(".toggle-btn");
-      toggleBtns.forEach(btn => {
+      document.querySelectorAll("#measureToggle .toggle-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          const mode = btn.dataset.mode || "FATURAMENTO";
+          const mode = btn.dataset.mode;
           state.valueMode  = mode;
           state.valueLabel = mode === "FATURAMENTO" ? "Faturamento" : "Volume";
-          toggleBtns.forEach(b => b.classList.remove("active"));
+          document.querySelectorAll("#measureToggle .toggle-btn")
+            .forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
           document.getElementById("metricMeanSub").textContent =
             mode === "FATURAMENTO" ? "Faturamento médio mensal" : "Volume médio mensal";
@@ -890,35 +696,25 @@
         });
       });
 
-      updateFilterOptions(); // initial fill of selects
-    }
-
-    function onFiltersChanged() {
       updateFilterOptions();
-      updateAll();
     }
 
-    function refillSelect(selectId, values, allLabel, filterKeyName) {
-      const select = document.getElementById(selectId);
+    function refillSelect(id, values, allLabel, filterKeyName) {
+      const sel = document.getElementById(id);
       const current = state[filterKeyName];
-      select.innerHTML = "";
-
+      sel.innerHTML = "";
       const optAll = document.createElement("option");
       optAll.value = "ALL";
       optAll.textContent = allLabel;
-      select.appendChild(optAll);
-
+      sel.appendChild(optAll);
       values.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        select.appendChild(opt);
+        const o = document.createElement("option");
+        o.value = v; o.textContent = v; sel.appendChild(o);
       });
-
       if (current !== "ALL" && values.includes(current)) {
-        select.value = current;
+        sel.value = current;
       } else {
-        select.value = "ALL";
+        sel.value = "ALL";
         state[filterKeyName] = "ALL";
       }
     }
@@ -926,70 +722,55 @@
     function updateFilterOptions() {
       const rows = state.rows;
 
-      // CLIENTE options – depend on Rep + State
+      // For CLIENTE, respect current Rep + State
       const rowsForClients = rows.filter(r =>
-        (state.filterRep   === "ALL" || r.representante === state.filterRep) &&
-        (state.filterState === "ALL" || r.estado        === state.filterState)
+        (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+        (state.filterState === "ALL" || r.estado === state.filterState)
       );
-      refillSelect(
-        "filterClient",
+      refillSelect("filterClient",
         uniqueSorted(rowsForClients.map(r => r.cliente)),
-        "Todos os clientes",
-        "filterClient"
-      );
+        "Todos os clientes","filterClient");
 
-      // REPRESENTANTE options – depend on Client + State
+      // For REP, respect current Client + State
       const rowsForReps = rows.filter(r =>
         (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
-        (state.filterState  === "ALL" || r.estado  === state.filterState)
+        (state.filterState === "ALL" || r.estado === state.filterState)
       );
-      refillSelect(
-        "filterRep",
+      refillSelect("filterRep",
         uniqueSorted(rowsForReps.map(r => r.representante)),
-        "Todos os representantes",
-        "filterRep"
-      );
+        "Todos os representantes","filterRep");
 
-      // ESTADO options – depend on Client + Rep
+      // For ESTADO, respect current Client + Rep
       const rowsForStates = rows.filter(r =>
-        (state.filterClient === "ALL" || r.cliente       === state.filterClient) &&
-        (state.filterRep    === "ALL" || r.representante === state.filterRep)
+        (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+        (state.filterRep === "ALL" || r.representante === state.filterRep)
       );
-      refillSelect(
-        "filterState",
+      refillSelect("filterState",
         uniqueSorted(rowsForStates.map(r => r.estado)),
-        "Todos os estados",
-        "filterState"
-      );
+        "Todos os estados","filterState");
 
-      // CATEGORIA options – depend on Client + Rep + State
+      // For CATEGORIA, respect all three
       const rowsForCats = rows.filter(r =>
-        (state.filterClient === "ALL" || r.cliente       === state.filterClient) &&
-        (state.filterRep    === "ALL" || r.representante === state.filterRep) &&
-        (state.filterState  === "ALL" || r.estado        === state.filterState)
+        (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+        (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+        (state.filterState === "ALL" || r.estado === state.filterState)
       );
-      refillSelect(
-        "filterCategory",
+      refillSelect("filterCategory",
         uniqueSorted(rowsForCats.map(r => r.categoria)),
-        "Todas as categorias",
-        "filterCategory"
-      );
+        "Todas as categorias","filterCategory");
     }
 
-    // ---- Range / series ----
     function getFilteredKeys() {
       const keys = state.allKeysSorted;
       if (!keys.length) return [];
-
       if (state.range === "CUSTOM") {
         const from = state.customFrom || keys[0];
-        const to   = state.customTo   || keys[keys.length - 1];
+        const to   = state.customTo   || keys[keys.length-1];
         const fi = keys.indexOf(from);
         const ti = keys.indexOf(to);
         if (fi === -1 || ti === -1 || fi > ti) return [];
-        return keys.slice(fi, ti + 1);
+        return keys.slice(fi,ti+1);
       }
-
       if (["3M","6M","1A","5A"].includes(state.range)) {
         let n = 0;
         if (state.range === "3M") n = 3;
@@ -997,67 +778,56 @@
         if (state.range === "1A") n = 12;
         if (state.range === "5A") n = 60;
         if (keys.length <= n) return keys.slice();
-        return keys.slice(keys.length - n);
+        return keys.slice(keys.length-n);
       }
-
-      return keys.slice(); // ALL
+      return keys.slice();
     }
 
-    function buildSeriesForCurrentFilters(filteredKeys) {
+    function buildSeries(filteredKeys) {
       const keySet = new Set(filteredKeys);
       const byCat = new Map();
-      const useFaturamento = state.valueMode === "FATURAMENTO";
+      const useFat = state.valueMode === "FATURAMENTO";
 
       for (const r of state.rows) {
         if (!keySet.has(r.key)) continue;
-        if (state.filterClient   !== "ALL" && r.cliente       !== state.filterClient) continue;
-        if (state.filterRep      !== "ALL" && r.representante !== state.filterRep)    continue;
-        if (state.filterState    !== "ALL" && r.estado        !== state.filterState)  continue;
+        if (state.filterClient   !== "ALL" && r.cliente       !== state.filterClient)   continue;
+        if (state.filterRep      !== "ALL" && r.representante !== state.filterRep)      continue;
+        if (state.filterState    !== "ALL" && r.estado        !== state.filterState)    continue;
         if (state.filterCategory !== "ALL" && r.categoria     !== state.filterCategory) continue;
 
         const cat = r.categoria;
-        const val = useFaturamento ? r.valor : r.quantidade;
+        const val = useFat ? r.valor : r.quantidade;
 
-        if (!byCat.has(cat)) byCat.set(cat, new Map());
+        if (!byCat.has(cat)) byCat.set(cat,new Map());
         const m = byCat.get(cat);
-        m.set(r.key, (m.get(r.key) || 0) + (isNaN(val) ? 0 : val));
+        m.set(r.key,(m.get(r.key)||0)+(isNaN(val)?0:val));
       }
       return byCat;
     }
 
-    function computeTotals(filteredKeys, seriesByCategory) {
-      return filteredKeys.map(key => {
+    function computeMetrics(filteredKeys, series) {
+      const totals = filteredKeys.map(key => {
         let sum = 0;
-        seriesByCategory.forEach(m => { sum += m.get(key) || 0; });
-        return { key, total: sum };
-      });
-    }
-
-    function computeMetrics(filteredKeys, seriesByCategory) {
-      const totals = computeTotals(filteredKeys, seriesByCategory);
-      const values = totals.map(t => t.total).filter(v => isFinite(v) && v > 0);
+        series.forEach(m => { sum += m.get(key) || 0; });
+        return sum;
+      }).filter(v => isFinite(v) && v>0);
 
       let mean = NaN, change = NaN, vol = NaN;
-
-      if (values.length) {
-        mean = values.reduce((a,b)=>a+b,0) / values.length;
+      if (totals.length) {
+        mean = totals.reduce((a,b)=>a+b,0) / totals.length;
       }
-
-      if (values.length >= 2) {
-        const first = values[0], last = values[values.length-1];
-        if (first !== 0) change = ((last - first) / Math.abs(first)) * 100;
+      if (totals.length >= 2) {
+        const first = totals[0], last = totals[totals.length-1];
+        if (first !== 0) change = ((last-first)/Math.abs(first))*100;
       }
-
-      if (values.length >= 3) {
+      if (totals.length >= 3) {
         const rets = [];
-        for (let i=1;i<values.length;i++) {
-          if (values[i-1] !== 0) {
-            rets.push(((values[i] / values[i-1]) - 1) * 100);
-          }
+        for (let i=1;i<totals.length;i++) {
+          if (totals[i-1] !== 0) rets.push(((totals[i]/totals[i-1])-1)*100);
         }
         if (rets.length > 1) {
-          const meanR = rets.reduce((a,b)=>a+b,0) / rets.length;
-          const varR  = rets.reduce((acc,r)=>acc + Math.pow(r-meanR,2),0) / (rets.length-1);
+          const meanR = rets.reduce((a,b)=>a+b,0)/rets.length;
+          const varR  = rets.reduce((acc,r)=>acc+Math.pow(r-meanR,2),0)/(rets.length-1);
           vol = Math.sqrt(varR);
         }
       }
@@ -1068,95 +838,74 @@
       document.getElementById("metricVol").textContent    = formatPercent(vol);
     }
 
-    // ---- Chart ----
-    function renderChart(filteredKeys, seriesByCategory) {
+    function renderChart(filteredKeys, series) {
       const labels = filteredKeys.map(k => state.keyToLabel.get(k) || labelFromKey(k));
-      const unit   = state.valueMode === "FATURAMENTO" ? "R$" : "un";
-      const decimals = state.valueMode === "FATURAMENTO" ? 2 : 0;
-      const yFormat  = decimals === 2 ? ",.2f" : ",.0f";
 
-      // sort categories by total descending for the selected period
-      const entries = Array.from(seriesByCategory.entries());
-      entries.sort((a,b) => {
+      // sort categories by total desc
+      const entries = Array.from(series.entries());
+      entries.sort((a,b)=>{
         const sumA = filteredKeys.reduce((acc,k)=>acc+(a[1].get(k)||0),0);
         const sumB = filteredKeys.reduce((acc,k)=>acc+(b[1].get(k)||0),0);
         return sumB - sumA;
       });
 
       const traces = [];
-      entries.forEach(([cat, map], idx) => {
-        const y = filteredKeys.map(k => map.get(k) || 0);
-        const color = ARIZONA_PALETTE[idx % ARIZONA_PALETTE.length];
-
+      entries.forEach(([cat,m],idx)=>{
+        const y = filteredKeys.map(k => m.get(k) || 0);
         traces.push({
           x: labels,
           y,
-          type: "scatter",
-          mode: "lines+markers",
-          name: cat,
-          line: { shape: "spline", width: 2, color },
-          marker: { size: 5 },
-          hovertemplate:
-            "<b>" + unit + "</b> %{y:" + yFormat + "}<extra>" + cat + "</extra>"
+          type:"scatter",
+          mode:"lines+markers",
+          name:cat,
+          line:{shape:"spline",width:2,color:ARIZONA_PALETTE[idx%ARIZONA_PALETTE.length]},
+          marker:{size:5},
+          hoverinfo:"name+y"
         });
       });
 
       const layout = {
-        margin: { l: 60, r: 20, t: 20, b: 60 },
-        paper_bgcolor: "rgba(0,0,0,0)",
-        plot_bgcolor: "rgba(0,0,0,0)",
-        showlegend: true,
-        legend: {
-          orientation: "h",
-          yanchor: "bottom",
-          y: -0.22,
-          xanchor: "center",
-          x: 0.5,
-          font: { size: 10 }
+        margin:{l:60,r:20,t:20,b:60},
+        paper_bgcolor:"rgba(0,0,0,0)",
+        plot_bgcolor:"rgba(0,0,0,0)",
+        showlegend:true,
+        legend:{
+          orientation:"h",
+          yanchor:"bottom",y:-0.22,
+          xanchor:"center",x:0.5,
+          font:{size:10}
         },
-        hovermode: "x unified",
-        hoverlabel: {
-          align: "left",
-          bgcolor: "#111827",
-          bordercolor: "#e5e7eb",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            color: "#ffffff"
-          }
+        hovermode:"x unified",
+        xaxis:{
+          type:"category",
+          categoryorder:"array",
+          categoryarray:labels,
+          tickvals:labels,
+          ticktext:labels,
+          tickangle:-35,
+          tickfont:{size:11},
+          showgrid:false,
+          zeroline:false
         },
-        xaxis: {
-          type: "category",
-          categoryorder: "array",
-          categoryarray: labels,
-          tickmode: "array",
-          tickvals: labels,
-          ticktext: labels,
-          tickangle: -35,
-          tickfont: { size: 11 },
-          showgrid: false,
-          zeroline: false
-        },
-        yaxis: {
-          title: state.valueLabel,
-          tickformat: ",.0f",
-          gridcolor: "rgba(148, 163, 184, 0.4)",
-          zerolinecolor: "rgba(148, 163, 184, 0.6)",
-          tickfont: { size: 11 },
-          automargin: true
+        yaxis:{
+          title:state.valueLabel,
+          tickformat:",.0f",
+          gridcolor:"rgba(148,163,184,0.4)",
+          zerolinecolor:"rgba(148,163,184,0.6)",
+          tickfont:{size:11},
+          automargin:true
         }
       };
 
-      Plotly.react("chart", traces, layout, { responsive: true, displayModeBar: false });
+      Plotly.react("chart",traces,layout,{responsive:true,displayModeBar:false});
     }
 
-    // ---- Update ----
     function updateAll() {
-      const filteredKeys = getFilteredKeys();
+      const keys = getFilteredKeys();
       const statusInfo  = document.getElementById("statusInfo");
       const statusRange = document.getElementById("statusRange");
 
-      if (!filteredKeys.length) {
+      if (!keys.length) {
         statusInfo.textContent  = "Nenhum dado para o período selecionado.";
         statusRange.textContent = "Período: --";
         document.getElementById("metricMean").textContent   = "--";
@@ -1166,13 +915,11 @@
         return;
       }
 
-      const seriesByCategory = buildSeriesForCurrentFilters(filteredKeys);
-      if (!seriesByCategory.size) {
+      const series = buildSeries(keys);
+      if (!series.size) {
         statusInfo.textContent  = "Nenhum dado para os filtros selecionados.";
-        const firstKey = filteredKeys[0];
-        const lastKey  = filteredKeys[filteredKeys.length - 1];
-        const fromLbl  = state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
-        const toLbl    = state.keyToLabel.get(lastKey)  || labelFromKey(lastKey);
+        const fromLbl = state.keyToLabel.get(keys[0]) || labelFromKey(keys[0]);
+        const toLbl   = state.keyToLabel.get(keys[keys.length-1]) || labelFromKey(keys[keys.length-1]);
         statusRange.textContent = "Período: " + fromLbl + " – " + toLbl;
         document.getElementById("metricMean").textContent   = "--";
         document.getElementById("metricChange").textContent = "--";
@@ -1181,16 +928,13 @@
         return;
       }
 
-      statusInfo.textContent = "Dados carregados • " + filteredKeys.length + " pontos";
-
-      const firstKey = filteredKeys[0];
-      const lastKey  = filteredKeys[filteredKeys.length - 1];
-      const fromLbl  = state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
-      const toLbl    = state.keyToLabel.get(lastKey)  || labelFromKey(lastKey);
+      const fromLbl = state.keyToLabel.get(keys[0]) || labelFromKey(keys[0]);
+      const toLbl   = state.keyToLabel.get(keys[keys.length-1]) || labelFromKey(keys[keys.length-1]);
+      statusInfo.textContent  = "Dados carregados • " + keys.length + " pontos";
       statusRange.textContent = "Período: " + fromLbl + " – " + toLbl;
 
-      computeMetrics(filteredKeys, seriesByCategory);
-      renderChart(filteredKeys, seriesByCategory);
+      computeMetrics(keys,series);
+      renderChart(keys,series);
     }
 
     document.addEventListener("DOMContentLoaded", loadCSV);

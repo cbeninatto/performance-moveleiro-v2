@@ -1,9 +1,8 @@
-<!-- my-new-graph.html | Performance Moveleiro v2 - Faturamento/Volume com Filtros -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Meu Novo Gráfico - Performance Moveleiro</title>
+  <title>Openfield Moveleiro — Nova Visão</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Inter font -->
@@ -21,9 +20,7 @@
   <style>
     :root {
       --bg-body: #dfe1e1;
-      --bg-body-alt: #111827;
       --bg-card: #ffffff;
-      --bg-chip: #111827;
       --text-main: #111827;
       --text-muted: #6b7280;
       --text-invert: #f9fafb;
@@ -33,16 +30,12 @@
       --border-subtle: rgba(15, 23, 42, 0.08);
       --shadow-soft: 0 3px 10px rgba(0, 0, 0, 0.08);
       --radius-card: 10px;
-      --radius-pill: 999px;
       --transition-fast: 160ms ease-out;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
@@ -52,16 +45,8 @@
       min-height: 100vh;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .page {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    body { display: flex; flex-direction: column; }
+    .page { min-height: 100vh; display: flex; flex-direction: column; }
 
     .content {
       flex: 1;
@@ -75,10 +60,10 @@
       max-width: 1400px;
     }
 
-    /* Top bar similar to volume-linha */
+    /* Top bar (matches volume-linha style) */
     .top-bar {
-      background: #000000;
-      color: #ffffff;
+      background: #000;
+      color: #fff;
       border-bottom: 4px solid var(--accent-gold);
       padding: 12px 16px;
       border-radius: 10px;
@@ -89,34 +74,28 @@
       gap: 8px;
       box-shadow: var(--shadow-soft);
     }
-
     .top-bar-title {
       font-weight: 700;
       letter-spacing: 0.03em;
     }
-
     .top-bar-sub {
       font-size: 0.8rem;
       opacity: 0.9;
     }
-
     .top-bar-updated {
       font-size: 0.8rem;
       opacity: 0.9;
     }
-
     .top-bar-updated span {
       font-weight: 600;
       color: var(--accent-gold-soft);
     }
 
-    .section {
-      margin-top: 16px;
-    }
+    .section { margin-top: 16px; }
 
     .titlebar {
-      background: #000000;
-      color: #ffffff;
+      background: #000;
+      color: #fff;
       padding: 12px 16px;
       border-radius: 10px 10px 0 0;
       font-weight: 700;
@@ -134,7 +113,7 @@
       padding: 14px;
     }
 
-    /* Range / filter bars styled like volume-linha */
+    /* Filters / buttons */
     .filters-row {
       display: flex;
       flex-wrap: wrap;
@@ -184,82 +163,10 @@
         #ffffff;
       color: #111827;
     }
-
     select:focus {
       outline: none;
       border-color: var(--accent-gold);
       box-shadow: 0 0 0 1px rgba(245, 185, 95, 0.6);
-    }
-
-    /* Buttons – mimic .rbtn from volume-linha */
-    .range-buttons {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .range-btn {
-      background: var(--accent-gold);
-      color: #000000;
-      border: 1px solid var(--accent-gold-border);
-      padding: 6px 12px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: background var(--transition-fast),
-        color var(--transition-fast), border-color var(--transition-fast),
-        transform 90ms ease-out;
-    }
-
-    .range-btn span {
-      font-size: 0.78rem;
-    }
-
-    .range-btn:hover,
-    .range-btn.active {
-      background: #000000;
-      color: #ffffff;
-      border-color: #000000;
-      transform: translateY(-0.3px);
-    }
-
-    .btn-small {
-      background: var(--accent-gold);
-      color: #000000;
-      border: 1px solid var(--accent-gold-border);
-      padding: 6px 12px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: background var(--transition-fast),
-        color var(--transition-fast), border-color var(--transition-fast),
-        transform 90ms ease-out;
-    }
-
-    .btn-small.secondary {
-      background: #000000;
-      color: #ffffff;
-      border-color: #000000;
-    }
-
-    .btn-small:hover {
-      background: #000000;
-      color: #ffffff;
-      border-color: #000000;
-      transform: translateY(-0.3px);
     }
 
     input[type="month"] {
@@ -269,46 +176,107 @@
       font-size: 0.78rem;
     }
 
-    /* Metrics – similar to volume-linha */
+    .range-buttons {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .range-btn {
+      background: var(--accent-gold);
+      color: #000;
+      border: 1px solid var(--accent-gold-border);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background var(--transition-fast),
+        color var(--transition-fast), border-color var(--transition-fast),
+        transform 90ms ease-out;
+    }
+    .range-btn span { font-size: 0.78rem; }
+    .range-btn:hover,
+    .range-btn.active {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+      transform: translateY(-0.3px);
+    }
+
+    .btn-small {
+      background: var(--accent-gold);
+      color: #000;
+      border: 1px solid var(--accent-gold-border);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background var(--transition-fast),
+        color var(--transition-fast), border-color var(--transition-fast),
+        transform 90ms ease-out;
+    }
+    .btn-small.secondary {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+    .btn-small:hover {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+      transform: translateY(-0.3px);
+    }
+
+    /* Metrics */
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin: 10px 0 14px;
     }
-
     .metric-card {
       background: #fafafa;
-      border: 1px solid #eeeeee;
+      border: 1px solid #eee;
       border-radius: 10px;
       padding: 8px 10px;
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
-
     .metric-label {
       font-size: 0.85rem;
-      color: #444444;
+      color: #444;
     }
-
     .metric-value {
       font-size: 1.05rem;
       font-weight: 700;
+    }
+    .metric-sub {
+      font-size: 0.75rem;
+      color: #666;
     }
 
     /* Chart */
     .chart-wrapper {
       border-radius: 10px;
       border: 1px solid rgba(148, 163, 184, 0.3);
-      background: #ffffff;
+      background: #fff;
       padding: 4px;
     }
-
-    .chart {
-      width: 100%;
-      height: 520px;
-    }
+    .chart { width: 100%; height: 520px; }
 
     .status-line {
       margin-top: 6px;
@@ -320,7 +288,6 @@
       align-items: center;
       flex-wrap: wrap;
     }
-
     .status-pill {
       border-radius: 999px;
       padding: 2px 8px;
@@ -330,40 +297,19 @@
     }
 
     @media (max-width: 900px) {
-      .chart {
-        height: 460px;
-      }
-
-      .metrics-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+      .chart { height: 460px; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-
     @media (max-width: 720px) {
-      .metrics-grid {
-        grid-template-columns: 1fr;
-      }
+      .metrics-grid { grid-template-columns: 1fr; }
     }
-
     @media (max-width: 640px) {
-      .content {
-        padding: 14px 10px 28px;
-      }
-
-      .filters-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .chart {
-        height: 380px;
-      }
+      .content { padding: 14px 10px 28px; }
+      .filters-row { flex-direction: column; align-items: flex-start; }
+      .chart { height: 380px; }
     }
-
     @media (max-width: 480px) {
-      .chart {
-        height: 340px;
-      }
+      .chart { height: 340px; }
     }
   </style>
 </head>
@@ -375,14 +321,16 @@
         <header class="top-bar">
           <div>
             <div class="top-bar-title">OPENFIELD MOVELEIRO — Nova Visão</div>
-            <div class="top-bar-sub">Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria</div>
+            <div class="top-bar-sub">
+              Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria
+            </div>
           </div>
           <div class="top-bar-updated">
             Atualizado: <span id="updatedAt">--/----</span>
           </div>
         </header>
 
-        <!-- SECTION / CARD -->
+        <!-- SECTION -->
         <section class="section">
           <div class="titlebar">
             <span>📊 Nova Visão Temporal</span>
@@ -407,7 +355,6 @@
               <button class="btn-small" id="applyCustom">Aplicar</button>
               <button class="btn-small secondary" id="resetCustom">Reset</button>
 
-              <!-- Mode toggle -->
               <span style="flex:0 0 auto;margin-left:auto;display:flex;gap:6px;">
                 <button class="btn-small" id="btnFaturamento">Faturamento</button>
                 <button class="btn-small secondary" id="btnVolume">Volume</button>
@@ -444,14 +391,17 @@
               <div class="metric-card">
                 <div class="metric-label">Variação total</div>
                 <div class="metric-value" id="metricChange">—</div>
+                <div class="metric-sub" id="metricChangeSub">—</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">Média mensal</div>
                 <div class="metric-value" id="metricMean">—</div>
+                <div class="metric-sub" id="metricMeanSub">—</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">Volatilidade</div>
                 <div class="metric-value" id="metricVol">—</div>
+                <div class="metric-sub" id="metricVolSub">—</div>
               </div>
             </div>
 
@@ -474,25 +424,9 @@
     const CSV_PATH = "data/relatorio_faturamento.csv";
 
     const ARIZONA_PALETTE = [
-      "#264653",
-      "#287271",
-      "#2a9d8f",
-      "#e9c46a",
-      "#f4a261",
-      "#ee8959",
-      "#e76f51"
+      "#264653", "#287271", "#2a9d8f",
+      "#e9c46a", "#f4a261", "#ee8959", "#e76f51"
     ];
-
-    // Category colors (same as volume-linha.html)
-    const COLORS = {
-      "Corrediça Oculta":        "#d64b4b",
-      "Corrediça Telescópica":   "#f57c00",
-      "Dobradiças":              "#fdd835",
-      "Articuladores":           "#81c784",
-      "Rodízio":                 "#4db6ac",
-      "Pulsadores":              "#9575cd",
-      "Acessórios":              "#bcaaa4"
-    };
 
     const state = {
       rows: [],
@@ -501,12 +435,13 @@
       range: "ALL",
       customFrom: null,
       customTo: null,
-      valueMode: "FATURAMENTO", // or "VOLUME"
+      valueMode: "FATURAMENTO",
       valueLabel: "Faturamento",
       filterClient: "ALL",
       filterRep: "ALL",
       filterState: "ALL",
-      filterCategory: "ALL"
+      filterCategory: "ALL",
+      currentChart: null // { keys:[], series:[{name,values[]}]} for legend-based metrics
     };
 
     function formatCurrencyBRL(v) {
@@ -519,9 +454,7 @@
 
     function formatNumberBR(v) {
       if (!isFinite(v)) return "—";
-      return v.toLocaleString("pt-BR", {
-        maximumFractionDigits: 0
-      });
+      return v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
     }
 
     function formatPercent(v) {
@@ -748,15 +681,13 @@
       btnFat.addEventListener("click", () => setMode("FATURAMENTO"));
       btnVol.addEventListener("click", () => setMode("VOLUME"));
 
-      // Default mode
-      setMode("FATURAMENTO");
+      setMode("FATURAMENTO"); // default, will call updateAll once we finish init
 
       // Filters
       document
         .getElementById("filterClient")
         .addEventListener("change", (e) => {
           state.filterClient = e.target.value;
-          updateFilterOptions();
           updateAll();
         });
 
@@ -764,7 +695,6 @@
         .getElementById("filterRep")
         .addEventListener("change", (e) => {
           state.filterRep = e.target.value;
-          updateFilterOptions();
           updateAll();
         });
 
@@ -772,7 +702,6 @@
         .getElementById("filterState")
         .addEventListener("change", (e) => {
           state.filterState = e.target.value;
-          updateFilterOptions();
           updateAll();
         });
 
@@ -783,7 +712,7 @@
           updateAll();
         });
 
-      updateFilterOptions();
+      updateFilterOptions(getFilteredKeys());
     }
 
     function refillSelect(selectId, values, allLabel, keyName) {
@@ -811,12 +740,15 @@
       }
     }
 
-    function updateFilterOptions() {
+    // filters now depend on period (filteredKeys)
+    function updateFilterOptions(filteredKeys) {
       const rows = state.rows;
+      const keySet = new Set(filteredKeys);
 
-      // CLIENTE options – depend on Rep + State
+      // CLIENTE options – depend on Rep + State + period
       const rowsForClients = rows.filter(
         (r) =>
+          keySet.has(r.key) &&
           (state.filterRep === "ALL" ||
             r.representante === state.filterRep) &&
           (state.filterState === "ALL" || r.estado === state.filterState)
@@ -828,9 +760,10 @@
         "filterClient"
       );
 
-      // REP options – depend on Client + State
+      // REP options – depend on Client + State + period
       const rowsForReps = rows.filter(
         (r) =>
+          keySet.has(r.key) &&
           (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
           (state.filterState === "ALL" || r.estado === state.filterState)
       );
@@ -841,9 +774,10 @@
         "filterRep"
       );
 
-      // ESTADO options – depend on Client + Rep
+      // ESTADO options – depend on Client + Rep + period
       const rowsForStates = rows.filter(
         (r) =>
+          keySet.has(r.key) &&
           (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
           (state.filterRep === "ALL" ||
             r.representante === state.filterRep)
@@ -855,9 +789,10 @@
         "filterState"
       );
 
-      // CATEGORIA options – depend on Client + Rep + State
+      // CATEGORIA options – depend on all + period
       const rowsForCats = rows.filter(
         (r) =>
+          keySet.has(r.key) &&
           (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
           (state.filterRep === "ALL" ||
             r.representante === state.filterRep) &&
@@ -907,23 +842,19 @@
         if (
           state.filterClient !== "ALL" &&
           r.cliente !== state.filterClient
-        )
-          continue;
+        ) continue;
         if (
           state.filterRep !== "ALL" &&
           r.representante !== state.filterRep
-        )
-          continue;
+        ) continue;
         if (
           state.filterState !== "ALL" &&
           r.estado !== state.filterState
-        )
-          continue;
+        ) continue;
         if (
           state.filterCategory !== "ALL" &&
           r.categoria !== state.filterCategory
-        )
-          continue;
+        ) continue;
 
         const cat = r.categoria;
         const val = useFaturamento ? r.valor : r.quantidade;
@@ -936,37 +867,25 @@
       return byCat;
     }
 
-    function computeTotals(filteredKeys, seriesByCategory) {
-      return filteredKeys.map((key) => {
-        let sum = 0;
-        seriesByCategory.forEach((m) => {
-          sum += m.get(key) || 0;
-        });
-        return sum;
-      });
-    }
-
-    function computeMetrics(filteredKeys, seriesByCategory) {
-      const totals = computeTotals(filteredKeys, seriesByCategory);
+    function computeMetricsFromTotals(totals) {
       const values = totals.filter((v) => isFinite(v) && v > 0);
+      if (!values.length) {
+        return { mean: NaN, change: NaN, vol: NaN, first: null, last: null, count: 0 };
+      }
 
-      let mean = NaN;
+      const count = values.length;
+      const first = values[0];
+      const last = values[count - 1];
+
+      let mean = values.reduce((a, b) => a + b, 0) / count;
+
       let change = NaN;
+      if (count >= 2 && first !== 0) {
+        change = ((last - first) / Math.abs(first)) * 100;
+      }
+
       let vol = NaN;
-
-      if (values.length) {
-        mean = values.reduce((a, b) => a + b, 0) / values.length;
-      }
-
-      if (values.length >= 2) {
-        const first = values[0];
-        const last = values[values.length - 1];
-        if (first !== 0) {
-          change = ((last - first) / Math.abs(first)) * 100;
-        }
-      }
-
-      if (values.length >= 3) {
+      if (count >= 3) {
         const rets = [];
         for (let i = 1; i < values.length; i++) {
           if (values[i - 1] !== 0) {
@@ -982,14 +901,75 @@
         }
       }
 
-      document.getElementById("metricMean").textContent =
-        state.valueMode === "FATURAMENTO"
-          ? formatCurrencyBRL(mean)
-          : formatNumberBR(mean);
+      return { mean, change, vol, first, last, count };
+    }
+
+    function recalcMetricsFromLegend() {
+      const chart = state.currentChart;
+      if (!chart || !chart.keys.length) return;
+
+      const gd = document.getElementById("chart");
+      const visibleNames = new Set();
+
+      if (gd && gd.data && gd.data.length) {
+        gd.data.forEach((trace) => {
+          if (trace.visible === "legendonly") return;
+          visibleNames.add(trace.name);
+        });
+      }
+
+      // If nothing selected (all hidden), show dashes
+      if (!visibleNames.size) {
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        return;
+      }
+
+      const totals = [];
+      for (let i = 0; i < chart.keys.length; i++) {
+        let sum = 0;
+        chart.series.forEach((s) => {
+          if (visibleNames.has(s.name)) {
+            sum += s.values[i] || 0;
+          }
+        });
+        totals.push(sum);
+      }
+
+      const { mean, change, vol, first, last, count } =
+        computeMetricsFromTotals(totals);
+
+      const isFat = state.valueMode === "FATURAMENTO";
+      const formatVal = (v) => {
+        if (!isFinite(v)) return "—";
+        return isFat
+          ? formatCurrencyBRL(v)
+          : formatNumberBR(v) + " un";
+      };
+
+      document.getElementById("metricMean").textContent = formatVal(mean);
       document.getElementById("metricChange").textContent =
         formatPercent(change);
       document.getElementById("metricVol").textContent =
         formatPercent(vol);
+
+      document.getElementById("metricMeanSub").textContent =
+        count ? `Média em ${count} meses` : "—";
+
+      document.getElementById("metricVolSub").textContent =
+        count > 1
+          ? `Baseado em ${Math.max(count - 1, 1)} variações mensais`
+          : "—";
+
+      const changeSub =
+        first != null && last != null && isFinite(first) && isFinite(last)
+          ? `De ${formatVal(first)} para ${formatVal(last)}`
+          : "—";
+      document.getElementById("metricChangeSub").textContent = changeSub;
     }
 
     function renderChart(filteredKeys, seriesByCategory) {
@@ -997,7 +977,7 @@
         (k) => state.keyToLabel.get(k) || labelFromKey(k)
       );
 
-      // Sort categories by total in period (desc)
+      // sort categories by total descending for selected period
       const entries = Array.from(seriesByCategory.entries());
       entries.sort((a, b) => {
         const sumA = filteredKeys.reduce(
@@ -1011,42 +991,57 @@
         return sumB - sumA;
       });
 
+      // totals for each month (all categories, independent of legend)
+      const totalPerKey = filteredKeys.map((key) => {
+        let sum = 0;
+        entries.forEach(([_, map]) => {
+          sum += map.get(key) || 0;
+        });
+        return sum;
+      });
+
       const traces = [];
+      const chartSeries = [];
+      const isFat = state.valueMode === "FATURAMENTO";
+
       entries.forEach(([cat, map], idx) => {
-        const y = filteredKeys.map((k) => map.get(k) || 0);
+        const vals = filteredKeys.map((k) => map.get(k) || 0);
+        chartSeries.push({ name: cat, values: vals });
 
-        // Use fixed colors for known categorias, fallback to Arizona palette
-        const color =
-          COLORS[cat] || ARIZONA_PALETTE[idx % ARIZONA_PALETTE.length];
+        const baseTemplate =
+          isFat
+            ? `<b>${cat}</b><br>R$ %{y:,.2f}<extra></extra>`
+            : `<b>${cat}</b><br>%{y:,.0f} un<extra></extra>`;
 
-        const hoverTemplate =
-          state.valueMode === "FATURAMENTO"
-            ? "<b>" +
-              cat +
-              "</b><br>R$ %{y:,.2f}<extra></extra>"
-            : "<b>" +
-              cat +
-              "</b><br>%{y:,.0f} un<extra></extra>";
+        const templateWithTotal =
+          isFat
+            ? `<b>${cat}</b><br>R$ %{y:,.2f}<br><b>Total:</b> R$ %{customdata:,.2f}<extra></extra>`
+            : `<b>${cat}</b><br>%{y:,.0f} un<br><b>Total:</b> %{customdata:,.0f} un<extra></extra>`;
 
         traces.push({
           x: labels,
-          y,
+          y: vals,
           type: "scatter",
           mode: "lines+markers",
           name: cat,
           line: {
             shape: "spline",
             width: 3,
-            color
+            color: ARIZONA_PALETTE[idx % ARIZONA_PALETTE.length]
           },
           marker: {
             size: 7,
             line: { width: 1, color: "#ffffff" }
           },
-          hovertemplate: hoverTemplate
+          customdata: totalPerKey,
+          hovertemplate: idx === 0 ? templateWithTotal : baseTemplate
         });
       });
 
+      state.currentChart = {
+        keys: filteredKeys.slice(),
+        series: chartSeries
+      };
 
       const layout = {
         margin: { l: 60, r: 30, t: 20, b: 80 },
@@ -1083,14 +1078,34 @@
         }
       };
 
-      Plotly.react("chart", traces, layout, {
+      const chartDiv = document.getElementById("chart");
+      Plotly.react(chartDiv, traces, layout, {
         responsive: true,
         displayModeBar: false
       });
+
+      // Attach legend handlers once
+      if (!chartDiv._metricsHooked) {
+        chartDiv.on("plotly_restyle", () => {
+          recalcMetricsFromLegend();
+        });
+        chartDiv.on("plotly_legendclick", () => {
+          // After visibility change
+          setTimeout(recalcMetricsFromLegend, 0);
+        });
+        chartDiv._metricsHooked = true;
+      }
+
+      // Initial metrics for all visible traces
+      recalcMetricsFromLegend();
     }
 
     function updateAll() {
       const filteredKeys = getFilteredKeys();
+
+      // period-sensitive filter lists
+      updateFilterOptions(filteredKeys);
+
       const statusInfo = document.getElementById("statusInfo");
       const statusRange = document.getElementById("statusRange");
 
@@ -1101,6 +1116,9 @@
         document.getElementById("metricMean").textContent = "—";
         document.getElementById("metricChange").textContent = "—";
         document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
         Plotly.purge("chart");
         return;
       }
@@ -1123,6 +1141,9 @@
         document.getElementById("metricMean").textContent = "—";
         document.getElementById("metricChange").textContent = "—";
         document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
         Plotly.purge("chart");
         return;
       }
@@ -1140,7 +1161,6 @@
       statusRange.textContent =
         "Período: " + labelFrom + " – " + labelTo;
 
-      computeMetrics(filteredKeys, seriesByCategory);
       renderChart(filteredKeys, seriesByCategory);
     }
 

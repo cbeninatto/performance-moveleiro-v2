@@ -84,22 +84,18 @@
       gap: 8px;
       box-shadow: var(--shadow-soft);
     }
-
     .top-bar-title {
       font-weight: 700;
       letter-spacing: 0.03em;
     }
-
     .top-bar-sub {
       font-size: 0.8rem;
       opacity: 0.9;
     }
-
     .top-bar-updated {
       font-size: 0.8rem;
       opacity: 0.9;
     }
-
     .top-bar-updated span {
       font-weight: 600;
       color: var(--accent-gold-soft);
@@ -179,7 +175,6 @@
         #ffffff;
       color: #111827;
     }
-
     select:focus {
       outline: none;
       border-color: var(--accent-gold);
@@ -215,15 +210,12 @@
       align-items: center;
       gap: 4px;
       transition: background var(--transition-fast),
-        color var(--transition-fast),
-        border-color var(--transition-fast),
+        color var(--transition-fast), border-color var(--transition-fast),
         transform 90ms ease-out;
     }
-
     .range-btn span {
       font-size: 0.78rem;
     }
-
     .range-btn:hover,
     .range-btn.active {
       background: #000;
@@ -247,17 +239,14 @@
       align-items: center;
       gap: 4px;
       transition: background var(--transition-fast),
-        color var(--transition-fast),
-        border-color var(--transition-fast),
+        color var(--transition-fast), border-color var(--transition-fast),
         transform 90ms ease-out;
     }
-
     .btn-small.secondary {
       background: #000;
       color: #fff;
       border-color: #000;
     }
-
     .btn-small:hover {
       background: #000;
       color: #fff;
@@ -272,7 +261,6 @@
       gap: 10px;
       margin: 10px 0 14px;
     }
-
     .metric-card {
       background: #fafafa;
       border: 1px solid #eee;
@@ -282,17 +270,14 @@
       flex-direction: column;
       gap: 2px;
     }
-
     .metric-label {
       font-size: 0.85rem;
       color: #444;
     }
-
     .metric-value {
       font-size: 1.05rem;
       font-weight: 700;
     }
-
     .metric-sub {
       font-size: 0.75rem;
       color: #666;
@@ -305,7 +290,6 @@
       background: #fff;
       padding: 4px;
     }
-
     .chart {
       width: 100%;
       height: 520px;
@@ -316,4 +300,1314 @@
       font-size: 0.7rem;
       color: var(--text-muted);
       display: flex;
-      justify-content
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .status-pill {
+      border-radius: 999px;
+      padding: 2px 8px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(15, 23, 42, 0.03);
+      font-size: 0.7rem;
+    }
+
+    /* Rankings / Tendências */
+    .trend-header {
+      margin-top: 12px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .trend-header-right {
+      margin-left: auto;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      max-width: 260px;
+    }
+
+    .ranking-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .ranking-card {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+    }
+    .ranking-card h4 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .ranking-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .ranking-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .ranking-label {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ranking-value {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .chart {
+        height: 460px;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ranking-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 720px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .ranking-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .content {
+        padding: 14px 10px 28px;
+      }
+      .filters-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .chart {
+        height: 380px;
+      }
+    }
+    @media (max-width: 480px) {
+      .chart {
+        height: 340px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <main class="content">
+      <div class="content-inner">
+        <!-- TOP BAR -->
+        <header class="top-bar">
+          <div>
+            <div class="top-bar-title">OPENFIELD MOVELEIRO — Nova Visão</div>
+            <div class="top-bar-sub">
+              Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria / Linha + Visão por Estado / Cliente
+            </div>
+          </div>
+          <div class="top-bar-updated">
+            Atualizado: <span id="updatedAt">--/----</span>
+          </div>
+        </header>
+
+        <!-- SECTION -->
+        <section class="section">
+          <div class="titlebar">
+            <span>📊 Nova Visão Temporal</span>
+          </div>
+          <div class="card">
+            <!-- PERIOD + MODE + VIEW -->
+            <div class="filters-row">
+              <span class="filters-label">Período</span>
+
+              <div class="range-buttons" id="rangeButtons">
+                <button class="range-btn" data-range="3M"><span>3M</span></button>
+                <button class="range-btn" data-range="6M"><span>6M</span></button>
+                <button class="range-btn" data-range="1A"><span>1A</span></button>
+                <button class="range-btn" data-range="5A"><span>5A</span></button>
+                <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
+              </div>
+
+              <span style="margin-left:8px;">De</span>
+              <input type="month" id="fromPeriod" />
+              <span>até</span>
+              <input type="month" id="toPeriod" />
+              <button class="btn-small" id="applyCustom">Aplicar</button>
+              <button class="btn-small secondary" id="resetCustom">Reset</button>
+
+              <span style="flex:0 0 auto;margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="filters-label">Visão</span>
+                <button class="btn-small" id="btnViewCategoria">Categoria</button>
+                <button class="btn-small secondary" id="btnViewEstado">Estado</button>
+                <button class="btn-small secondary" id="btnViewCliente">Cliente</button>
+
+                <span style="width:4px;"></span>
+
+                <button class="btn-small" id="btnFaturamento">Faturamento</button>
+                <button class="btn-small secondary" id="btnVolume">Volume</button>
+              </span>
+            </div>
+
+            <!-- DIMENSION FILTERS -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Filtros</span>
+
+              <div class="field-group">
+                <label class="field-label" for="filterClient">Cliente</label>
+                <select id="filterClient"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterRep">Representante</label>
+                <select id="filterRep"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterState">Estado</label>
+                <select id="filterState"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterCategory">Categoria</label>
+                <select id="filterCategory"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterLinha">Linha</label>
+                <select id="filterLinha"></select>
+              </div>
+            </div>
+
+            <!-- METRICS -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">Média mensal</div>
+                <div class="metric-value" id="metricChange">—</div>
+                <div class="metric-sub" id="metricChangeSub">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Total no período</div>
+                <div class="metric-value" id="metricMean">—</div>
+                <div class="metric-sub" id="metricMeanSub">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Destaques</div>
+                <div class="metric-value" id="metricVol">—</div>
+                <div class="metric-sub" id="metricVolSub">—</div>
+              </div>
+            </div>
+
+            <!-- CHART -->
+            <div class="chart-wrapper">
+              <div id="chart" class="chart"></div>
+            </div>
+
+            <!-- TREND DIMENSION HEADER -->
+            <div class="trend-header">
+              <span class="filters-label">Tendências</span>
+              <span style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                <span class="field-label" style="margin-right:4px;">Dimensão</span>
+                <button class="btn-small" id="trendDimRep">Representante</button>
+                <button class="btn-small secondary" id="trendDimCli">Cliente</button>
+                <button class="btn-small secondary" id="trendDimEst">Estado</button>
+              </span>
+              <span class="trend-header-right">
+                Comparando a segunda metade do período selecionado com a primeira metade.
+              </span>
+            </div>
+
+            <!-- RANKINGS -->
+            <div class="ranking-grid" id="rankingGrid">
+              <div class="ranking-card">
+                <h4 id="rankingTopTitle">Maiores no período — Representante</h4>
+                <ul class="ranking-list" id="rankingTop"></ul>
+              </div>
+              <div class="ranking-card">
+                <h4 id="rankingRisingTitle">Ganhando espaço — Representante</h4>
+                <ul class="ranking-list" id="rankingRising"></ul>
+              </div>
+              <div class="ranking-card">
+                <h4 id="rankingFallingTitle">Perdendo espaço — Representante</h4>
+                <ul class="ranking-list" id="rankingFalling"></ul>
+              </div>
+            </div>
+
+            <div class="status-line">
+              <div id="statusInfo">Carregando dados...</div>
+              <div class="status-pill" id="statusRange">Período: --</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const CSV_MAIN = "data/relatorio_faturamento.csv";
+    const CSV_FAMILIAS = "data/produtos_categorias_familias.csv";
+
+    const ARIZONA_PALETTE = [
+      "#264653", "#287271", "#2a9d8f",
+      "#e9c46a", "#f4a261", "#ee8959", "#e76f51"
+    ];
+
+    const familiesMap = new Map(); // descricao normalizada -> FAMILIA_PRODUTO
+
+    const state = {
+      rows: [],
+      allKeysSorted: [],
+      keyToLabel: new Map(), // "YYYY-MM" -> "MMM AA"
+      range: "ALL",
+      customFrom: null,
+      customTo: null,
+      valueMode: "FATURAMENTO",
+      valueLabel: "Faturamento",
+      viewMode: "CATEGORIA", // CATEGORIA | ESTADO | CLIENTE
+      filterClient: "ALL",
+      filterRep: "ALL",
+      filterState: "ALL",
+      filterCategory: "ALL",
+      filterLinha: "ALL",
+      rankingDimension: "REPRESENTANTE", // REPRESENTANTE | CLIENTE | ESTADO
+      currentChart: null
+    };
+
+    function normalizeDesc(str) {
+      return (str || "").toString().trim().toUpperCase();
+    }
+
+    function formatCurrencyBRL(v) {
+      if (!isFinite(v)) return "—";
+      return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function formatNumberBR(v) {
+      if (!isFinite(v)) return "—";
+      return v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+    }
+
+    function labelFromKey(key) {
+      const [y, mStr] = key.split("-");
+      const m = parseInt(mStr, 10);
+      const shortYear = y.slice(-2);
+      const months = [
+        "JAN","FEV","MAR","ABR","MAI","JUN",
+        "JUL","AGO","SET","OUT","NOV","DEZ"
+      ];
+      return (months[m - 1] || mStr) + " " + shortYear;
+    }
+
+    function detectDelimiter(text) {
+      const sample = text.slice(0, 1000);
+      const commas = (sample.match(/,/g) || []).length;
+      const semis = (sample.match(/;/g) || []).length;
+      return semis > commas ? ";" : ",";
+    }
+
+    function uniqueSorted(values) {
+      return Array.from(new Set(values)).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
+    }
+
+    function loadFamilies() {
+      return fetch(CSV_FAMILIAS, { cache: "no-cache" })
+        .then((res) => {
+          if (!res.ok) throw new Error("familias CSV not found");
+          return res.text();
+        })
+        .then((text) => {
+          const delimiter = detectDelimiter(text);
+          Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            delimiter,
+            complete: (results) => {
+              (results.data || []).forEach((row) => {
+                const descKey = normalizeDesc(row["Descricao"]);
+                if (!descKey) return;
+                const fam =
+                  (row["FAMILIA_PRODUTO"] || "").toString().trim() ||
+                  "Sem Linha";
+                familiesMap.set(descKey, fam);
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn("Falha ao carregar familias:", err);
+        });
+    }
+
+    function loadMainCSV() {
+      fetch(CSV_MAIN, { cache: "no-cache" })
+        .then((res) => {
+          if (!res.ok) throw new Error("Erro ao carregar CSV principal");
+          return res.text();
+        })
+        .then((text) => {
+          const delimiter = detectDelimiter(text);
+          Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            delimiter,
+            complete: (results) => processData(results.data || []),
+            error: (err) => {
+              console.error(err);
+              document.getElementById("statusInfo").textContent =
+                "Erro ao processar o CSV.";
+            }
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          document.getElementById("statusInfo").textContent =
+            "Erro ao carregar o arquivo de dados.";
+        });
+    }
+
+    function processData(rows) {
+      if (!rows.length) {
+        document.getElementById("statusInfo").textContent =
+          "Nenhum dado encontrado.";
+        return;
+      }
+
+      const keySet = new Set();
+      const keyToLabel = new Map();
+      const normalized = [];
+
+      for (const row of rows) {
+        const ano = parseInt(row["Ano"], 10);
+        const mes = parseInt(row["Mes"], 10);
+        if (!ano || !mes) continue;
+
+        const key = `${ano}-${String(mes).padStart(2, "0")}`;
+        const label = labelFromKey(key);
+        keySet.add(key);
+        if (!keyToLabel.has(key)) keyToLabel.set(key, label);
+
+        const rawValor = (row["Valor"] ?? "0").toString().replace(",", ".");
+        const rawQtd = (row["Quantidade"] ?? "0").toString().replace(",", ".");
+        const valor = parseFloat(rawValor);
+        const quantidade = parseFloat(rawQtd);
+
+        const categoria =
+          (row["Categoria"] || "").toString().trim() || "Sem Categoria";
+        const cliente =
+          (row["Cliente"] || "").toString().trim() || "Sem Cliente";
+        const representante =
+          (row["Representante"] || "").toString().trim() ||
+          "Sem Representante";
+        const estado =
+          (row["Estado"] || "").toString().trim() || "Sem Estado";
+
+        const descKey = normalizeDesc(row["Descricao"]);
+        const linha =
+          familiesMap.get(descKey) || "Sem Linha";
+
+        normalized.push({
+          key,
+          label,
+          ano,
+          mes,
+          categoria,
+          cliente,
+          representante,
+          estado,
+          linha,
+          valor: isNaN(valor) ? 0 : valor,
+          quantidade: isNaN(quantidade) ? 0 : quantidade
+        });
+      }
+
+      const allKeysSorted = Array.from(keySet).sort();
+      if (!allKeysSorted.length) {
+        document.getElementById("statusInfo").textContent =
+          "Nenhum dado válido para exibir.";
+        return;
+      }
+
+      state.rows = normalized;
+      state.allKeysSorted = allKeysSorted;
+      state.keyToLabel = keyToLabel;
+
+      initUI();
+      updateAll();
+    }
+
+    function rowPassesDimensionFilters(r) {
+      if (state.filterClient !== "ALL" && r.cliente !== state.filterClient) return false;
+      if (state.filterRep !== "ALL" && r.representante !== state.filterRep) return false;
+      if (state.filterState !== "ALL" && r.estado !== state.filterState) return false;
+      if (state.filterCategory !== "ALL" && r.categoria !== state.filterCategory) return false;
+      if (state.filterLinha !== "ALL" && r.linha !== state.filterLinha) return false;
+      return true;
+    }
+
+    function initUI() {
+      const fromInput = document.getElementById("fromPeriod");
+      const toInput = document.getElementById("toPeriod");
+
+      const firstKey = state.allKeysSorted[0];
+      const lastKey =
+        state.allKeysSorted[state.allKeysSorted.length - 1];
+
+      fromInput.min = firstKey;
+      fromInput.max = lastKey;
+      toInput.min = firstKey;
+      toInput.max = lastKey;
+
+      fromInput.value = firstKey;
+      toInput.value = lastKey;
+
+      state.customFrom = firstKey;
+      state.customTo = lastKey;
+
+      const lastLabel =
+        state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+      document.getElementById("updatedAt").textContent = lastLabel;
+
+      const rangeButtons = document.querySelectorAll(
+        "#rangeButtons .range-btn"
+      );
+      rangeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          rangeButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          state.range = btn.dataset.range || "ALL";
+          updateAll();
+        });
+      });
+
+      document
+        .getElementById("applyCustom")
+        .addEventListener("click", () => {
+          const fromVal = fromInput.value;
+          const toVal = toInput.value;
+          if (!fromVal || !toVal) return;
+
+          const all = state.allKeysSorted;
+          const fromIdx = all.indexOf(fromVal);
+          const toIdx = all.indexOf(toVal);
+          if (fromIdx === -1 || toIdx === -1 || fromIdx > toIdx) {
+            alert("Selecione um intervalo De/Até válido.");
+            return;
+          }
+          state.customFrom = fromVal;
+          state.customTo = toVal;
+          state.range = "CUSTOM";
+
+          rangeButtons.forEach((b) => b.classList.remove("active"));
+          updateAll();
+        });
+
+      document
+        .getElementById("resetCustom")
+        .addEventListener("click", () => {
+          fromInput.value = firstKey;
+          toInput.value = lastKey;
+          state.customFrom = firstKey;
+          state.customTo = lastKey;
+          state.range = "ALL";
+
+          rangeButtons.forEach((b) => {
+            b.classList.toggle("active", b.dataset.range === "ALL");
+          });
+
+          updateAll();
+        });
+
+      const btnFat = document.getElementById("btnFaturamento");
+      const btnVol = document.getElementById("btnVolume");
+
+      function setMode(mode) {
+        state.valueMode = mode;
+        state.valueLabel =
+          mode === "FATURAMENTO" ? "Faturamento" : "Volume";
+
+        if (mode === "FATURAMENTO") {
+          btnFat.classList.remove("secondary");
+          btnVol.classList.add("secondary");
+        } else {
+          btnVol.classList.remove("secondary");
+          btnFat.classList.add("secondary");
+        }
+
+        updateAll();
+      }
+
+      btnFat.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol.addEventListener("click", () => setMode("VOLUME"));
+
+      // View buttons
+      const btnViewCat = document.getElementById("btnViewCategoria");
+      const btnViewEst = document.getElementById("btnViewEstado");
+      const btnViewCli = document.getElementById("btnViewCliente");
+
+      function setView(mode) {
+        state.viewMode = mode;
+
+        btnViewCat.classList.toggle("secondary", mode !== "CATEGORIA");
+        btnViewEst.classList.toggle("secondary", mode !== "ESTADO");
+        btnViewCli.classList.toggle("secondary", mode !== "CLIENTE");
+
+        updateAll();
+      }
+
+      btnViewCat.addEventListener("click", () => setView("CATEGORIA"));
+      btnViewEst.addEventListener("click", () => setView("ESTADO"));
+      btnViewCli.addEventListener("click", () => setView("CLIENTE"));
+
+      // Filters
+      document
+        .getElementById("filterClient")
+        .addEventListener("change", (e) => {
+          state.filterClient = e.target.value;
+          updateAll();
+        });
+
+      document
+        .getElementById("filterRep")
+        .addEventListener("change", (e) => {
+          state.filterRep = e.target.value;
+          updateAll();
+        });
+
+      document
+        .getElementById("filterState")
+        .addEventListener("change", (e) => {
+          state.filterState = e.target.value;
+          updateAll();
+        });
+
+      document
+        .getElementById("filterCategory")
+        .addEventListener("change", (e) => {
+          state.filterCategory = e.target.value;
+          updateAll();
+        });
+
+      document
+        .getElementById("filterLinha")
+        .addEventListener("change", (e) => {
+          state.filterLinha = e.target.value;
+          updateAll();
+        });
+
+      // Trend dimension buttons
+      const btnTrendRep = document.getElementById("trendDimRep");
+      const btnTrendCli = document.getElementById("trendDimCli");
+      const btnTrendEst = document.getElementById("trendDimEst");
+
+      function setRankingDimension(dim) {
+        state.rankingDimension = dim;
+
+        btnTrendRep.classList.toggle("secondary", dim !== "REPRESENTANTE");
+        btnTrendCli.classList.toggle("secondary", dim !== "CLIENTE");
+        btnTrendEst.classList.toggle("secondary", dim !== "ESTADO");
+
+        const dimLabel =
+          dim === "CLIENTE" ? "Cliente" :
+          dim === "ESTADO" ? "Estado" : "Representante";
+
+        document.getElementById("rankingTopTitle").textContent =
+          "Maiores no período — " + dimLabel;
+        document.getElementById("rankingRisingTitle").textContent =
+          "Ganhando espaço — " + dimLabel;
+        document.getElementById("rankingFallingTitle").textContent =
+          "Perdendo espaço — " + dimLabel;
+
+        updateAll();
+      }
+
+      btnTrendRep.addEventListener("click", () => setRankingDimension("REPRESENTANTE"));
+      btnTrendCli.addEventListener("click", () => setRankingDimension("CLIENTE"));
+      btnTrendEst.addEventListener("click", () => setRankingDimension("ESTADO"));
+
+      // Initial filter options & defaults
+      updateFilterOptions(getFilteredKeys());
+      setView("CATEGORIA");
+      setMode("FATURAMENTO");
+      setRankingDimension("REPRESENTANTE");
+    }
+
+    function refillSelect(selectId, values, allLabel, keyName) {
+      const select = document.getElementById(selectId);
+      const currentValue = state[keyName];
+      select.innerHTML = "";
+
+      const optAll = document.createElement("option");
+      optAll.value = "ALL";
+      optAll.textContent = allLabel;
+      select.appendChild(optAll);
+
+      values.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      });
+
+      if (currentValue !== "ALL" && values.includes(currentValue)) {
+        select.value = currentValue;
+      } else {
+        select.value = "ALL";
+        state[keyName] = "ALL";
+      }
+    }
+
+    function updateFilterOptions(filteredKeys) {
+      const rows = state.rows;
+      const keySet = new Set(filteredKeys);
+      const rowsBase = rows.filter((r) => keySet.has(r.key));
+
+      // CLIENTE
+      const rowsForClients = rowsBase.filter(
+        (r) =>
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      refillSelect(
+        "filterClient",
+        uniqueSorted(rowsForClients.map((r) => r.cliente)),
+        "Todos os clientes",
+        "filterClient"
+      );
+
+      // REP
+      const rowsForReps = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      refillSelect(
+        "filterRep",
+        uniqueSorted(rowsForReps.map((r) => r.representante)),
+        "Todos os representantes",
+        "filterRep"
+      );
+
+      // ESTADO
+      const rowsForStates = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      refillSelect(
+        "filterState",
+        uniqueSorted(rowsForStates.map((r) => r.estado)),
+        "Todos os estados",
+        "filterState"
+      );
+
+      // CATEGORIA
+      const rowsForCats = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      refillSelect(
+        "filterCategory",
+        uniqueSorted(rowsForCats.map((r) => r.categoria)),
+        "Todas as categorias",
+        "filterCategory"
+      );
+
+      // LINHA
+      const rowsForLinha = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory)
+      );
+      refillSelect(
+        "filterLinha",
+        uniqueSorted(rowsForLinha.map((r) => r.linha)),
+        "Todas as linhas",
+        "filterLinha"
+      );
+    }
+
+    function getFilteredKeys() {
+      const keys = state.allKeysSorted;
+      if (!keys.length) return [];
+
+      if (state.range === "CUSTOM") {
+        const from = state.customFrom || keys[0];
+        const to = state.customTo || keys[keys.length - 1];
+        const fi = keys.indexOf(from);
+        const ti = keys.indexOf(to);
+        if (fi === -1 || ti === -1 || fi > ti) return [];
+        return keys.slice(fi, ti + 1);
+      }
+
+      if (["3M", "6M", "1A", "5A"].includes(state.range)) {
+        let n = 0;
+        if (state.range === "3M") n = 3;
+        if (state.range === "6M") n = 6;
+        if (state.range === "1A") n = 12;
+        if (state.range === "5A") n = 60;
+        if (keys.length <= n) return keys.slice();
+        return keys.slice(keys.length - n);
+      }
+
+      return keys.slice(); // ALL
+    }
+
+    function buildSeriesForCurrentFilters(filteredKeys) {
+      const keySet = new Set(filteredKeys);
+      const byGroup = new Map();
+      const useFaturamento = state.valueMode === "FATURAMENTO";
+
+      for (const r of state.rows) {
+        if (!keySet.has(r.key)) continue;
+        if (!rowPassesDimensionFilters(r)) continue;
+
+        let group;
+        if (state.viewMode === "ESTADO") {
+          group = r.estado;
+        } else if (state.viewMode === "CLIENTE") {
+          group = r.cliente;
+        } else {
+          group = r.categoria; // default: CATEGORIA
+        }
+
+        const val = useFaturamento ? r.valor : r.quantidade;
+        if (!byGroup.has(group)) byGroup.set(group, new Map());
+        const m = byGroup.get(group);
+        m.set(r.key, (m.get(r.key) || 0) + (isNaN(val) ? 0 : val));
+      }
+
+      return byGroup;
+    }
+
+    function computeBasicStats(totals) {
+      const n = totals.length;
+      if (!n) {
+        return {
+          mean: NaN,
+          total: NaN,
+          bestIdx: -1,
+          worstIdx: -1,
+          count: 0
+        };
+      }
+
+      let total = 0;
+      for (let i = 0; i < n; i++) {
+        const v = totals[i];
+        total += isFinite(v) ? v : 0;
+      }
+      const mean = total / n;
+
+      let bestIdx = 0;
+      let worstIdx = 0;
+      for (let i = 1; i < n; i++) {
+        if (totals[i] > totals[bestIdx]) bestIdx = i;
+        if (totals[i] < totals[worstIdx]) worstIdx = i;
+      }
+
+      return {
+        mean,
+        total,
+        bestIdx,
+        worstIdx,
+        count: n
+      };
+    }
+
+    function recalcMetricsFromLegend() {
+      const chart = state.currentChart;
+      if (!chart || !chart.keys.length) return;
+
+      const gd = document.getElementById("chart");
+      const visibleNames = new Set();
+
+      if (gd && gd.data && gd.data.length) {
+        gd.data.forEach((trace) => {
+          if (trace.visible === "legendonly") return;
+          visibleNames.add(trace.name);
+        });
+      }
+
+      if (!visibleNames.size) {
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        return;
+      }
+
+      const totals = [];
+      for (let i = 0; i < chart.keys.length; i++) {
+        let sum = 0;
+        chart.series.forEach((s) => {
+          if (visibleNames.has(s.name)) {
+            sum += s.values[i] || 0;
+          }
+        });
+        totals.push(sum);
+      }
+
+      const stats = computeBasicStats(totals);
+      const isFat = state.valueMode === "FATURAMENTO";
+      const formatVal = (v) => {
+        if (!isFinite(v)) return "—";
+        return isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+      };
+
+      // Card 1: Média mensal
+      document.getElementById("metricChange").textContent =
+        formatVal(stats.mean);
+      document.getElementById("metricChangeSub").textContent =
+        stats.count ? `Em ${stats.count} meses` : "Sem dados suficientes";
+
+      // Card 2: Total no período
+      document.getElementById("metricMean").textContent =
+        formatVal(stats.total);
+      document.getElementById("metricMeanSub").textContent =
+        stats.count ? `Soma de ${stats.count} meses` : "Sem dados suficientes";
+
+      // Card 3: Destaques (melhor / pior)
+      if (stats.count && stats.bestIdx >= 0 && stats.worstIdx >= 0) {
+        const bestLabel =
+          state.keyToLabel.get(chart.keys[stats.bestIdx]) ||
+          labelFromKey(chart.keys[stats.bestIdx]);
+        const worstLabel =
+          state.keyToLabel.get(chart.keys[stats.worstIdx]) ||
+          labelFromKey(chart.keys[stats.worstIdx]);
+
+        const bestVal = formatVal(totals[stats.bestIdx]);
+        const worstVal = formatVal(totals[stats.worstIdx]);
+
+        document.getElementById("metricVol").textContent =
+          `Melhor: ${bestLabel} — ${bestVal}`;
+        document.getElementById("metricVolSub").textContent =
+          `Pior: ${worstLabel} — ${worstVal}`;
+      } else {
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+      }
+    }
+
+    function clearRankings() {
+      ["rankingTop", "rankingRising", "rankingFalling"].forEach((id) => {
+        const ul = document.getElementById(id);
+        if (!ul) return;
+        ul.innerHTML = "";
+        const li = document.createElement("li");
+        li.textContent = "Sem dados";
+        ul.appendChild(li);
+      });
+    }
+
+    function updateRankings(filteredKeys) {
+      const ulTop = document.getElementById("rankingTop");
+      const ulRising = document.getElementById("rankingRising");
+      const ulFalling = document.getElementById("rankingFalling");
+      ulTop.innerHTML = "";
+      ulRising.innerHTML = "";
+      ulFalling.innerHTML = "";
+
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+
+      if (!rows.length || filteredKeys.length === 0) {
+        clearRankings();
+        return;
+      }
+
+      const useFat = state.valueMode === "FATURAMENTO";
+      const valKey = useFat ? "valor" : "quantidade";
+
+      // Build key index map & split point
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, idx) => keyIndex.set(k, idx));
+      const nKeys = filteredKeys.length;
+      const mid = Math.floor(nKeys / 2) || 1; // ensure >0
+
+      // Aggregate per entity
+      const statsMap = new Map();
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        if (idx == null) return;
+
+        let dimVal;
+        if (state.rankingDimension === "CLIENTE") dimVal = r.cliente;
+        else if (state.rankingDimension === "ESTADO") dimVal = r.estado;
+        else dimVal = r.representante;
+
+        const v = r[valKey] || 0;
+        if (!statsMap.has(dimVal)) {
+          statsMap.set(dimVal, { total: 0, totalA: 0, totalB: 0 });
+        }
+        const st = statsMap.get(dimVal);
+        st.total += v;
+        if (idx < mid) st.totalA += v;
+        else st.totalB += v;
+      });
+
+      const trendFloor = useFat ? 1000 : 50; // ignore tiny/noisy entities
+      const entities = [];
+      statsMap.forEach((st, name) => {
+        if (!name || !name.toString().trim()) return;
+        const total = st.total;
+        if (!total) return;
+
+        const varAbs = st.totalB - st.totalA;
+        if ((st.totalA + st.totalB) < trendFloor) {
+          entities.push({ name, total, varAbs: 0 });
+        } else {
+          entities.push({ name, total, varAbs });
+        }
+      });
+
+      if (!entities.length) {
+        clearRankings();
+        return;
+      }
+
+      const maxItems = 10;
+
+      // TOP: maiores em valor no período
+      const topArr = [...entities]
+        .sort((a, b) => b.total - a.total)
+        .slice(0, maxItems);
+
+      topArr.forEach((e, idx) => {
+        const li = document.createElement("li");
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "ranking-label";
+        labelSpan.textContent = `${idx + 1}. ${e.name}`;
+        const valSpan = document.createElement("span");
+        valSpan.className = "ranking-value";
+        valSpan.textContent = useFat
+          ? formatCurrencyBRL(e.total)
+          : formatNumberBR(e.total);
+        li.appendChild(labelSpan);
+        li.appendChild(valSpan);
+        ulTop.appendChild(li);
+      });
+
+      // RISING: maior aumento absoluto
+      const risingArr = entities
+        .filter((e) => e.varAbs > 0)
+        .sort((a, b) => b.varAbs - a.varAbs)
+        .slice(0, maxItems);
+
+      if (!risingArr.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem dados relevantes";
+        ulRising.appendChild(li);
+      } else {
+        risingArr.forEach((e, idx) => {
+          const li = document.createElement("li");
+          const labelSpan = document.createElement("span");
+          labelSpan.className = "ranking-label";
+          labelSpan.textContent = `${idx + 1}. ${e.name}`;
+          const valSpan = document.createElement("span");
+          valSpan.className = "ranking-value";
+
+          const deltaTxt = useFat
+            ? formatCurrencyBRL(e.varAbs)
+            : formatNumberBR(e.varAbs) + " un";
+          valSpan.textContent = `+${deltaTxt}`;
+          li.appendChild(labelSpan);
+          li.appendChild(valSpan);
+          ulRising.appendChild(li);
+        });
+      }
+
+      // FALLING: maior queda absoluta
+      const fallingArr = entities
+        .filter((e) => e.varAbs < 0)
+        .sort((a, b) => a.varAbs - b.varAbs) // more negative first
+        .slice(0, maxItems);
+
+      if (!fallingArr.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem dados relevantes";
+        ulFalling.appendChild(li);
+      } else {
+        fallingArr.forEach((e, idx) => {
+          const li = document.createElement("li");
+          const labelSpan = document.createElement("span");
+          labelSpan.className = "ranking-label";
+          labelSpan.textContent = `${idx + 1}. ${e.name}`;
+          const valSpan = document.createElement("span");
+          valSpan.className = "ranking-value";
+
+          const deltaTxt = useFat
+            ? formatCurrencyBRL(Math.abs(e.varAbs))
+            : formatNumberBR(Math.abs(e.varAbs)) + " un";
+          valSpan.textContent = `-${deltaTxt}`;
+          li.appendChild(labelSpan);
+          li.appendChild(valSpan);
+          ulFalling.appendChild(li);
+        });
+      }
+    }
+
+    function renderChart(filteredKeys, seriesMap) {
+      const labels = filteredKeys.map(
+        (k) => state.keyToLabel.get(k) || labelFromKey(k)
+      );
+
+      let entries = Array.from(seriesMap.entries());
+      entries.sort((a, b) => {
+        const sumA = filteredKeys.reduce(
+          (acc, k) => acc + (a[1].get(k) || 0),
+          0
+        );
+        const sumB = filteredKeys.reduce(
+          (acc, k) => acc + (b[1].get(k) || 0),
+          0
+        );
+        return sumB - sumA;
+      });
+
+      // In Cliente view, only show top 10 clients on the chart
+      if (state.viewMode === "CLIENTE" && entries.length > 10) {
+        entries = entries.slice(0, 10);
+      }
+
+      const totalPerKey = filteredKeys.map((key) => {
+        let sum = 0;
+        entries.forEach(([_, map]) => {
+          sum += map.get(key) || 0;
+        });
+        return sum;
+      });
+
+      const traces = [];
+      const chartSeries = [];
+      const isFat = state.valueMode === "FATURAMENTO";
+
+      entries.forEach(([groupName, map], idx) => {
+        const vals = filteredKeys.map((k) => map.get(k) || 0);
+        chartSeries.push({ name: groupName, values: vals });
+
+        const baseTemplate =
+          isFat
+            ? `<b>${groupName}</b><br>R$ %{y:,.2f}<extra></extra>`
+            : `<b>${groupName}</b><br>%{y:,.0f} un<extra></extra>`;
+
+        traces.push({
+          x: labels,
+          y: vals,
+          type: "scatter",
+          mode: "lines+markers",
+          name: groupName,
+          line: {
+            shape: "spline",
+            width: 3,
+            color: ARIZONA_PALETTE[idx % ARIZONA_PALETTE.length]
+          },
+          marker: {
+            size: 7,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: baseTemplate
+        });
+      });
+
+      // Invisible total trace for unified tooltip bottom line
+      if (filteredKeys.length) {
+        traces.push({
+          x: labels,
+          y: totalPerKey,
+          type: "scatter",
+          mode: "lines",
+          name: "Total",
+          line: { width: 0 },
+          marker: { size: 0 },
+          opacity: 0,
+          showlegend: false,
+          hovertemplate: isFat
+            ? `<br><b>Total: R$ %{y:,.2f}</b><extra></extra>`
+            : `<br><b>Total: %{y:,.0f} un</b><extra></extra>`
+        });
+      }
+
+      state.currentChart = {
+        keys: filteredKeys.slice(),
+        series: chartSeries
+      };
+
+      const layout = {
+        margin: { l: 60, r: 30, t: 20, b: 80 },
+        paper_bgcolor: "#ffffff",
+        plot_bgcolor: "#ffffff",
+        showlegend: true,
+        legend: {
+          orientation: "h",
+          yanchor: "bottom",
+          y: -0.25,
+          xanchor: "center",
+          x: 0.5,
+          font: { size: 10 }
+        },
+        hovermode: "x unified",
+        xaxis: {
+          type: "category",
+          categoryorder: "array",
+          categoryarray: labels,
+          tickvals: labels,
+          ticktext: labels,
+          tickangle: -35,
+          tickfont: { size: 11 },
+          showgrid: false,
+          zeroline: false
+        },
+        yaxis: {
+          title: state.valueLabel,
+          tickformat: ",.0f",
+          gridcolor: "#e9ecef",
+          zeroline: false,
+          automargin: true,
+          tickfont: { size: 11 }
+        }
+      };
+
+      const chartDiv = document.getElementById("chart");
+      Plotly.react(chartDiv, traces, layout, {
+        responsive: true,
+        displayModeBar: false
+      });
+
+      if (!chartDiv._metricsHooked) {
+        chartDiv.on("plotly_restyle", () => {
+          recalcMetricsFromLegend();
+        });
+        chartDiv.on("plotly_legendclick", () => {
+          setTimeout(recalcMetricsFromLegend, 0);
+        });
+        chartDiv._metricsHooked = true;
+      }
+
+      recalcMetricsFromLegend();
+    }
+
+    function updateAll() {
+      const filteredKeys = getFilteredKeys();
+      updateFilterOptions(filteredKeys);
+
+      const statusInfo = document.getElementById("statusInfo");
+      const statusRange = document.getElementById("statusRange");
+
+      if (!filteredKeys.length) {
+        statusInfo.textContent = "Nenhum dado para o período selecionado.";
+        statusRange.textContent = "Período: --";
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        clearRankings();
+        Plotly.purge("chart");
+        return;
+      }
+
+      if (state.viewMode === "CLIENTE" && state.filterRep === "ALL") {
+        statusInfo.textContent =
+          "Selecione um representante para a visão por cliente (top 10).";
+        const firstKey = filteredKeys[0];
+        const lastKey = filteredKeys[filteredKeys.length - 1];
+        const labelFrom =
+          state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
+        const labelTo =
+          state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+        statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        clearRankings();
+        Plotly.purge("chart");
+        return;
+      }
+
+      const seriesMap = buildSeriesForCurrentFilters(filteredKeys);
+
+      if (!seriesMap.size) {
+        statusInfo.textContent = "Nenhum dado para os filtros selecionados.";
+        const firstKey = filteredKeys[0];
+        const lastKey = filteredKeys[filteredKeys.length - 1];
+        const labelFrom =
+          state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
+        const labelTo =
+          state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+        statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        clearRankings();
+        Plotly.purge("chart");
+        return;
+      }
+
+      if (state.viewMode === "CLIENTE") {
+        statusInfo.textContent =
+          "Dados carregados • Top 10 clientes do representante selecionado";
+      } else if (state.viewMode === "ESTADO") {
+        statusInfo.textContent =
+          "Dados carregados • Visão por estado";
+      } else {
+        statusInfo.textContent =
+          "Dados carregados • Visão por categoria";
+      }
+
+      const firstKey = filteredKeys[0];
+      const lastKey = filteredKeys[filteredKeys.length - 1];
+      const labelFrom =
+        state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
+      const labelTo =
+        state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+      statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
+
+      updateRankings(filteredKeys);
+      renderChart(filteredKeys, seriesMap);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadFamilies().then(loadMainCSV).catch(loadMainCSV);
+    });
+  </script>
+</body>
+</html>

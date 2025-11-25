@@ -32,9 +32,12 @@
       --transition-fast: 160ms ease-out;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
@@ -98,7 +101,9 @@
       color: var(--accent-gold-soft);
     }
 
-    .section { margin-top: 16px; }
+    .section {
+      margin-top: 16px;
+    }
 
     .titlebar {
       background: #000;
@@ -208,7 +213,9 @@
         color var(--transition-fast), border-color var(--transition-fast),
         transform 90ms ease-out;
     }
-    .range-btn span { font-size: 0.78rem; }
+    .range-btn span {
+      font-size: 0.78rem;
+    }
     .range-btn:hover,
     .range-btn.active {
       background: #000;
@@ -218,9 +225,9 @@
     }
 
     .btn-small {
-      background: var(--accent-gold);
-      color: #000;
-      border: 1px solid var(--accent-gold-border);
+      background: #000;
+      color: #fff;
+      border: 1px solid #000;
       padding: 6px 12px;
       border-radius: 10px;
       font-weight: 600;
@@ -236,14 +243,11 @@
         transform 90ms ease-out;
     }
     .btn-small.secondary {
-      background: #000;
-      color: #fff;
-      border-color: #000;
+      background: var(--accent-gold);
+      color: #000;
+      border-color: var(--accent-gold-border);
     }
     .btn-small:hover {
-      background: #000;
-      color: #fff;
-      border-color: #000;
       transform: translateY(-0.3px);
     }
 
@@ -309,24 +313,35 @@
     /* Rankings / Tendências */
     .trend-header {
       margin-top: 12px;
-      margin-bottom: 6px;
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
     }
-    .trend-header-right {
+    .trend-dim-wrap {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .trend-mode-wrap {
       margin-left: auto;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .trend-info {
+      margin-top: 4px;
       font-size: 0.7rem;
       color: var(--text-muted);
-      max-width: 260px;
     }
 
     .ranking-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 4px;
+      margin-top: 8px;
     }
     .ranking-card {
       background: #fafafa;
@@ -365,21 +380,40 @@
     }
 
     @media (max-width: 900px) {
-      .chart { height: 460px; }
-      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .ranking-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .chart {
+        height: 460px;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ranking-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
     @media (max-width: 720px) {
-      .metrics-grid { grid-template-columns: 1fr; }
-      .ranking-grid { grid-template-columns: 1fr; }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .ranking-grid {
+        grid-template-columns: 1fr;
+      }
     }
     @media (max-width: 640px) {
-      .content { padding: 14px 10px 28px; }
-      .filters-row { flex-direction: column; align-items: flex-start; }
-      .chart { height: 380px; }
+      .content {
+        padding: 14px 10px 28px;
+      }
+      .filters-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .chart {
+        height: 380px;
+      }
     }
     @media (max-width: 480px) {
-      .chart { height: 340px; }
+      .chart {
+        height: 340px;
+      }
     }
   </style>
 </head>
@@ -493,18 +527,26 @@
               <div id="chart" class="chart"></div>
             </div>
 
-            <!-- TREND DIMENSION HEADER -->
+            <!-- TENDÊNCIAS HEADER -->
             <div class="trend-header">
               <span class="filters-label">Tendências</span>
-              <span style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;">
+
+              <span class="trend-dim-wrap">
                 <span class="field-label" style="margin-right:4px;">Dimensão</span>
                 <button class="btn-small" id="trendDimRep">Representante</button>
                 <button class="btn-small secondary" id="trendDimCli">Cliente</button>
                 <button class="btn-small secondary" id="trendDimEst">Estado</button>
+                <button class="btn-small secondary" id="trendDimCat">Categoria</button>
               </span>
-              <span class="trend-header-right">
-                Comparando a segunda metade do período selecionado com a primeira metade.
+
+              <span class="trend-mode-wrap">
+                <span class="field-label" style="margin-right:4px;">Métrica</span>
+                <button class="btn-small" id="trendModeFat">Faturamento</button>
+                <button class="btn-small secondary" id="trendModeVol">Volume</button>
               </span>
+            </div>
+            <div class="trend-info">
+              Comparando a soma da segunda metade do período selecionado com a soma da primeira metade para cada dimensão.
             </div>
 
             <!-- RANKINGS -->
@@ -537,9 +579,12 @@
     const CSV_MAIN = "data/relatorio_faturamento.csv";
     const CSV_FAMILIAS = "data/produtos_categorias_familias.csv";
 
+    /* Extended palette so we don't repeat colors for many lines */
     const ARIZONA_PALETTE = [
-      "#264653", "#287271", "#2a9d8f",
-      "#e9c46a", "#f4a261", "#ee8959", "#e76f51"
+      "#264653", "#287271", "#2a9d8f", "#e9c46a", "#f4a261", "#ee8959", "#e76f51",
+      "#1d3557", "#457b9d", "#a8dadc", "#606c38", "#283618", "#8d99ae", "#ef476f",
+      "#06d6a0", "#118ab2", "#073b4c", "#d38f5e", "#a86a44", "#f07167", "#0081a7",
+      "#00afb9", "#f29e4c", "#e8505b"
     ];
 
     const familiesMap = new Map(); // descricao normalizada -> FAMILIA_PRODUTO
@@ -559,7 +604,7 @@
       filterState: "ALL",
       filterCategory: "ALL",
       filterLinha: "ALL",
-      rankingDimension: "REPRESENTANTE", // REPRESENTANTE | CLIENTE | ESTADO
+      rankingDimension: "REPRESENTANTE", // REPRESENTANTE | CLIENTE | ESTADO | CATEGORIA
       currentChart: null
     };
 
@@ -811,25 +856,32 @@
 
       const btnFat = document.getElementById("btnFaturamento");
       const btnVol = document.getElementById("btnVolume");
+      const btnFat2 = document.getElementById("trendModeFat");
+      const btnVol2 = document.getElementById("trendModeVol");
 
       function setMode(mode) {
         state.valueMode = mode;
         state.valueLabel =
           mode === "FATURAMENTO" ? "Faturamento" : "Volume";
 
-        if (mode === "FATURAMENTO") {
-          btnFat.classList.remove("secondary");
-          btnVol.classList.add("secondary");
-        } else {
-          btnVol.classList.remove("secondary");
-          btnFat.classList.add("secondary");
-        }
+        const isFat = mode === "FATURAMENTO";
+
+        [btnFat, btnFat2].forEach((b) => {
+          if (!b) return;
+          b.classList.toggle("secondary", !isFat);
+        });
+        [btnVol, btnVol2].forEach((b) => {
+          if (!b) return;
+          b.classList.toggle("secondary", isFat);
+        });
 
         updateAll();
       }
 
       btnFat.addEventListener("click", () => setMode("FATURAMENTO"));
       btnVol.addEventListener("click", () => setMode("VOLUME"));
+      btnFat2.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol2.addEventListener("click", () => setMode("VOLUME"));
 
       // View buttons
       const btnViewCat = document.getElementById("btnViewCategoria");
@@ -893,6 +945,7 @@
       const btnTrendRep = document.getElementById("trendDimRep");
       const btnTrendCli = document.getElementById("trendDimCli");
       const btnTrendEst = document.getElementById("trendDimEst");
+      const btnTrendCat = document.getElementById("trendDimCat");
 
       function setRankingDimension(dim) {
         state.rankingDimension = dim;
@@ -900,10 +953,13 @@
         btnTrendRep.classList.toggle("secondary", dim !== "REPRESENTANTE");
         btnTrendCli.classList.toggle("secondary", dim !== "CLIENTE");
         btnTrendEst.classList.toggle("secondary", dim !== "ESTADO");
+        btnTrendCat.classList.toggle("secondary", dim !== "CATEGORIA");
 
         const dimLabel =
           dim === "CLIENTE" ? "Cliente" :
-          dim === "ESTADO" ? "Estado" : "Representante";
+          dim === "ESTADO" ? "Estado" :
+          dim === "CATEGORIA" ? "Categoria" :
+          "Representante";
 
         document.getElementById("rankingTopTitle").textContent =
           "Maiores no período — " + dimLabel;
@@ -918,6 +974,7 @@
       btnTrendRep.addEventListener("click", () => setRankingDimension("REPRESENTANTE"));
       btnTrendCli.addEventListener("click", () => setRankingDimension("CLIENTE"));
       btnTrendEst.addEventListener("click", () => setRankingDimension("ESTADO"));
+      btnTrendCat.addEventListener("click", () => setRankingDimension("CATEGORIA"));
 
       // Initial filter options & defaults
       updateFilterOptions(getFilteredKeys());
@@ -1243,9 +1300,15 @@
         if (idx == null) return;
 
         let dimVal;
-        if (state.rankingDimension === "CLIENTE") dimVal = r.cliente;
-        else if (state.rankingDimension === "ESTADO") dimVal = r.estado;
-        else dimVal = r.representante;
+        if (state.rankingDimension === "CLIENTE") {
+          dimVal = r.cliente;
+        } else if (state.rankingDimension === "ESTADO") {
+          dimVal = r.estado;
+        } else if (state.rankingDimension === "CATEGORIA") {
+          dimVal = r.categoria;
+        } else {
+          dimVal = r.representante;
+        }
 
         const v = r[valKey] || 0;
         if (!statsMap.has(dimVal)) {
@@ -1266,9 +1329,9 @@
 
         const varAbs = st.totalB - st.totalA;
         if ((st.totalA + st.totalB) < trendFloor) {
-          entities.push({ name, total, varAbs: 0 });
+          entities.push({ name, total, totalA: st.totalA, totalB: st.totalB, varAbs: 0 });
         } else {
-          entities.push({ name, total, varAbs });
+          entities.push({ name, total, totalA: st.totalA, totalB: st.totalB, varAbs });
         }
       });
 
@@ -1280,6 +1343,7 @@
       const maxItems = 10;
 
       // TOP: maiores em valor no período
+      const grandTotal = entities.reduce((acc, e) => acc + e.total, 0);
       const topArr = [...entities]
         .sort((a, b) => b.total - a.total)
         .slice(0, maxItems);
@@ -1291,9 +1355,14 @@
         labelSpan.textContent = `${idx + 1}. ${e.name}`;
         const valSpan = document.createElement("span");
         valSpan.className = "ranking-value";
-        valSpan.textContent = useFat
+
+        const valueText = useFat
           ? formatCurrencyBRL(e.total)
-          : formatNumberBR(e.total);
+          : formatNumberBR(e.total) + " un";
+
+        const pct = grandTotal > 0 ? Math.round((e.total / grandTotal) * 100) : 0;
+        valSpan.textContent = `${valueText} ${pct}%`;
+
         li.appendChild(labelSpan);
         li.appendChild(valSpan);
         ulTop.appendChild(li);
@@ -1318,10 +1387,16 @@
           const valSpan = document.createElement("span");
           valSpan.className = "ranking-value";
 
-          const deltaTxt = useFat
-            ? formatCurrencyBRL(e.varAbs)
-            : formatNumberBR(e.varAbs) + " un";
-          valSpan.textContent = `+${deltaTxt}`;
+          const deltaVal = Math.abs(e.varAbs);
+          const valueText = useFat
+            ? formatCurrencyBRL(deltaVal)
+            : formatNumberBR(deltaVal) + " un";
+          const pctNum =
+            e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
+          const pctTxt = `${Math.round(pctNum)}%`;
+
+          valSpan.textContent = `+${valueText} ${pctTxt}`;
+
           li.appendChild(labelSpan);
           li.appendChild(valSpan);
           ulRising.appendChild(li);
@@ -1347,10 +1422,16 @@
           const valSpan = document.createElement("span");
           valSpan.className = "ranking-value";
 
-          const deltaTxt = useFat
-            ? formatCurrencyBRL(Math.abs(e.varAbs))
-            : formatNumberBR(Math.abs(e.varAbs)) + " un";
-          valSpan.textContent = `-${deltaTxt}`;
+          const deltaVal = Math.abs(e.varAbs);
+          const valueText = useFat
+            ? formatCurrencyBRL(deltaVal)
+            : formatNumberBR(deltaVal) + " un";
+          const pctNum =
+            e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
+          const pctTxt = `${Math.round(Math.abs(pctNum))}%`;
+
+          valSpan.textContent = `-${valueText} -${pctTxt}`;
+
           li.appendChild(labelSpan);
           li.appendChild(valSpan);
           ulFalling.appendChild(li);
@@ -1381,6 +1462,7 @@
         entries = entries.slice(0, 10);
       }
 
+      // Total per month for tooltip + metrics
       const totalPerKey = filteredKeys.map((key) => {
         let sum = 0;
         entries.forEach(([_, map]) => {
@@ -1397,10 +1479,9 @@
         const vals = filteredKeys.map((k) => map.get(k) || 0);
         chartSeries.push({ name: groupName, values: vals });
 
-        const baseTemplate =
-          isFat
-            ? `<b>${groupName}</b><br>R$ %{y:,.2f}<extra></extra>`
-            : `<b>${groupName}</b><br>%{y:,.0f} un<extra></extra>`;
+        const baseTemplate = isFat
+          ? `<b>${groupName}</b><br>R$ %{y:,.2f}<extra></extra>`
+          : `<b>${groupName}</b><br>%{y:,.0f} un<extra></extra>`;
 
         traces.push({
           x: labels,
@@ -1421,7 +1502,7 @@
         });
       });
 
-      // Invisible total trace for unified tooltip bottom line
+      // Invisible total trace to show "Total" at the bottom of the unified tooltip
       if (filteredKeys.length) {
         traces.push({
           x: labels,
@@ -1444,6 +1525,19 @@
         series: chartSeries
       };
 
+      // Thin x-axis labels when too many months (avoid overlap covering months)
+      let tickVals = labels.slice();
+      let tickText = labels.slice();
+      if (labels.length > 18) {
+        const step = labels.length > 36 ? 3 : 2;
+        tickVals = [];
+        tickText = [];
+        for (let i = 0; i < labels.length; i += step) {
+          tickVals.push(labels[i]);
+          tickText.push(labels[i]);
+        }
+      }
+
       const layout = {
         margin: { l: 60, r: 30, t: 20, b: 80 },
         paper_bgcolor: "#ffffff",
@@ -1462,8 +1556,8 @@
           type: "category",
           categoryorder: "array",
           categoryarray: labels,
-          tickvals: labels,
-          ticktext: labels,
+          tickvals: tickVals,
+          ticktext: tickText,
           tickangle: -35,
           tickfont: { size: 11 },
           showgrid: false,
@@ -1475,15 +1569,21 @@
           gridcolor: "#e9ecef",
           zeroline: false,
           automargin: true,
-          tickfont: { size: 11 }
+          tickfont: { size: 11 },
+          autorange: true
         }
       };
 
       const chartDiv = document.getElementById("chart");
+
+      // Rebuild chart with new data/layout
       Plotly.react(chartDiv, traces, layout, {
         responsive: true,
         displayModeBar: false
       });
+
+      // Force a fresh autoscale on every render
+      Plotly.relayout(chartDiv, { "yaxis.autorange": true });
 
       if (!chartDiv._metricsHooked) {
         chartDiv.on("plotly_restyle", () => {

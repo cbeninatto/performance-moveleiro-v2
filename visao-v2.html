@@ -60,7 +60,7 @@
       max-width: 1400px;
     }
 
-    /* Top bar (matches volume-linha style) */
+    /* Top bar */
     .top-bar {
       background: #000;
       color: #fff;
@@ -322,7 +322,7 @@
           <div>
             <div class="top-bar-title">OPENFIELD MOVELEIRO — Nova Visão</div>
             <div class="top-bar-sub">
-              Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria
+              Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria / Linha
             </div>
           </div>
           <div class="top-bar-updated">
@@ -384,6 +384,11 @@
                 <label class="field-label" for="filterCategory">Categoria</label>
                 <select id="filterCategory"></select>
               </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterLinha">Linha</label>
+                <select id="filterLinha"></select>
+              </div>
             </div>
 
             <!-- METRICS -->
@@ -421,12 +426,15 @@
   </div>
 
   <script>
-    const CSV_PATH = "data/relatorio_faturamento.csv";
+    const CSV_MAIN = "data/relatorio_faturamento.csv";
+    const CSV_FAMILIAS = "data/produtos_categorias_familias.csv";
 
     const ARIZONA_PALETTE = [
       "#264653", "#287271", "#2a9d8f",
       "#e9c46a", "#f4a261", "#ee8959", "#e76f51"
     ];
+
+    const familiesMap = new Map(); // descricao normalizada -> FAMILIA_PRODUTO
 
     const state = {
       rows: [],
@@ -441,15 +449,17 @@
       filterRep: "ALL",
       filterState: "ALL",
       filterCategory: "ALL",
-      currentChart: null // { keys:[], series:[{name,values[]}]} for legend-based metrics
+      filterLinha: "ALL",
+      currentChart: null
     };
+
+    function normalizeDesc(str) {
+      return (str || "").toString().trim().toUpperCase();
+    }
 
     function formatCurrencyBRL(v) {
       if (!isFinite(v)) return "—";
-      return v.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-      });
+      return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
     function formatNumberBR(v) {
@@ -459,12 +469,10 @@
 
     function formatPercent(v) {
       if (!isFinite(v)) return "—";
-      return (
-        v.toLocaleString("pt-BR", {
-          minimumFractionDigits: 1,
-          maximumFractionDigits: 1
-        }) + " %"
-      );
+      return v.toLocaleString("pt-BR", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      }) + " %";
     }
 
     function labelFromKey(key) {
@@ -491,10 +499,39 @@
       );
     }
 
-    function loadCSV() {
-      fetch(CSV_PATH, { cache: "no-cache" })
+    function loadFamilies() {
+      return fetch(CSV_FAMILIAS, { cache: "no-cache" })
         .then((res) => {
-          if (!res.ok) throw new Error("Erro ao carregar CSV");
+          if (!res.ok) throw new Error("familias CSV not found");
+          return res.text();
+        })
+        .then((text) => {
+          const delimiter = detectDelimiter(text);
+          Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            delimiter,
+            complete: (results) => {
+              (results.data || []).forEach((row) => {
+                const descKey = normalizeDesc(row["Descricao"]);
+                if (!descKey) return;
+                const fam =
+                  (row["FAMILIA_PRODUTO"] || "").toString().trim() ||
+                  "Sem Linha";
+                familiesMap.set(descKey, fam);
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn("Falha ao carregar familias:", err);
+        });
+    }
+
+    function loadMainCSV() {
+      fetch(CSV_MAIN, { cache: "no-cache" })
+        .then((res) => {
+          if (!res.ok) throw new Error("Erro ao carregar CSV principal");
           return res.text();
         })
         .then((text) => {
@@ -554,6 +591,11 @@
         const estado =
           (row["Estado"] || "").toString().trim() || "Sem Estado";
 
+        const descKey = normalizeDesc(row["Descricao"]);
+        const linha =
+          familiesMap.get(descKey) ||
+          "Sem Linha";
+
         normalized.push({
           key,
           label,
@@ -563,6 +605,7 @@
           cliente,
           representante,
           estado,
+          linha,
           valor: isNaN(valor) ? 0 : valor,
           quantidade: isNaN(quantidade) ? 0 : quantidade
         });
@@ -606,7 +649,6 @@
         state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
       document.getElementById("updatedAt").textContent = lastLabel;
 
-      // Range buttons
       const rangeButtons = document.querySelectorAll(
         "#rangeButtons .range-btn"
       );
@@ -619,7 +661,6 @@
         });
       });
 
-      // Custom range
       document
         .getElementById("applyCustom")
         .addEventListener("click", () => {
@@ -658,7 +699,6 @@
           updateAll();
         });
 
-      // Mode buttons
       const btnFat = document.getElementById("btnFaturamento");
       const btnVol = document.getElementById("btnVolume");
 
@@ -681,9 +721,7 @@
       btnFat.addEventListener("click", () => setMode("FATURAMENTO"));
       btnVol.addEventListener("click", () => setMode("VOLUME"));
 
-      setMode("FATURAMENTO"); // default, will call updateAll once we finish init
-
-      // Filters
+      // filters
       document
         .getElementById("filterClient")
         .addEventListener("change", (e) => {
@@ -712,7 +750,16 @@
           updateAll();
         });
 
+      document
+        .getElementById("filterLinha")
+        .addEventListener("change", (e) => {
+          state.filterLinha = e.target.value;
+          updateAll();
+        });
+
+      // initial filters based on full period
       updateFilterOptions(getFilteredKeys());
+      setMode("FATURAMENTO");
     }
 
     function refillSelect(selectId, values, allLabel, keyName) {
@@ -740,18 +787,19 @@
       }
     }
 
-    // filters now depend on period (filteredKeys)
     function updateFilterOptions(filteredKeys) {
       const rows = state.rows;
       const keySet = new Set(filteredKeys);
 
-      // CLIENTE options – depend on Rep + State + period
-      const rowsForClients = rows.filter(
+      const rowsBase = rows.filter((r) => keySet.has(r.key));
+
+      // CLIENTE
+      const rowsForClients = rowsBase.filter(
         (r) =>
-          keySet.has(r.key) &&
-          (state.filterRep === "ALL" ||
-            r.representante === state.filterRep) &&
-          (state.filterState === "ALL" || r.estado === state.filterState)
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
       );
       refillSelect(
         "filterClient",
@@ -760,12 +808,13 @@
         "filterClient"
       );
 
-      // REP options – depend on Client + State + period
-      const rowsForReps = rows.filter(
+      // REP
+      const rowsForReps = rowsBase.filter(
         (r) =>
-          keySet.has(r.key) &&
           (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
-          (state.filterState === "ALL" || r.estado === state.filterState)
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
       );
       refillSelect(
         "filterRep",
@@ -774,13 +823,13 @@
         "filterRep"
       );
 
-      // ESTADO options – depend on Client + Rep + period
-      const rowsForStates = rows.filter(
+      // ESTADO
+      const rowsForStates = rowsBase.filter(
         (r) =>
-          keySet.has(r.key) &&
           (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
-          (state.filterRep === "ALL" ||
-            r.representante === state.filterRep)
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
       );
       refillSelect(
         "filterState",
@@ -789,20 +838,34 @@
         "filterState"
       );
 
-      // CATEGORIA options – depend on all + period
-      const rowsForCats = rows.filter(
+      // CATEGORIA
+      const rowsForCats = rowsBase.filter(
         (r) =>
-          keySet.has(r.key) &&
           (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
-          (state.filterRep === "ALL" ||
-            r.representante === state.filterRep) &&
-          (state.filterState === "ALL" || r.estado === state.filterState)
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
       );
       refillSelect(
         "filterCategory",
         uniqueSorted(rowsForCats.map((r) => r.categoria)),
         "Todas as categorias",
         "filterCategory"
+      );
+
+      // LINHA
+      const rowsForLinha = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory)
+      );
+      refillSelect(
+        "filterLinha",
+        uniqueSorted(rowsForLinha.map((r) => r.linha)),
+        "Todas as linhas",
+        "filterLinha"
       );
     }
 
@@ -839,22 +902,11 @@
 
       for (const r of state.rows) {
         if (!keySet.has(r.key)) continue;
-        if (
-          state.filterClient !== "ALL" &&
-          r.cliente !== state.filterClient
-        ) continue;
-        if (
-          state.filterRep !== "ALL" &&
-          r.representante !== state.filterRep
-        ) continue;
-        if (
-          state.filterState !== "ALL" &&
-          r.estado !== state.filterState
-        ) continue;
-        if (
-          state.filterCategory !== "ALL" &&
-          r.categoria !== state.filterCategory
-        ) continue;
+        if (state.filterClient !== "ALL" && r.cliente !== state.filterClient) continue;
+        if (state.filterRep !== "ALL" && r.representante !== state.filterRep) continue;
+        if (state.filterState !== "ALL" && r.estado !== state.filterState) continue;
+        if (state.filterCategory !== "ALL" && r.categoria !== state.filterCategory) continue;
+        if (state.filterLinha !== "ALL" && r.linha !== state.filterLinha) continue;
 
         const cat = r.categoria;
         const val = useFaturamento ? r.valor : r.quantidade;
@@ -918,7 +970,6 @@
         });
       }
 
-      // If nothing selected (all hidden), show dashes
       if (!visibleNames.size) {
         document.getElementById("metricMean").textContent = "—";
         document.getElementById("metricChange").textContent = "—";
@@ -946,16 +997,12 @@
       const isFat = state.valueMode === "FATURAMENTO";
       const formatVal = (v) => {
         if (!isFinite(v)) return "—";
-        return isFat
-          ? formatCurrencyBRL(v)
-          : formatNumberBR(v) + " un";
+        return isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
       };
 
       document.getElementById("metricMean").textContent = formatVal(mean);
-      document.getElementById("metricChange").textContent =
-        formatPercent(change);
-      document.getElementById("metricVol").textContent =
-        formatPercent(vol);
+      document.getElementById("metricChange").textContent = formatPercent(change);
+      document.getElementById("metricVol").textContent = formatPercent(vol);
 
       document.getElementById("metricMeanSub").textContent =
         count ? `Média em ${count} meses` : "—";
@@ -977,7 +1024,6 @@
         (k) => state.keyToLabel.get(k) || labelFromKey(k)
       );
 
-      // sort categories by total descending for selected period
       const entries = Array.from(seriesByCategory.entries());
       entries.sort((a, b) => {
         const sumA = filteredKeys.reduce(
@@ -991,7 +1037,6 @@
         return sumB - sumA;
       });
 
-      // totals for each month (all categories, independent of legend)
       const totalPerKey = filteredKeys.map((key) => {
         let sum = 0;
         entries.forEach(([_, map]) => {
@@ -1084,34 +1129,28 @@
         displayModeBar: false
       });
 
-      // Attach legend handlers once
       if (!chartDiv._metricsHooked) {
         chartDiv.on("plotly_restyle", () => {
           recalcMetricsFromLegend();
         });
         chartDiv.on("plotly_legendclick", () => {
-          // After visibility change
           setTimeout(recalcMetricsFromLegend, 0);
         });
         chartDiv._metricsHooked = true;
       }
 
-      // Initial metrics for all visible traces
       recalcMetricsFromLegend();
     }
 
     function updateAll() {
       const filteredKeys = getFilteredKeys();
-
-      // period-sensitive filter lists
       updateFilterOptions(filteredKeys);
 
       const statusInfo = document.getElementById("statusInfo");
       const statusRange = document.getElementById("statusRange");
 
       if (!filteredKeys.length) {
-        statusInfo.textContent =
-          "Nenhum dado para o período selecionado.";
+        statusInfo.textContent = "Nenhum dado para o período selecionado.";
         statusRange.textContent = "Período: --";
         document.getElementById("metricMean").textContent = "—";
         document.getElementById("metricChange").textContent = "—";
@@ -1123,21 +1162,17 @@
         return;
       }
 
-      const seriesByCategory =
-        buildSeriesForCurrentFilters(filteredKeys);
+      const seriesByCategory = buildSeriesForCurrentFilters(filteredKeys);
 
       if (!seriesByCategory.size) {
-        statusInfo.textContent =
-          "Nenhum dado para os filtros selecionados.";
+        statusInfo.textContent = "Nenhum dado para os filtros selecionados.";
         const firstKey = filteredKeys[0];
-        const lastKey =
-          filteredKeys[filteredKeys.length - 1];
+        const lastKey = filteredKeys[filteredKeys.length - 1];
         const labelFrom =
           state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
         const labelTo =
           state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
-        statusRange.textContent =
-          "Período: " + labelFrom + " – " + labelTo;
+        statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
         document.getElementById("metricMean").textContent = "—";
         document.getElementById("metricChange").textContent = "—";
         document.getElementById("metricVol").textContent = "—";
@@ -1152,19 +1187,20 @@
         "Dados carregados • " + filteredKeys.length + " pontos";
 
       const firstKey = filteredKeys[0];
-      const lastKey =
-        filteredKeys[filteredKeys.length - 1];
+      const lastKey = filteredKeys[filteredKeys.length - 1];
       const labelFrom =
         state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
       const labelTo =
         state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
-      statusRange.textContent =
-        "Período: " + labelFrom + " – " + labelTo;
+      statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
 
       renderChart(filteredKeys, seriesByCategory);
     }
 
-    document.addEventListener("DOMContentLoaded", loadCSV);
+    document.addEventListener("DOMContentLoaded", () => {
+      // load families first, then main data
+      loadFamilies().then(loadMainCSV).catch(loadMainCSV);
+    });
   </script>
 </body>
 </html>

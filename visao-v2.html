@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Openfield Moveleiro — Dashboard</title>
+  <title>Openfield Moveleiro — Nova Visão</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Inter font -->
@@ -32,12 +32,9 @@
       --transition-fast: 160ms ease-out;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
@@ -101,9 +98,7 @@
       color: var(--accent-gold-soft);
     }
 
-    .section {
-      margin-top: 16px;
-    }
+    .section { margin-top: 16px; }
 
     .titlebar {
       background: #000;
@@ -217,9 +212,7 @@
         color var(--transition-fast), border-color var(--transition-fast),
         transform 90ms ease-out;
     }
-    .range-btn span {
-      font-size: 0.78rem;
-    }
+    .range-btn span { font-size: 0.78rem; }
     .range-btn:hover,
     .range-btn.active {
       background: #000;
@@ -251,9 +244,7 @@
       color: #000;
       border-color: var(--accent-gold-border);
     }
-    .btn-small:hover {
-      transform: translateY(-0.3px);
-    }
+    .btn-small:hover { transform: translateY(-0.3px); }
 
     /* Metrics */
     .metrics-grid {
@@ -390,22 +381,67 @@
     /* Deep Dive */
     .deep-dive-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-      gap: 12px;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr);
+      gap: 14px;
       margin-top: 8px;
       align-items: stretch;
+    }
+    .deep-dive-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .deep-dive-chart-wrapper {
       border-radius: 10px;
       border: 1px solid rgba(148, 163, 184, 0.3);
       background: #fff;
       padding: 4px;
-      min-height: 280px;
+      min-height: 320px;
     }
     .deep-dive-chart {
       width: 100%;
-      height: 280px;
+      height: 320px;
     }
+    .deep-dive-tables {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .deep-dive-table {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      max-height: 220px;
+      overflow: auto;
+    }
+    .deep-dive-table h5 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .deep-dive-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .deep-dive-table th,
+    .deep-dive-table td {
+      padding: 2px 4px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      white-space: nowrap;
+    }
+    .deep-dive-table th:nth-child(1),
+    .deep-dive-table td:nth-child(1) {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .deep-dive-info {
       font-size: 0.8rem;
       color: var(--text-main);
@@ -417,14 +453,10 @@
       flex-direction: column;
       gap: 4px;
     }
-    .deep-dive-info small {
-      color: var(--text-muted);
-    }
+    .deep-dive-info small { color: var(--text-muted); }
 
     @media (max-width: 900px) {
-      .chart {
-        height: 460px;
-      }
+      .chart { height: 460px; }
       .metrics-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -434,14 +466,13 @@
       .deep-dive-layout {
         grid-template-columns: 1fr;
       }
+      .deep-dive-chart {
+        height: 300px;
+      }
     }
     @media (max-width: 720px) {
-      .metrics-grid {
-        grid-template-columns: 1fr;
-      }
-      .ranking-grid {
-        grid-template-columns: 1fr;
-      }
+      .metrics-grid { grid-template-columns: 1fr; }
+      .ranking-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .content {
@@ -451,14 +482,10 @@
         flex-direction: column;
         align-items: flex-start;
       }
-      .chart {
-        height: 380px;
-      }
+      .chart { height: 380px; }
     }
     @media (max-width: 480px) {
-      .chart {
-        height: 340px;
-      }
+      .chart { height: 340px; }
     }
   </style>
 </head>
@@ -581,6 +608,7 @@
                 <button class="btn-small secondary" id="trendDimCli">Cliente</button>
                 <button class="btn-small secondary" id="trendDimEst">Estado</button>
                 <button class="btn-small secondary" id="trendDimCat">Categoria</button>
+                <button class="btn-small secondary" id="trendReset">Reset</button>
               </span>
 
               <span class="trend-mode-wrap">
@@ -626,8 +654,14 @@
               Clique em qualquer item das listas de Tendências para explorar os detalhes deste representante, cliente, estado ou categoria.
             </p>
             <div class="deep-dive-layout">
-              <div class="deep-dive-chart-wrapper">
-                <div id="deepDiveChart" class="deep-dive-chart"></div>
+              <div class="deep-dive-left">
+                <div class="deep-dive-chart-wrapper">
+                  <div id="deepDiveChart" class="deep-dive-chart"></div>
+                </div>
+                <div class="deep-dive-tables">
+                  <div class="deep-dive-table" id="deepDiveTableClientes"></div>
+                  <div class="deep-dive-table" id="deepDiveTableCategorias"></div>
+                </div>
               </div>
               <div class="deep-dive-info" id="deepDiveInfo">
                 <div><strong>Nenhum item selecionado.</strong></div>
@@ -1030,6 +1064,7 @@
       const btnTrendCli = document.getElementById("trendDimCli");
       const btnTrendEst = document.getElementById("trendDimEst");
       const btnTrendCat = document.getElementById("trendDimCat");
+      const btnTrendReset = document.getElementById("trendReset");
 
       function setRankingDimension(dim) {
         state.rankingDimension = dim;
@@ -1059,6 +1094,12 @@
       btnTrendCli.addEventListener("click", () => setRankingDimension("CLIENTE"));
       btnTrendEst.addEventListener("click", () => setRankingDimension("ESTADO"));
       btnTrendCat.addEventListener("click", () => setRankingDimension("CATEGORIA"));
+
+      btnTrendReset.addEventListener("click", () => {
+        state.deepDive = null;
+        setRankingDimension("REPRESENTANTE");
+        renderDeepDive();
+      });
 
       // Initial filter options & defaults
       updateFilterOptions(getFilteredKeys());
@@ -1273,6 +1314,7 @@
       if (gd && gd.data && gd.data.length) {
         gd.data.forEach((trace) => {
           if (trace.visible === "legendonly") return;
+          if (!trace.name || trace.name === "Total") return;
           visibleNames.add(trace.name);
         });
       }
@@ -1409,7 +1451,6 @@
         if (idx < mid) st.totalA += v;
         else st.totalB += v;
 
-        // count distinct clients for that dimension (for "Maiores no período" info)
         st.clients.add(r.cliente);
       });
 
@@ -1434,7 +1475,6 @@
         return;
       }
 
-      // max items depends on dimension
       const maxItems = state.rankingDimension === "CLIENTE" ? 20 : 10;
 
       // TOP: maiores em valor no período
@@ -1473,7 +1513,7 @@
           : formatNumberBR(e.total) + " un";
 
         const pct = grandTotal > 0 ? Math.round((e.total / grandTotal) * 100) : 0;
-        valSpan.textContent = `${valueText}  (${pct}%)`;
+        valSpan.textContent = `${valueText}  • ${pct}%`;
 
         li.appendChild(labelSpan);
         li.appendChild(valSpan);
@@ -1513,7 +1553,7 @@
             e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
           const pctTxt = `${Math.round(pctNum)}%`;
 
-          valSpan.textContent = `+${valueText}  (+${pctTxt})`;
+          valSpan.textContent = `+${valueText}  • +${pctTxt}`;
 
           li.appendChild(labelSpan);
           li.appendChild(valSpan);
@@ -1554,7 +1594,7 @@
             e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
           const pctTxt = `${Math.round(Math.abs(pctNum))}%`;
 
-          valSpan.textContent = `-${valueText}  (-${pctTxt})`;
+          valSpan.textContent = `-${valueText}  • -${pctTxt}`;
 
           li.appendChild(labelSpan);
           li.appendChild(valSpan);
@@ -1606,11 +1646,11 @@
 
       entries.forEach(([groupName, map]) => {
         const vals = filteredKeys.map((k) => map.get(k) || 0);
-        chartSeries.push({ name: groupName, values: vals });
-
         const legendName = isFat
           ? `${groupName} (R$)`
           : `${groupName} (un)`;
+
+        chartSeries.push({ name: legendName, values: vals });
 
         const baseTemplate = isFat
           ? `<b>${groupName}</b><br>R$ %{y:,.2f}<extra></extra>`
@@ -1625,7 +1665,7 @@
           line: {
             shape: "spline",
             width: 3,
-            color: getColorForName(groupName)
+            color: getColorForName(groupName) // stable by group
           },
           marker: {
             size: 7,
@@ -1658,7 +1698,7 @@
         series: chartSeries
       };
 
-      // Thin x-axis labels when too many months (avoid overlap covering months)
+      // Thin x-axis labels when too many months (avoid overlap)
       let tickVals = labels.slice();
       let tickText = labels.slice();
       if (labels.length > 18) {
@@ -1679,7 +1719,7 @@
         legend: {
           orientation: "h",
           yanchor: "bottom",
-          y: 1.08,
+          y: 1.1,
           xanchor: "center",
           x: 0.5,
           font: { size: 10 }
@@ -1710,7 +1750,6 @@
 
       const chartDiv = document.getElementById("chart");
 
-      // Rebuild chart with new data/layout, restore plotly toolbar
       Plotly.react(chartDiv, traces, layout, {
         responsive: true
       });
@@ -1734,6 +1773,11 @@
     function renderDeepDive() {
       const info = document.getElementById("deepDiveInfo");
       const chartDiv = document.getElementById("deepDiveChart");
+      const tblCli = document.getElementById("deepDiveTableClientes");
+      const tblCat = document.getElementById("deepDiveTableCategorias");
+
+      tblCli.innerHTML = "";
+      tblCat.innerHTML = "";
 
       if (!state.deepDive || !state.deepDive.name) {
         info.innerHTML = `
@@ -1763,7 +1807,6 @@
       const useFat = state.valueMode === "FATURAMENTO";
       const valKey = useFat ? "valor" : "quantidade";
 
-      // Filter rows respecting global filters + deep dive dimension
       const rows = state.rows.filter((r) => {
         if (!keySet.has(r.key)) return false;
         if (!rowPassesDimensionFilters(r)) return false;
@@ -1784,7 +1827,7 @@
         return;
       }
 
-      // Choose grouping for the pie chart
+      // Group for pie
       let groupField, groupLabel;
       if (dimType === "REPRESENTANTE") {
         groupField = "cliente";
@@ -1796,8 +1839,7 @@
         groupField = "categoria";
         groupLabel = "categorias";
       } else {
-        // CATEGORIA
-        groupField = "cliente";
+        groupField = "cliente"; // CATEGORIA
         groupLabel = "clientes";
       }
 
@@ -1876,6 +1918,128 @@
       }, {
         responsive: true
       });
+
+      // Deep Dive tables
+      // Table: clientes do representante ou equivalentes
+      function renderTableClientes() {
+        if (dimType === "REPRESENTANTE") {
+          const cliMap = new Map();
+          rows.forEach((r) => {
+            const c = (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+            const v = r[valKey] || 0;
+            cliMap.set(c, (cliMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(cliMap.entries()).sort((a, b) => b[1] - a[1]);
+          if (!arr.length) {
+            tblCli.innerHTML = "<em>Sem clientes neste período.</em>";
+            return;
+          }
+          let html = `<h5>Clientes do representante</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCli.innerHTML = html;
+        } else if (dimType === "CLIENTE") {
+          tblCli.innerHTML = `<h5>Cliente selecionado</h5><table><tbody><tr><td>${name}</td></tr></tbody></table>`;
+        } else if (dimType === "ESTADO") {
+          tblCli.innerHTML = `<h5>Estado selecionado</h5><table><tbody><tr><td>${name}</td></tr></tbody></table>`;
+        } else {
+          // CATEGORIA
+          tblCli.innerHTML = `<h5>Categoria selecionada</h5><table><tbody><tr><td>${name}</td></tr></tbody></table>`;
+        }
+      }
+
+      // Table: categorias para o foco (ou clientes, dependendo do caso)
+      function renderTableCategorias() {
+        if (dimType === "REPRESENTANTE") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c = (r.categoria || "Sem Categoria").toString().trim() || "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias (todos os clientes)</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else if (dimType === "CLIENTE") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c = (r.categoria || "Sem Categoria").toString().trim() || "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias deste cliente</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else if (dimType === "ESTADO") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c = (r.categoria || "Sem Categoria").toString().trim() || "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias neste estado</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else {
+          // CATEGORIA
+          const cliMap = new Map();
+          rows.forEach((r) => {
+            const c = (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+            const v = r[valKey] || 0;
+            cliMap.set(c, (cliMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(cliMap.entries()).sort((a, b) => b[1] - a[1]);
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem clientes nesta categoria.</em>";
+            return;
+          }
+          let html = `<h5>Clientes desta categoria</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        }
+      }
+
+      renderTableClientes();
+      renderTableCategorias();
     }
 
     function updateAll() {

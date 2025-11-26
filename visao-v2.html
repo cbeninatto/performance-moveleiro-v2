@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Openfield Moveleiro — Dashboard</title>
+  <title>Openfield Moveleiro — Nova Visão</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Inter font -->
@@ -32,9 +32,12 @@
       --transition-fast: 160ms ease-out;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
@@ -98,7 +101,9 @@
       color: var(--accent-gold-soft);
     }
 
-    .section { margin-top: 16px; }
+    .section {
+      margin-top: 16px;
+    }
 
     .titlebar {
       background: #000;
@@ -212,7 +217,9 @@
         color var(--transition-fast), border-color var(--transition-fast),
         transform 90ms ease-out;
     }
-    .range-btn span { font-size: 0.78rem; }
+    .range-btn span {
+      font-size: 0.78rem;
+    }
     .range-btn:hover,
     .range-btn.active {
       background: #000;
@@ -244,7 +251,9 @@
       color: #000;
       border-color: var(--accent-gold-border);
     }
-    .btn-small:hover { transform: translateY(-0.3px); }
+    .btn-small:hover {
+      transform: translateY(-0.3px);
+    }
 
     /* Metrics */
     .metrics-grid {
@@ -381,7 +390,7 @@
     /* Deep Dive */
     .deep-dive-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr);
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.1fr);
       gap: 14px;
       margin-top: 8px;
       align-items: stretch;
@@ -391,17 +400,64 @@
       flex-direction: column;
       gap: 10px;
     }
-    .deep-dive-chart-wrapper {
+
+    .deep-dive-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+    }
+    .deep-dive-kpi-item {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+    }
+    .deep-dive-kpi-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4b5563;
+      margin-bottom: 2px;
+    }
+    .deep-dive-kpi-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+    .deep-dive-kpi-label {
+      color: #6b7280;
+    }
+    .deep-dive-kpi-value {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .deep-dive-trend-wrapper {
       border-radius: 10px;
       border: 1px solid rgba(148, 163, 184, 0.3);
       background: #fff;
       padding: 4px;
-      min-height: 320px;
+      min-height: 180px;
+      max-height: 220px;
+    }
+    .deep-dive-trend {
+      width: 100%;
+      height: 100%;
+    }
+
+    .deep-dive-chart-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #fff;
+      padding: 6px;
+      min-height: 260px;
+      max-height: 320px;
     }
     .deep-dive-chart {
       width: 100%;
-      height: 320px;
+      height: 100%;
     }
+
     .deep-dive-tables {
       display: flex;
       flex-direction: column;
@@ -453,10 +509,14 @@
       flex-direction: column;
       gap: 4px;
     }
-    .deep-dive-info small { color: var(--text-muted); }
+    .deep-dive-info small {
+      color: var(--text-muted);
+    }
 
     @media (max-width: 900px) {
-      .chart { height: 460px; }
+      .chart {
+        height: 460px;
+      }
       .metrics-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -466,13 +526,18 @@
       .deep-dive-layout {
         grid-template-columns: 1fr;
       }
-      .deep-dive-chart {
-        height: 300px;
+      .deep-dive-chart-wrapper {
+        min-height: 260px;
+        max-height: 320px;
       }
     }
     @media (max-width: 720px) {
-      .metrics-grid { grid-template-columns: 1fr; }
-      .ranking-grid { grid-template-columns: 1fr; }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .ranking-grid {
+        grid-template-columns: 1fr;
+      }
     }
     @media (max-width: 640px) {
       .content {
@@ -482,10 +547,22 @@
         flex-direction: column;
         align-items: flex-start;
       }
-      .chart { height: 380px; }
+      .chart {
+        height: 380px;
+      }
+      .deep-dive-trend-wrapper {
+        min-height: 180px;
+        max-height: 200px;
+      }
+      .deep-dive-chart-wrapper {
+        min-height: 240px;
+        max-height: 280px;
+      }
     }
     @media (max-width: 480px) {
-      .chart { height: 340px; }
+      .chart {
+        height: 340px;
+      }
     }
   </style>
 </head>
@@ -496,7 +573,7 @@
         <!-- TOP BAR -->
         <header class="top-bar">
           <div>
-            <div class="top-bar-title">OPENFIELD MOVELEIRO — Dashboard</div>
+            <div class="top-bar-title">OPENFIELD MOVELEIRO — Nova Visão</div>
             <div class="top-bar-sub">
               Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria / Linha + Visão por Estado / Cliente / Representante
             </div>
@@ -509,7 +586,7 @@
         <!-- MAIN VISÃO SECTION -->
         <section class="section">
           <div class="titlebar">
-            <span>📊 Visão Geral</span>
+            <span>📊 Nova Visão Temporal</span>
           </div>
           <div class="card">
             <!-- PERIOD + VIEW + MODE -->
@@ -619,6 +696,7 @@
             </div>
             <div class="trend-info">
               Comparando a soma da segunda metade do período selecionado com a soma da primeira metade para cada dimensão.
+              Clique em um item para focar; clique em um segundo item para comparar no Deep Dive.
             </div>
 
             <!-- RANKINGS -->
@@ -652,12 +730,20 @@
           <div class="card">
             <p style="font-size:0.8rem;color:#4b5563;margin:0 0 6px;">
               Clique em qualquer item das listas de Tendências para explorar os detalhes deste representante, cliente, estado ou categoria.
+              Clique em um segundo item para comparar (KPIs + linha de tendência). Comportamento interno (clientes / categorias) é sempre do foco principal.
             </p>
             <div class="deep-dive-layout">
               <div class="deep-dive-left">
+                <div class="deep-dive-kpis" id="deepDiveKpis"></div>
+
+                <div class="deep-dive-trend-wrapper">
+                  <div id="deepDiveTrend" class="deep-dive-trend"></div>
+                </div>
+
                 <div class="deep-dive-chart-wrapper">
                   <div id="deepDiveChart" class="deep-dive-chart"></div>
                 </div>
+
                 <div class="deep-dive-tables">
                   <div class="deep-dive-table" id="deepDiveTableClientes"></div>
                   <div class="deep-dive-table" id="deepDiveTableCategorias"></div>
@@ -667,8 +753,8 @@
                 <div><strong>Nenhum item selecionado.</strong></div>
                 <small>
                   Use as listas de Tendências acima para escolher um foco.
-                  O gráfico mostrará a distribuição interna (ex.: clientes de um representante, categorias de um cliente, etc.)
-                  no mesmo período e filtros da Nova Visão.
+                  O gráfico de linha mostrará a evolução do foco ao longo do tempo (e, opcionalmente, um segundo item para comparação).
+                  O gráfico de pizza e as tabelas mostram a composição interna (clientes / categorias) do foco principal.
                 </small>
               </div>
             </div>
@@ -685,12 +771,12 @@
 
     /* Extended palette so we don't repeat / cluster dark colors */
     const ARIZONA_PALETTE = [
-      "#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51",
-      "#1d3557", "#457b9d", "#a8dadc", "#606c38", "#dda15e",
-      "#fb8500", "#8ecae6", "#ffb703", "#219ebc", "#023047",
-      "#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93",
-      "#ff7f51", "#ff9f1c", "#2ec4b6", "#5c6ac4", "#cb997e",
-      "#6d597a", "#355070", "#b56576", "#003f5c", "#ffa600"
+      "#264653","#2a9d8f","#e9c46a","#f4a261","#e76f51",
+      "#1d3557","#457b9d","#a8dadc","#606c38","#dda15e",
+      "#fb8500","#8ecae6","#ffb703","#219ebc","#023047",
+      "#ff595e","#ffca3a","#8ac926","#1982c4","#6a4c93",
+      "#ff7f51","#ff9f1c","#2ec4b6","#5c6ac4","#cb997e",
+      "#6d597a","#355070","#b56576","#003f5c","#ffa600"
     ];
 
     const familiesMap = new Map(); // descricao normalizada -> FAMILIA_PRODUTO
@@ -723,7 +809,8 @@
       filterLinha: "ALL",
       rankingDimension: "REPRESENTANTE", // REPRESENTANTE | CLIENTE | ESTADO | CATEGORIA
       currentChart: null,
-      deepDive: null // { dimType, name }
+      deepDivePrimary: null,   // { dimType, name }
+      deepDiveSecondary: null  // { dimType, name }
     };
 
     function normalizeDesc(str) {
@@ -745,8 +832,8 @@
       const m = parseInt(mStr, 10);
       const shortYear = y.slice(-2);
       const months = [
-        "JAN","FEV","MAR","ABR","MAI","JUN",
-        "JUL","AGO","SET","OUT","NOV","DEZ"
+        "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
+        "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"
       ];
       return (months[m - 1] || mStr) + " " + shortYear;
     }
@@ -897,6 +984,14 @@
       if (state.filterCategory !== "ALL" && r.categoria !== state.filterCategory) return false;
       if (state.filterLinha !== "ALL" && r.linha !== state.filterLinha) return false;
       return true;
+    }
+
+    function matchesDim(r, dimType, name) {
+      if (dimType === "REPRESENTANTE") return r.representante === name;
+      if (dimType === "CLIENTE") return r.cliente === name;
+      if (dimType === "ESTADO") return r.estado === name;
+      if (dimType === "CATEGORIA") return r.categoria === name;
+      return false;
     }
 
     function initUI() {
@@ -1075,10 +1170,13 @@
         btnTrendCat.classList.toggle("secondary", dim !== "CATEGORIA");
 
         const dimLabel =
-          dim === "CLIENTE" ? "Cliente" :
-          dim === "ESTADO" ? "Estado" :
-          dim === "CATEGORIA" ? "Categoria" :
-          "Representante";
+          dim === "CLIENTE"
+            ? "Cliente"
+            : dim === "ESTADO"
+            ? "Estado"
+            : dim === "CATEGORIA"
+            ? "Categoria"
+            : "Representante";
 
         document.getElementById("rankingTopTitle").textContent =
           "Maiores no período — " + dimLabel;
@@ -1087,16 +1185,30 @@
         document.getElementById("rankingFallingTitle").textContent =
           "Perdendo espaço — " + dimLabel;
 
+        // Changing dimension resets Deep Dive compare
+        state.deepDivePrimary = null;
+        state.deepDiveSecondary = null;
+        renderDeepDive();
+
         updateAll();
       }
 
-      btnTrendRep.addEventListener("click", () => setRankingDimension("REPRESENTANTE"));
-      btnTrendCli.addEventListener("click", () => setRankingDimension("CLIENTE"));
-      btnTrendEst.addEventListener("click", () => setRankingDimension("ESTADO"));
-      btnTrendCat.addEventListener("click", () => setRankingDimension("CATEGORIA"));
+      btnTrendRep.addEventListener("click", () =>
+        setRankingDimension("REPRESENTANTE")
+      );
+      btnTrendCli.addEventListener("click", () =>
+        setRankingDimension("CLIENTE")
+      );
+      btnTrendEst.addEventListener("click", () =>
+        setRankingDimension("ESTADO")
+      );
+      btnTrendCat.addEventListener("click", () =>
+        setRankingDimension("CATEGORIA")
+      );
 
       btnTrendReset.addEventListener("click", () => {
-        state.deepDive = null;
+        state.deepDivePrimary = null;
+        state.deepDiveSecondary = null;
         setRankingDimension("REPRESENTANTE");
         renderDeepDive();
       });
@@ -1394,7 +1506,34 @@
     }
 
     function setDeepDive(dimType, name) {
-      state.deepDive = { dimType, name };
+      // Compare mode: first click sets primary, second click sets secondary,
+      // third click (on any) resets to that as primary only.
+      const currentPrimary = state.deepDivePrimary;
+      const currentSecondary = state.deepDiveSecondary;
+
+      if (!currentPrimary) {
+        state.deepDivePrimary = { dimType, name };
+        state.deepDiveSecondary = null;
+      } else if (
+        currentPrimary.dimType === dimType &&
+        currentPrimary.name === name
+      ) {
+        // Clicking the same primary toggles secondary off (if any)
+        if (currentSecondary) {
+          state.deepDiveSecondary = null;
+        } else {
+          // keep single selection
+          state.deepDivePrimary = { dimType, name };
+        }
+      } else if (!currentSecondary) {
+        // Add compare
+        state.deepDiveSecondary = { dimType, name };
+      } else {
+        // Replace both: new primary, no secondary
+        state.deepDivePrimary = { dimType, name };
+        state.deepDiveSecondary = null;
+      }
+
       renderDeepDive();
     }
 
@@ -1444,13 +1583,17 @@
 
         const v = r[valKey] || 0;
         if (!statsMap.has(dimVal)) {
-          statsMap.set(dimVal, { total: 0, totalA: 0, totalB: 0, clients: new Set() });
+          statsMap.set(dimVal, {
+            total: 0,
+            totalA: 0,
+            totalB: 0,
+            clients: new Set()
+          });
         }
         const st = statsMap.get(dimVal);
         st.total += v;
         if (idx < mid) st.totalA += v;
         else st.totalB += v;
-
         st.clients.add(r.cliente);
       });
 
@@ -1463,10 +1606,24 @@
 
         const varAbs = st.totalB - st.totalA;
         const clientsCount = st.clients.size;
-        if ((st.totalA + st.totalB) < trendFloor) {
-          entities.push({ name, total, totalA: st.totalA, totalB: st.totalB, varAbs: 0, clientsCount });
+        if (st.totalA + st.totalB < trendFloor) {
+          entities.push({
+            name,
+            total,
+            totalA: st.totalA,
+            totalB: st.totalB,
+            varAbs: 0,
+            clientsCount
+          });
         } else {
-          entities.push({ name, total, totalA: st.totalA, totalB: st.totalB, varAbs, clientsCount });
+          entities.push({
+            name,
+            total,
+            totalA: st.totalA,
+            totalB: st.totalB,
+            varAbs,
+            clientsCount
+          });
         }
       });
 
@@ -1484,10 +1641,13 @@
         .slice(0, maxItems);
 
       const dimLabelTop =
-        state.rankingDimension === "CLIENTE" ? "Cliente" :
-        state.rankingDimension === "ESTADO" ? "Estado" :
-        state.rankingDimension === "CATEGORIA" ? "Categoria" :
-        "Representante";
+        state.rankingDimension === "CLIENTE"
+          ? "Cliente"
+          : state.rankingDimension === "ESTADO"
+          ? "Estado"
+          : state.rankingDimension === "CATEGORIA"
+          ? "Categoria"
+          : "Representante";
 
       if (state.rankingDimension === "CLIENTE") {
         document.getElementById("rankingTopTitle").textContent =
@@ -1665,7 +1825,7 @@
           line: {
             shape: "spline",
             width: 3,
-            color: getColorForName(groupName) // stable by group
+            color: getColorForName(groupName)
           },
           marker: {
             size: 7,
@@ -1770,36 +1930,131 @@
       recalcMetricsFromLegend();
     }
 
+    function computeClientHealthForRep(name, filteredKeys) {
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, i) => keyIndex.set(k, i));
+      const nKeys = filteredKeys.length;
+      if (!nKeys) return null;
+
+      const mid = Math.floor(nKeys / 2) || 1;
+      const valKey = state.valueMode === "FATURAMENTO" ? "valor" : "quantidade";
+
+      const rows = state.rows.filter(
+        (r) =>
+          keyIndex.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          r.representante === name
+      );
+
+      const clients = new Map(); // cliente -> {A,B}
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        const v = r[valKey] || 0;
+        const cli = (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+        if (!clients.has(cli)) clients.set(cli, { A: 0, B: 0 });
+        const st = clients.get(cli);
+        if (idx < mid) st.A += v;
+        else st.B += v;
+      });
+
+      let novos = 0;
+      let perdidos = 0;
+      let crescendo = 0;
+      let caindo = 0;
+      let estaveis = 0;
+      const threshold = 0.15;
+
+      clients.forEach((st) => {
+        const A = st.A;
+        const B = st.B;
+        if (A === 0 && B > 0) {
+          novos++;
+        } else if (A > 0 && B === 0) {
+          perdidos++;
+        } else if (A > 0 && B > 0) {
+          if (B > A * (1 + threshold)) crescendo++;
+          else if (B < A * (1 - threshold)) caindo++;
+          else estaveis++;
+        }
+      });
+
+      return {
+        novos,
+        perdidos,
+        crescendo,
+        caindo,
+        estaveis,
+        total: clients.size
+      };
+    }
+
+    function buildEntitySeries(dimType, name, filteredKeys) {
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, i) => keyIndex.set(k, i));
+      const n = filteredKeys.length;
+      const vals = new Array(n).fill(0);
+      const valKey = state.valueMode === "FATURAMENTO" ? "valor" : "quantidade";
+
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) =>
+          keySet.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          matchesDim(r, dimType, name)
+      );
+
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        if (idx == null) return;
+        const v = r[valKey] || 0;
+        vals[idx] += v;
+      });
+
+      return vals;
+    }
+
+    function computeSeriesKpis(vals, filteredKeys) {
+      const n = vals.length;
+      if (!n) return { total: 0, mean: 0, active: 0 };
+
+      let total = 0;
+      let active = 0;
+      for (let i = 0; i < n; i++) {
+        const v = vals[i] || 0;
+        total += v;
+        if (v > 0) active++;
+      }
+      const mean = total / n;
+      return { total, mean, active, months: n };
+    }
+
     function renderDeepDive() {
       const info = document.getElementById("deepDiveInfo");
       const chartDiv = document.getElementById("deepDiveChart");
+      const trendDiv = document.getElementById("deepDiveTrend");
+      const kpiDiv = document.getElementById("deepDiveKpis");
       const tblCli = document.getElementById("deepDiveTableClientes");
       const tblCat = document.getElementById("deepDiveTableCategorias");
 
+      kpiDiv.innerHTML = "";
       tblCli.innerHTML = "";
       tblCat.innerHTML = "";
 
-      if (!state.deepDive || !state.deepDive.name) {
+      const primary = state.deepDivePrimary;
+      const secondary = state.deepDiveSecondary;
+
+      const filteredKeys = getFilteredKeys();
+      if (!primary || !primary.name || !filteredKeys.length) {
         info.innerHTML = `
           <div><strong>Nenhum item selecionado.</strong></div>
           <small>
             Use as listas de Tendências acima para escolher um foco.
-            O gráfico mostrará a distribuição interna (ex.: clientes de um representante, categorias de um cliente, etc.)
-            no mesmo período e filtros da Nova Visão.
+            O gráfico de linha mostrará a evolução do foco ao longo do tempo (e, opcionalmente, um segundo item para comparação).
+            O gráfico de pizza e as tabelas mostram a composição interna (clientes / categorias) do foco principal.
           </small>
         `;
         Plotly.purge(chartDiv);
-        return;
-      }
-
-      const { dimType, name } = state.deepDive;
-      const filteredKeys = getFilteredKeys();
-      if (!filteredKeys.length) {
-        info.innerHTML = `
-          <div><strong>${name}</strong></div>
-          <small>Sem dados para o período selecionado.</small>
-        `;
-        Plotly.purge(chartDiv);
+        Plotly.purge(trendDiv);
         return;
       }
 
@@ -1807,35 +2062,281 @@
       const useFat = state.valueMode === "FATURAMENTO";
       const valKey = useFat ? "valor" : "quantidade";
 
-      const rows = state.rows.filter((r) => {
-        if (!keySet.has(r.key)) return false;
-        if (!rowPassesDimensionFilters(r)) return false;
-
-        if (dimType === "REPRESENTANTE") return r.representante === name;
-        if (dimType === "CLIENTE") return r.cliente === name;
-        if (dimType === "ESTADO") return r.estado === name;
-        if (dimType === "CATEGORIA") return r.categoria === name;
-        return false;
+      // Company total for share
+      const companyRows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+      let companyTotal = 0;
+      companyRows.forEach((r) => {
+        companyTotal += r[valKey] || 0;
       });
 
+      // SERIES for primary and secondary
+      const seriesPrimary = buildEntitySeries(
+        primary.dimType,
+        primary.name,
+        filteredKeys
+      );
+      const statsPrimary = computeSeriesKpis(
+        seriesPrimary,
+        filteredKeys
+      );
+
+      let seriesSecondary = null;
+      let statsSecondary = null;
+      if (secondary && secondary.name) {
+        seriesSecondary = buildEntitySeries(
+          secondary.dimType,
+          secondary.name,
+          filteredKeys
+        );
+        statsSecondary = computeSeriesKpis(
+          seriesSecondary,
+          filteredKeys
+        );
+      }
+
+      const dimLabel = (dimType) =>
+        dimType === "REPRESENTANTE"
+          ? "Representante"
+          : dimType === "CLIENTE"
+          ? "Cliente"
+          : dimType === "ESTADO"
+          ? "Estado"
+          : "Categoria";
+
+      const formatVal = (v) =>
+        useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      // KPIs HTML
+      const kpiCards = [];
+
+      const primaryShare =
+        companyTotal > 0
+          ? ((statsPrimary.total / companyTotal) * 100).toFixed(1).replace(".", ",") +
+            "%"
+          : "—";
+
+      kpiCards.push(`
+        <div class="deep-dive-kpi-item">
+          <div class="deep-dive-kpi-title">${dimLabel(
+            primary.dimType
+          )}: ${primary.name}</div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Total período</span>
+            <span class="deep-dive-kpi-value">${formatVal(
+              statsPrimary.total
+            )}</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Média mensal</span>
+            <span class="deep-dive-kpi-value">${formatVal(
+              statsPrimary.mean
+            )}</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Meses com venda</span>
+            <span class="deep-dive-kpi-value">${statsPrimary.active} / ${
+        statsPrimary.months
+      }</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Participação</span>
+            <span class="deep-dive-kpi-value">${primaryShare}</span>
+          </div>
+        </div>
+      `);
+
+      if (seriesSecondary && statsSecondary) {
+        const secShare =
+          companyTotal > 0
+            ? (
+                (statsSecondary.total / companyTotal) *
+                100
+              )
+                .toFixed(1)
+                .replace(".", ",") + "%"
+            : "—";
+        kpiCards.push(`
+          <div class="deep-dive-kpi-item">
+            <div class="deep-dive-kpi-title">${dimLabel(
+              secondary.dimType
+            )}: ${secondary.name}</div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Total período</span>
+              <span class="deep-dive-kpi-value">${formatVal(
+                statsSecondary.total
+              )}</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Média mensal</span>
+              <span class="deep-dive-kpi-value">${formatVal(
+                statsSecondary.mean
+              )}</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Meses com venda</span>
+              <span class="deep-dive-kpi-value">${
+                statsSecondary.active
+              } / ${statsSecondary.months}</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Participação</span>
+              <span class="deep-dive-kpi-value">${secShare}</span>
+            </div>
+          </div>
+        `);
+      }
+
+      kpiDiv.innerHTML = kpiCards.join("");
+
+      // Trend chart (primary + optional secondary)
+      const labels = filteredKeys.map(
+        (k) => state.keyToLabel.get(k) || labelFromKey(k)
+      );
+      const tracesTrend = [
+        {
+          x: labels,
+          y: seriesPrimary,
+          type: "scatter",
+          mode: "lines+markers",
+          name: `${dimLabel(primary.dimType)} ${primary.name}`,
+          line: {
+            shape: "spline",
+            width: 3,
+            color: getColorForName(
+              `DD:${primary.dimType}:${primary.name}`
+            )
+          },
+          marker: {
+            size: 6,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: useFat
+            ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+            : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
+        }
+      ];
+
+      if (seriesSecondary && statsSecondary) {
+        tracesTrend.push({
+          x: labels,
+          y: seriesSecondary,
+          type: "scatter",
+          mode: "lines+markers",
+          name: `${dimLabel(secondary.dimType)} ${secondary.name}`,
+          line: {
+            shape: "spline",
+            width: 3,
+            dash: "dot",
+            color: getColorForName(
+              `DD:${secondary.dimType}:${secondary.name}`
+            )
+          },
+          marker: {
+            size: 6,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: useFat
+            ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+            : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
+        });
+      }
+
+      Plotly.react(
+        trendDiv,
+        tracesTrend,
+        {
+          margin: { l: 50, r: 20, t: 20, b: 50 },
+          paper_bgcolor: "#ffffff",
+          plot_bgcolor: "#ffffff",
+          showlegend: true,
+          legend: {
+            orientation: "h",
+            yanchor: "bottom",
+            y: 1.02,
+            xanchor: "center",
+            x: 0.5,
+            font: { size: 10 }
+          },
+          hovermode: "x unified",
+          xaxis: {
+            type: "category",
+            categoryorder: "array",
+            categoryarray: labels,
+            showgrid: false,
+            tickangle: -30,
+            tickfont: { size: 10 }
+          },
+          yaxis: {
+            title: "",
+            gridcolor: "#e9ecef",
+            zeroline: false,
+            automargin: true,
+            autorange: true
+          }
+        },
+        { responsive: true }
+      );
+      Plotly.relayout(trendDiv, { "yaxis.autorange": true });
+
+      // Deep Dive info text + client health
+      let infoHtml = `
+        <div><strong>${dimLabel(primary.dimType)}: ${
+        primary.name
+      }</strong></div>
+        <div>Total no período (foco principal): <strong>${formatVal(
+          statsPrimary.total
+        )}</strong></div>
+      `;
+      if (secondary && statsSecondary) {
+        infoHtml += `<div>Comparando com: <strong>${dimLabel(
+          secondary.dimType
+        )} ${secondary.name}</strong> — ${formatVal(
+          statsSecondary.total
+        )}</div>`;
+      }
+
+      // Client health for representante
+      if (primary.dimType === "REPRESENTANTE") {
+        const ch = computeClientHealthForRep(primary.name, filteredKeys);
+        if (ch) {
+          infoHtml += `<div>Saúde da carteira: <strong>Novos ${ch.novos}</strong> • <strong>Perdidos ${ch.perdidos}</strong> • <strong>Crescendo ${ch.crescendo}</strong> • <strong>Caindo ${ch.caindo}</strong> • <strong>Estáveis ${ch.estaveis}</strong> (total de ${ch.total} clientes)</div>`;
+        }
+      }
+
+      infoHtml += `
+        <small>
+          Distribuição interna considera o mesmo período e filtros da Nova Visão.
+          O gráfico de pizza e as tabelas abaixo sempre usam o foco principal (primeiro selecionado).
+        </small>
+      `;
+      info.innerHTML = infoHtml;
+
+      // Pie chart + tables for primary only
+      const rows = state.rows.filter(
+        (r) =>
+          keySet.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          matchesDim(r, primary.dimType, primary.name)
+      );
+
       if (!rows.length) {
-        info.innerHTML = `
-          <div><strong>${name}</strong></div>
-          <small>Sem dados para os filtros atuais.</small>
-        `;
+        tblCli.innerHTML = "<em>Sem dados para os filtros atuais.</em>";
+        tblCat.innerHTML = "<em>Sem dados para os filtros atuais.</em>";
         Plotly.purge(chartDiv);
         return;
       }
 
-      // Group for pie
+      // Decide grouping dimension for pie
       let groupField, groupLabel;
-      if (dimType === "REPRESENTANTE") {
+      if (primary.dimType === "REPRESENTANTE") {
         groupField = "cliente";
         groupLabel = "clientes";
-      } else if (dimType === "CLIENTE") {
+      } else if (primary.dimType === "CLIENTE") {
         groupField = "categoria";
         groupLabel = "categorias";
-      } else if (dimType === "ESTADO") {
+      } else if (primary.dimType === "ESTADO") {
         groupField = "categoria";
         groupLabel = "categorias";
       } else {
@@ -1847,89 +2348,86 @@
       let totalVal = 0;
 
       rows.forEach((r) => {
-        const key = (r[groupField] || "Outros").toString().trim() || "Outros";
+        const keyG =
+          (r[groupField] || "Outros").toString().trim() || "Outros";
         const v = r[valKey] || 0;
         totalVal += v;
-        groupMap.set(key, (groupMap.get(key) || 0) + v);
+        groupMap.set(keyG, (groupMap.get(keyG) || 0) + v);
       });
 
-      const groups = Array.from(groupMap.entries())
-        .sort((a, b) => b[1] - a[1]);
+      const groups = Array.from(groupMap.entries()).sort(
+        (a, b) => b[1] - a[1]
+      );
 
       const maxSlices = 15;
-      const labels = [];
-      const values = [];
+      const labelsPie = [];
+      const valuesPie = [];
       let othersTotal = 0;
 
       groups.forEach(([gName, gVal], idx) => {
         if (idx < maxSlices) {
-          labels.push(gName);
-          values.push(gVal);
+          labelsPie.push(gName);
+          valuesPie.push(gVal);
         } else {
           othersTotal += gVal;
         }
       });
 
       if (othersTotal > 0) {
-        labels.push("Outros");
-        values.push(othersTotal);
+        labelsPie.push("Outros");
+        valuesPie.push(othersTotal);
       }
 
-      const dimTitle =
-        dimType === "REPRESENTANTE" ? "Representante" :
-        dimType === "CLIENTE" ? "Cliente" :
-        dimType === "ESTADO" ? "Estado" : "Categoria";
+      const pieColors = labelsPie.map((lab) =>
+        getColorForName(
+          `DDpie:${primary.dimType}:${primary.name}:${lab}`
+        )
+      );
 
-      const valText = useFat ? formatCurrencyBRL(totalVal) : formatNumberBR(totalVal) + " un";
-      const distinctGroups = groups.length;
-
-      info.innerHTML = `
-        <div><strong>${dimTitle}: ${name}</strong></div>
-        <div>Total no período: <strong>${valText}</strong></div>
-        <div>${distinctGroups} ${groupLabel} distintos(s) dentro deste foco.</div>
-        <small>
-          Distribuição por ${groupLabel} considerando o mesmo período e filtros da Nova Visão.
-        </small>
-      `;
-
-      const pieColors = labels.map((lab) => getColorForName(`${dimType}:${name}:${lab}`));
-
-      Plotly.react(chartDiv, [{
-        type: "pie",
-        labels: labels,
-        values: values,
-        textinfo: "label+percent",
-        insidetextorientation: "radial",
-        hovertemplate: useFat
-          ? "<b>%{label}</b><br>R$ %{value:,.2f} (%{percent})<extra></extra>"
-          : "<b>%{label}</b><br>%{value:,.0f} un (%{percent})<extra></extra>",
-        marker: {
-          colors: pieColors
-        }
-      }], {
-        margin: { t: 30, l: 20, r: 20, b: 20 },
-        paper_bgcolor: "#ffffff",
-        plot_bgcolor: "#ffffff",
-        showlegend: false,
-        title: {
-          text: `Distribuição por ${groupLabel}`,
-          font: { size: 14 }
-        }
-      }, {
-        responsive: true
-      });
+      Plotly.react(
+        chartDiv,
+        [
+          {
+            type: "pie",
+            labels: labelsPie,
+            values: valuesPie,
+            textinfo: "label+percent",
+            insidetextorientation: "radial",
+            hovertemplate: useFat
+              ? "<b>%{label}</b><br>R$ %{value:,.2f} (%{percent})<extra></extra>"
+              : "<b>%{label}</b><br>%{value:,.0f} un (%{percent})<extra></extra>",
+            marker: {
+              colors: pieColors
+            }
+          }
+        ],
+        {
+          margin: { t: 30, l: 20, r: 20, b: 20 },
+          paper_bgcolor: "#ffffff",
+          plot_bgcolor: "#ffffff",
+          showlegend: false,
+          title: {
+            text: `Distribuição por ${groupLabel}`,
+            font: { size: 14 }
+          }
+        },
+        { responsive: true }
+      );
 
       // Deep Dive tables
-      // Table: clientes do representante ou equivalentes
       function renderTableClientes() {
-        if (dimType === "REPRESENTANTE") {
+        if (primary.dimType === "REPRESENTANTE") {
           const cliMap = new Map();
           rows.forEach((r) => {
-            const c = (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+            const c =
+              (r.cliente || "Sem Cliente").toString().trim() ||
+              "Sem Cliente";
             const v = r[valKey] || 0;
             cliMap.set(c, (cliMap.get(c) || 0) + v);
           });
-          const arr = Array.from(cliMap.entries()).sort((a, b) => b[1] - a[1]);
+          const arr = Array.from(cliMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
           if (!arr.length) {
             tblCli.innerHTML = "<em>Sem clientes neste período.</em>";
             return;
@@ -1937,31 +2435,37 @@
           let html = `<h5>Clientes do representante</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
           arr.forEach(([cName, v]) => {
             const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
-            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
-            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
           });
           html += "</tbody></table>";
           tblCli.innerHTML = html;
-        } else if (dimType === "CLIENTE") {
-          tblCli.innerHTML = `<h5>Cliente selecionado</h5><table><tbody><tr><td>${name}</td></tr></tbody></table>`;
-        } else if (dimType === "ESTADO") {
-          tblCli.innerHTML = `<h5>Estado selecionado</h5><table><tbody><tr><td>${name}</td></tr></tbody></table>`;
+        } else if (primary.dimType === "CLIENTE") {
+          tblCli.innerHTML = `<h5>Cliente selecionado</h5><table><tbody><tr><td>${primary.name}</td></tr></tbody></table>`;
+        } else if (primary.dimType === "ESTADO") {
+          tblCli.innerHTML = `<h5>Estado selecionado</h5><table><tbody><tr><td>${primary.name}</td></tr></tbody></table>`;
         } else {
-          // CATEGORIA
-          tblCli.innerHTML = `<h5>Categoria selecionada</h5><table><tbody><tr><td>${name}</td></tr></tbody></table>`;
+          tblCli.innerHTML = `<h5>Categoria selecionada</h5><table><tbody><tr><td>${primary.name}</td></tr></tbody></table>`;
         }
       }
 
-      // Table: categorias para o foco (ou clientes, dependendo do caso)
       function renderTableCategorias() {
-        if (dimType === "REPRESENTANTE") {
+        if (primary.dimType === "REPRESENTANTE") {
           const catMap = new Map();
           rows.forEach((r) => {
-            const c = (r.categoria || "Sem Categoria").toString().trim() || "Sem Categoria";
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
             const v = r[valKey] || 0;
             catMap.set(c, (catMap.get(c) || 0) + v);
           });
-          const arr = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
           if (!arr.length) {
             tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
             return;
@@ -1969,19 +2473,27 @@
           let html = `<h5>Categorias (todos os clientes)</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
           arr.forEach(([cName, v]) => {
             const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
-            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
-            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
           });
           html += "</tbody></table>";
           tblCat.innerHTML = html;
-        } else if (dimType === "CLIENTE") {
+        } else if (primary.dimType === "CLIENTE") {
           const catMap = new Map();
           rows.forEach((r) => {
-            const c = (r.categoria || "Sem Categoria").toString().trim() || "Sem Categoria";
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
             const v = r[valKey] || 0;
             catMap.set(c, (catMap.get(c) || 0) + v);
           });
-          const arr = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
           if (!arr.length) {
             tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
             return;
@@ -1989,19 +2501,27 @@
           let html = `<h5>Categorias deste cliente</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
           arr.forEach(([cName, v]) => {
             const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
-            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
-            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
           });
           html += "</tbody></table>";
           tblCat.innerHTML = html;
-        } else if (dimType === "ESTADO") {
+        } else if (primary.dimType === "ESTADO") {
           const catMap = new Map();
           rows.forEach((r) => {
-            const c = (r.categoria || "Sem Categoria").toString().trim() || "Sem Categoria";
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
             const v = r[valKey] || 0;
             catMap.set(c, (catMap.get(c) || 0) + v);
           });
-          const arr = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
           if (!arr.length) {
             tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
             return;
@@ -2009,8 +2529,12 @@
           let html = `<h5>Categorias neste estado</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
           arr.forEach(([cName, v]) => {
             const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
-            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
-            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
           });
           html += "</tbody></table>";
           tblCat.innerHTML = html;
@@ -2018,11 +2542,15 @@
           // CATEGORIA
           const cliMap = new Map();
           rows.forEach((r) => {
-            const c = (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+            const c =
+              (r.cliente || "Sem Cliente").toString().trim() ||
+              "Sem Cliente";
             const v = r[valKey] || 0;
             cliMap.set(c, (cliMap.get(c) || 0) + v);
           });
-          const arr = Array.from(cliMap.entries()).sort((a, b) => b[1] - a[1]);
+          const arr = Array.from(cliMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
           if (!arr.length) {
             tblCat.innerHTML = "<em>Sem clientes nesta categoria.</em>";
             return;
@@ -2030,8 +2558,12 @@
           let html = `<h5>Clientes desta categoria</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
           arr.forEach(([cName, v]) => {
             const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
-            const vt = useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
-            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct.toFixed(1).replace('.', ',')}%</td></tr>`;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
           });
           html += "</tbody></table>";
           tblCat.innerHTML = html;
@@ -2091,8 +2623,7 @@
         statusInfo.textContent =
           "Dados carregados • Top 10 clientes no período";
       } else if (state.viewMode === "ESTADO") {
-        statusInfo.textContent =
-          "Dados carregados • Visão por estado";
+        statusInfo.textContent = "Dados carregados • Visão por estado";
       } else if (state.viewMode === "REPRESENTANTE") {
         statusInfo.textContent =
           "Dados carregados • Visão por representante";

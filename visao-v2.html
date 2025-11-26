@@ -78,7 +78,7 @@
       padding: 12px 16px;
       border-radius: 10px;
       display: flex;
-      justify-content: space-between;
+      justify-content:space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
@@ -253,6 +253,15 @@
     }
     .btn-small:hover {
       transform: translateY(-0.3px);
+    }
+
+    /* NEW: right-aligned block “De/Até/Aplicar/Reset + Métrica” */
+    .top-right-wrap {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     /* Metrics */
@@ -558,6 +567,9 @@
         min-height: 240px;
         max-height: 280px;
       }
+      .top-right-wrap {
+        margin-left: 0;
+      }
     }
     @media (max-width: 480px) {
       .chart {
@@ -589,11 +601,11 @@
             <span>📊 Nova Visão Temporal</span>
           </div>
           <div class="card">
-            <!-- PERIOD + VIEW + MODE -->
+            <!-- PERIOD + MÉTRICA (TOP) -->
             <div class="filters-row">
               <span class="filters-label">Período</span>
 
-              <!-- 1) UPDATED PERIOD BUTTONS: 3M 6M 9M 1A 2A 3A 5A TUDO -->
+              <!-- 3M 6M 9M 1A 2A 3A 5A TUDO -->
               <div class="range-buttons" id="rangeButtons">
                 <button class="range-btn" data-range="3M"><span>3M</span></button>
                 <button class="range-btn" data-range="6M"><span>6M</span></button>
@@ -605,26 +617,29 @@
                 <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
               </div>
 
-              <span style="margin-left:8px;">De</span>
-              <input type="month" lang="pt-BR" id="fromPeriod" />
-              <span>até</span>
-              <input type="month" lang="pt-BR" id="toPeriod" />
-              <button class="btn-small" id="applyCustom">Aplicar</button>
-              <button class="btn-small secondary" id="resetCustom">Reset</button>
+              <!-- Right-aligned: De/Até + Aplicar/Reset + Métrica FAT/VOL -->
+              <div class="top-right-wrap">
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="fromPeriod" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="toPeriod" />
+                <button class="btn-small" id="applyCustom">Aplicar</button>
+                <button class="btn-small secondary" id="resetCustom">Reset</button>
 
-              <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <span class="filters-label" style="margin-left:12px;">Visão</span>
-                <button class="btn-small" id="btnViewCategoria">Categoria</button>
-                <button class="btn-small secondary" id="btnViewEstado">Estado</button>
-                <button class="btn-small secondary" id="btnViewCliente">Cliente</button>
-                <button class="btn-small secondary" id="btnViewRep">Representante</button>
-
-                <!-- 2) TOP MÉTRICA BUTTONS MIRROR BOTTOM (label + FAT/ VOL) -->
-                <span style="width:10px;"></span>
-                <span class="field-label" style="margin-right:4px;">Métrica</span>
+                <span class="field-label" style="margin-left:8px;">Métrica</span>
                 <button class="btn-small" id="btnFaturamento">Faturamento</button>
                 <button class="btn-small secondary" id="btnVolume">Volume</button>
-              </span>
+              </div>
+            </div>
+
+            <!-- VISÃO BUTTONS (inclui GERAL) -->
+            <div class="filters-row">
+              <span class="filters-label">Visão</span>
+              <button class="btn-small secondary" id="btnViewGeral">Geral</button>
+              <button class="btn-small" id="btnViewCategoria">Categoria</button>
+              <button class="btn-small secondary" id="btnViewEstado">Estado</button>
+              <button class="btn-small secondary" id="btnViewCliente">Cliente</button>
+              <button class="btn-small secondary" id="btnViewRep">Representante</button>
             </div>
 
             <!-- INCLUDE FILTERS -->
@@ -657,7 +672,7 @@
               </div>
             </div>
 
-            <!-- 3) EXCLUDE FILTERS: remove selected CLIENTE/REP/ESTADO/CATEGORIA/LINHA -->
+            <!-- EXCLUDE FILTERS -->
             <div class="filters-row filters-row-secondary">
               <span class="filters-label">Excluir</span>
 
@@ -835,13 +850,13 @@
       customTo: null,
       valueMode: "FATURAMENTO",
       valueLabel: "Faturamento",
+      // VIEW MODES: "GERAL", "CATEGORIA", "ESTADO", "CLIENTE", "REPRESENTANTE"
       viewMode: "CATEGORIA",
       filterClient: "ALL",
       filterRep: "ALL",
       filterState: "ALL",
       filterCategory: "ALL",
       filterLinha: "ALL",
-      // NEW EXCLUDE FILTERS
       excludeClient: "NONE",
       excludeRep: "NONE",
       excludeState: "NONE",
@@ -1018,18 +1033,18 @@
     }
 
     function rowPassesDimensionFilters(r) {
-      // include filters
       if (state.filterClient !== "ALL" && r.cliente !== state.filterClient) return false;
       if (state.filterRep !== "ALL" && r.representante !== state.filterRep) return false;
       if (state.filterState !== "ALL" && r.estado !== state.filterState) return false;
       if (state.filterCategory !== "ALL" && r.categoria !== state.filterCategory) return false;
       if (state.filterLinha !== "ALL" && r.linha !== state.filterLinha) return false;
-      // exclude filters
+
       if (state.excludeClient !== "NONE" && r.cliente === state.excludeClient) return false;
       if (state.excludeRep !== "NONE" && r.representante === state.excludeRep) return false;
       if (state.excludeState !== "NONE" && r.estado === state.excludeState) return false;
       if (state.excludeCategory !== "NONE" && r.categoria === state.excludeCategory) return false;
       if (state.excludeLinha !== "NONE" && r.linha === state.excludeLinha) return false;
+
       return true;
     }
 
@@ -1143,6 +1158,7 @@
       btnFat2.addEventListener("click", () => setMode("FATURAMENTO"));
       btnVol2.addEventListener("click", () => setMode("VOLUME"));
 
+      const btnViewGeral = document.getElementById("btnViewGeral");
       const btnViewCat = document.getElementById("btnViewCategoria");
       const btnViewEst = document.getElementById("btnViewEstado");
       const btnViewCli = document.getElementById("btnViewCliente");
@@ -1151,14 +1167,22 @@
       function setView(mode) {
         state.viewMode = mode;
 
-        btnViewCat.classList.toggle("secondary", mode !== "CATEGORIA");
-        btnViewEst.classList.toggle("secondary", mode !== "ESTADO");
-        btnViewCli.classList.toggle("secondary", mode !== "CLIENTE");
-        btnViewRep.classList.toggle("secondary", mode !== "REPRESENTANTE");
+        const mapping = [
+          ["GERAL", btnViewGeral],
+          ["CATEGORIA", btnViewCat],
+          ["ESTADO", btnViewEst],
+          ["CLIENTE", btnViewCli],
+          ["REPRESENTANTE", btnViewRep]
+        ];
+        mapping.forEach(([val, btn]) => {
+          if (!btn) return;
+          btn.classList.toggle("secondary", mode !== val);
+        });
 
         updateAll();
       }
 
+      btnViewGeral.addEventListener("click", () => setView("GERAL"));
       btnViewCat.addEventListener("click", () => setView("CATEGORIA"));
       btnViewEst.addEventListener("click", () => setView("ESTADO"));
       btnViewCli.addEventListener("click", () => setView("CLIENTE"));
@@ -1199,7 +1223,6 @@
           updateAll();
         });
 
-      // EXCLUDE filters listeners
       document
         .getElementById("excludeClient")
         .addEventListener("change", (e) => {
@@ -1298,7 +1321,6 @@
       setRankingDimension("REPRESENTANTE");
     }
 
-    // Reusable for include & exclude selects
     function refillSelect(selectId, values, allLabel, keyName, allValue = "ALL") {
       const select = document.getElementById(selectId);
       const currentValue = state[keyName];
@@ -1409,7 +1431,6 @@
         "ALL"
       );
 
-      // EXCLUDE options use same universe, but "Nenhum" with value "NONE"
       refillSelect(
         "excludeClient",
         clientValues,
@@ -1489,7 +1510,9 @@
         if (!rowPassesDimensionFilters(r)) continue;
 
         let group;
-        if (state.viewMode === "ESTADO") {
+        if (state.viewMode === "GERAL") {
+          group = "Geral";
+        } else if (state.viewMode === "ESTADO") {
           group = r.estado;
         } else if (state.viewMode === "CLIENTE") {
           group = r.cliente;
@@ -2384,8 +2407,17 @@
       );
       Plotly.relayout(trendDiv, { "yaxis.autorange": true });
 
+      const dimLabelFunc = (dimType) =>
+        dimType === "REPRESENTANTE"
+          ? "Representante"
+          : dimType === "CLIENTE"
+          ? "Cliente"
+          : dimType === "ESTADO"
+          ? "Estado"
+          : "Categoria";
+
       let infoHtml = `
-        <div><strong>${dimLabel(primary.dimType)}: ${
+        <div><strong>${dimLabelFunc(primary.dimType)}: ${
         primary.name
       }</strong></div>
         <div>Total no período (foco principal): <strong>${formatVal(
@@ -2393,7 +2425,7 @@
         )}</strong></div>
       `;
       if (secondary && statsSecondary) {
-        infoHtml += `<div>Comparando com: <strong>${dimLabel(
+        infoHtml += `<div>Comparando com: <strong>${dimLabelFunc(
           secondary.dimType
         )} ${secondary.name}</strong> — ${formatVal(
           statsSecondary.total
@@ -2725,6 +2757,8 @@
       } else if (state.viewMode === "REPRESENTANTE") {
         statusInfo.textContent =
           "Dados carregados • Visão por representante";
+      } else if (state.viewMode === "GERAL") {
+        statusInfo.textContent = "Dados carregados • Visão geral";
       } else {
         statusInfo.textContent =
           "Dados carregados • Visão por categoria";

@@ -78,7 +78,7 @@
       padding: 12px 16px;
       border-radius: 10px;
       display: flex;
-      justify-content:space-between;
+      justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
@@ -255,7 +255,6 @@
       transform: translateY(-0.3px);
     }
 
-    /* NEW: right-aligned block “De/Até/Aplicar/Reset + Métrica” */
     .top-right-wrap {
       margin-left: auto;
       display: flex;
@@ -396,7 +395,7 @@
       white-space: nowrap;
     }
 
-    /* Deep Dive */
+    /* Deep Dive layout */
     .deep-dive-layout {
       display: grid;
       grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.1fr);
@@ -405,6 +404,11 @@
       align-items: stretch;
     }
     .deep-dive-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .deep-dive-right {
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -446,8 +450,8 @@
       border: 1px solid rgba(148, 163, 184, 0.3);
       background: #fff;
       padding: 4px;
-      min-height: 180px;
-      max-height: 220px;
+      min-height: 280px;  /* taller mini trend */
+      max-height: 340px;
     }
     .deep-dive-trend {
       width: 100%;
@@ -459,8 +463,8 @@
       border: 1px solid rgba(148, 163, 184, 0.3);
       background: #fff;
       padding: 6px;
-      min-height: 260px;
-      max-height: 320px;
+      min-height: 380px;  /* taller main chart */
+      max-height: 460px;
     }
     .deep-dive-chart {
       width: 100%;
@@ -478,7 +482,7 @@
       border: 1px solid #eee;
       padding: 8px 10px;
       font-size: 0.78rem;
-      max-height: 220px;
+      max-height: 260px;
       overflow: auto;
     }
     .deep-dive-table h5 {
@@ -536,6 +540,10 @@
         grid-template-columns: 1fr;
       }
       .deep-dive-chart-wrapper {
+        min-height: 340px;
+        max-height: 420px;
+      }
+      .deep-dive-trend-wrapper {
         min-height: 260px;
         max-height: 320px;
       }
@@ -558,14 +566,6 @@
       }
       .chart {
         height: 380px;
-      }
-      .deep-dive-trend-wrapper {
-        min-height: 180px;
-        max-height: 200px;
-      }
-      .deep-dive-chart-wrapper {
-        min-height: 240px;
-        max-height: 280px;
       }
       .top-right-wrap {
         margin-left: 0;
@@ -746,7 +746,7 @@
             </div>
             <div class="trend-info">
               Comparando a soma da segunda metade do período selecionado com a soma da primeira metade para cada dimensão.
-              Clique em um item para focar; clique em um segundo item para comparar no Deep Dive.
+              Clique em um item para focar. Use o seletor de comparação no Deep Dive para comparar até 3 outros itens.
             </div>
 
             <!-- RANKINGS -->
@@ -778,10 +778,49 @@
             <span>🔎 Deep Dive</span>
           </div>
           <div class="card">
+
+            <!-- Deep Dive filters: period + metric (mirrors main) -->
+            <div class="filters-row">
+              <span class="filters-label">Período</span>
+              <div class="range-buttons" id="ddRangeButtons">
+                <button class="range-btn" data-range="3M"><span>3M</span></button>
+                <button class="range-btn" data-range="6M"><span>6M</span></button>
+                <button class="range-btn" data-range="9M"><span>9M</span></button>
+                <button class="range-btn" data-range="1A"><span>1A</span></button>
+                <button class="range-btn" data-range="2A"><span>2A</span></button>
+                <button class="range-btn" data-range="3A"><span>3A</span></button>
+                <button class="range-btn" data-range="5A"><span>5A</span></button>
+                <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
+              </div>
+
+              <div class="top-right-wrap">
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="ddFromPeriod" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="ddToPeriod" />
+                <button class="btn-small" id="ddApplyCustom">Aplicar</button>
+                <button class="btn-small secondary" id="ddResetCustom">Reset</button>
+
+                <span class="field-label" style="margin-left:8px;">Métrica</span>
+                <button class="btn-small" id="ddBtnFaturamento">Faturamento</button>
+                <button class="btn-small secondary" id="ddBtnVolume">Volume</button>
+              </div>
+            </div>
+
+            <!-- Deep Dive compare selector -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Comparar</span>
+              <div class="field-group">
+                <label class="field-label" for="deepDiveCompare">Comparar com (máx. 3)</label>
+                <select id="deepDiveCompare" multiple size="4"></select>
+              </div>
+            </div>
+
             <p style="font-size:0.8rem;color:#4b5563;margin:0 0 6px;">
-              Clique em qualquer item das listas de Tendências para explorar os detalhes deste representante, cliente, estado ou categoria.
-              Clique em um segundo item para comparar (KPIs + linha de tendência). Comportamento interno (clientes / categorias) é sempre do foco principal.
+              Selecione um item nas listas de Tendências para definir o foco principal.
+              Use o seletor acima para comparar até 3 outros itens da mesma dimensão (Representante, Cliente, Estado ou Categoria).
             </p>
+
             <div class="deep-dive-layout">
               <div class="deep-dive-left">
                 <div class="deep-dive-kpis" id="deepDiveKpis"></div>
@@ -793,19 +832,22 @@
                 <div class="deep-dive-chart-wrapper">
                   <div id="deepDiveChart" class="deep-dive-chart"></div>
                 </div>
+              </div>
+
+              <div class="deep-dive-right">
+                <div class="deep-dive-info" id="deepDiveInfo">
+                  <div><strong>Nenhum item selecionado.</strong></div>
+                  <small>
+                    Use as listas de Tendências para escolher um foco (representante, cliente, estado ou categoria).
+                    O gráfico de linha mostra a evolução no tempo; o gráfico de pizza e as tabelas mostram a composição interna
+                    (clientes / categorias) para o foco principal.
+                  </small>
+                </div>
 
                 <div class="deep-dive-tables">
                   <div class="deep-dive-table" id="deepDiveTableClientes"></div>
                   <div class="deep-dive-table" id="deepDiveTableCategorias"></div>
                 </div>
-              </div>
-              <div class="deep-dive-info" id="deepDiveInfo">
-                <div><strong>Nenhum item selecionado.</strong></div>
-                <small>
-                  Use as listas de Tendências acima para escolher um foco.
-                  O gráfico de linha mostrará a evolução do foco ao longo do tempo (e, opcionalmente, um segundo item para comparação).
-                  O gráfico de pizza e as tabelas mostram a composição interna (clientes / categorias) do foco principal.
-                </small>
               </div>
             </div>
           </div>
@@ -850,8 +892,7 @@
       customTo: null,
       valueMode: "FATURAMENTO",
       valueLabel: "Faturamento",
-      // VIEW MODES: "GERAL", "CATEGORIA", "ESTADO", "CLIENTE", "REPRESENTANTE"
-      viewMode: "CATEGORIA",
+      viewMode: "CATEGORIA", // GERAL, CATEGORIA, ESTADO, CLIENTE, REPRESENTANTE
       filterClient: "ALL",
       filterRep: "ALL",
       filterState: "ALL",
@@ -864,8 +905,8 @@
       excludeLinha: "NONE",
       rankingDimension: "REPRESENTANTE",
       currentChart: null,
-      deepDivePrimary: null,
-      deepDiveSecondary: null
+      deepDiveFocus: null,          // { dimType, name }
+      deepDiveComparisons: []       // [name1, name2, ...] up to 3
     };
 
     function normalizeDesc(str) {
@@ -1057,82 +1098,131 @@
     }
 
     function initUI() {
-      const fromInput = document.getElementById("fromPeriod");
-      const toInput = document.getElementById("toPeriod");
+      const keys = state.allKeysSorted;
+      const firstKey = keys[0];
+      const lastKey = keys[keys.length - 1];
 
-      const firstKey = state.allKeysSorted[0];
-      const lastKey =
-        state.allKeysSorted[state.allKeysSorted.length - 1];
+      const fromInputTop = document.getElementById("fromPeriod");
+      const toInputTop = document.getElementById("toPeriod");
+      const fromInputDD = document.getElementById("ddFromPeriod");
+      const toInputDD = document.getElementById("ddToPeriod");
 
-      fromInput.min = firstKey;
-      fromInput.max = lastKey;
-      toInput.min = firstKey;
-      toInput.max = lastKey;
+      fromInputTop.min = firstKey;
+      fromInputTop.max = lastKey;
+      toInputTop.min = firstKey;
+      toInputTop.max = lastKey;
 
-      fromInput.value = firstKey;
-      toInput.value = lastKey;
+      fromInputDD.min = firstKey;
+      fromInputDD.max = lastKey;
+      toInputDD.min = firstKey;
+      toInputDD.max = lastKey;
 
       state.customFrom = firstKey;
       state.customTo = lastKey;
+
+      function syncDateInputs() {
+        const fromVal = state.customFrom || firstKey;
+        const toVal = state.customTo || lastKey;
+        fromInputTop.value = fromVal;
+        toInputTop.value = toVal;
+        fromInputDD.value = fromVal;
+        toInputDD.value = toVal;
+      }
+      syncDateInputs();
 
       const lastLabel =
         state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
       document.getElementById("updatedAt").textContent = lastLabel;
 
-      const rangeButtons = document.querySelectorAll(
+      const rangeButtonsMain = document.querySelectorAll(
         "#rangeButtons .range-btn"
       );
-      rangeButtons.forEach((btn) => {
+      const rangeButtonsDD = document.querySelectorAll(
+        "#ddRangeButtons .range-btn"
+      );
+
+      function updateActiveRangeButtons() {
+        const allBtns = [...rangeButtonsMain, ...rangeButtonsDD];
+        allBtns.forEach((b) => {
+          if (!b.dataset.range) return;
+          if (state.range === "CUSTOM") {
+            b.classList.remove("active");
+          } else {
+            b.classList.toggle("active", b.dataset.range === state.range);
+          }
+        });
+      }
+
+      function applyRange(rangeCode) {
+        state.range = rangeCode;
+        updateActiveRangeButtons();
+        updateAll();
+      }
+
+      rangeButtonsMain.forEach((btn) => {
         btn.addEventListener("click", () => {
-          rangeButtons.forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          state.range = btn.dataset.range || "ALL";
-          updateAll();
+          applyRange(btn.dataset.range || "ALL");
         });
       });
+      rangeButtonsDD.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          applyRange(btn.dataset.range || "ALL");
+        });
+      });
+
+      function handleCustomApply(fromVal, toVal) {
+        if (!fromVal || !toVal) {
+          alert("Selecione mês/ano inicial e final.");
+          return;
+        }
+        const all = state.allKeysSorted;
+        const fromIdx = all.indexOf(fromVal);
+        const toIdx = all.indexOf(toVal);
+        if (fromIdx === -1 || toIdx === -1 || fromIdx > toIdx) {
+          alert("Período inválido.");
+          return;
+        }
+        state.customFrom = fromVal;
+        state.customTo = toVal;
+        state.range = "CUSTOM";
+        updateActiveRangeButtons();
+        syncDateInputs();
+        updateAll();
+      }
 
       document
         .getElementById("applyCustom")
         .addEventListener("click", () => {
-          const fromVal = fromInput.value;
-          const toVal = toInput.value;
-          if (!fromVal || !toVal) return;
-
-          const all = state.allKeysSorted;
-          const fromIdx = all.indexOf(fromVal);
-          const toIdx = all.indexOf(toVal);
-          if (fromIdx === -1 || toIdx === -1 || fromIdx > toIdx) {
-            alert("Selecione um intervalo De/Até válido.");
-            return;
-          }
-          state.customFrom = fromVal;
-          state.customTo = toVal;
-          state.range = "CUSTOM";
-
-          rangeButtons.forEach((b) => b.classList.remove("active"));
-          updateAll();
+          handleCustomApply(fromInputTop.value, toInputTop.value);
         });
+      document
+        .getElementById("ddApplyCustom")
+        .addEventListener("click", () => {
+          handleCustomApply(fromInputDD.value, toInputDD.value);
+        });
+
+      function resetCustom() {
+        state.customFrom = firstKey;
+        state.customTo = lastKey;
+        state.range = "ALL";
+        syncDateInputs();
+        updateActiveRangeButtons();
+        updateAll();
+      }
 
       document
         .getElementById("resetCustom")
-        .addEventListener("click", () => {
-          fromInput.value = firstKey;
-          toInput.value = lastKey;
-          state.customFrom = firstKey;
-          state.customTo = lastKey;
-          state.range = "ALL";
-
-          rangeButtons.forEach((b) => {
-            b.classList.toggle("active", b.dataset.range === "ALL");
-          });
-
-          updateAll();
-        });
+        .addEventListener("click", resetCustom);
+      document
+        .getElementById("ddResetCustom")
+        .addEventListener("click", resetCustom);
 
       const btnFat = document.getElementById("btnFaturamento");
       const btnVol = document.getElementById("btnVolume");
       const btnFat2 = document.getElementById("trendModeFat");
       const btnVol2 = document.getElementById("trendModeVol");
+      const btnFat3 = document.getElementById("ddBtnFaturamento");
+      const btnVol3 = document.getElementById("ddBtnVolume");
 
       function setMode(mode) {
         state.valueMode = mode;
@@ -1141,11 +1231,11 @@
 
         const isFat = mode === "FATURAMENTO";
 
-        [btnFat, btnFat2].forEach((b) => {
+        [btnFat, btnFat2, btnFat3].forEach((b) => {
           if (!b) return;
           b.classList.toggle("secondary", !isFat);
         });
-        [btnVol, btnVol2].forEach((b) => {
+        [btnVol, btnVol2, btnVol3].forEach((b) => {
           if (!b) return;
           b.classList.toggle("secondary", isFat);
         });
@@ -1157,6 +1247,8 @@
       btnVol.addEventListener("click", () => setMode("VOLUME"));
       btnFat2.addEventListener("click", () => setMode("FATURAMENTO"));
       btnVol2.addEventListener("click", () => setMode("VOLUME"));
+      btnFat3.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol3.addEventListener("click", () => setMode("VOLUME"));
 
       const btnViewGeral = document.getElementById("btnViewGeral");
       const btnViewCat = document.getElementById("btnViewCategoria");
@@ -1194,28 +1286,24 @@
           state.filterClient = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("filterRep")
         .addEventListener("change", (e) => {
           state.filterRep = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("filterState")
         .addEventListener("change", (e) => {
           state.filterState = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("filterCategory")
         .addEventListener("change", (e) => {
           state.filterCategory = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("filterLinha")
         .addEventListener("change", (e) => {
@@ -1229,28 +1317,24 @@
           state.excludeClient = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("excludeRep")
         .addEventListener("change", (e) => {
           state.excludeRep = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("excludeState")
         .addEventListener("change", (e) => {
           state.excludeState = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("excludeCategory")
         .addEventListener("change", (e) => {
           state.excludeCategory = e.target.value;
           updateAll();
         });
-
       document
         .getElementById("excludeLinha")
         .addEventListener("change", (e) => {
@@ -1288,8 +1372,8 @@
         document.getElementById("rankingFallingTitle").textContent =
           "Perdendo espaço — " + dimLabel;
 
-        state.deepDivePrimary = null;
-        state.deepDiveSecondary = null;
+        state.deepDiveFocus = null;
+        state.deepDiveComparisons = [];
         renderDeepDive();
 
         updateAll();
@@ -1309,16 +1393,38 @@
       );
 
       btnTrendReset.addEventListener("click", () => {
-        state.deepDivePrimary = null;
-        state.deepDiveSecondary = null;
+        state.deepDiveFocus = null;
+        state.deepDiveComparisons = [];
         setRankingDimension("REPRESENTANTE");
         renderDeepDive();
       });
 
-      updateFilterOptions(getFilteredKeys());
+      const ddCompareSelect = document.getElementById("deepDiveCompare");
+      ddCompareSelect.addEventListener("change", (e) => {
+        const options = Array.from(e.target.options);
+        let selected = options.filter((o) => o.selected).map((o) => o.value);
+
+        if (selected.length > 3) {
+          alert("Selecione no máximo 3 itens para comparação.");
+          selected = selected.slice(0, 3);
+          options.forEach((o) => {
+            o.selected = selected.includes(o.value);
+          });
+        }
+
+        if (state.deepDiveFocus) {
+          const focusName = state.deepDiveFocus.name;
+          selected = selected.filter((n) => n !== focusName);
+        }
+
+        state.deepDiveComparisons = selected.slice(0, 3);
+        renderDeepDive();
+      });
+
       setView("CATEGORIA");
       setMode("FATURAMENTO");
       setRankingDimension("REPRESENTANTE");
+      updateActiveRangeButtons();
     }
 
     function refillSelect(selectId, values, allLabel, keyName, allValue = "ALL") {
@@ -1653,29 +1759,61 @@
     }
 
     function setDeepDive(dimType, name) {
-      const currentPrimary = state.deepDivePrimary;
-      const currentSecondary = state.deepDiveSecondary;
+      state.deepDiveFocus = { dimType, name };
+      state.deepDiveComparisons = [];
 
-      if (!currentPrimary) {
-        state.deepDivePrimary = { dimType, name };
-        state.deepDiveSecondary = null;
-      } else if (
-        currentPrimary.dimType === dimType &&
-        currentPrimary.name === name
-      ) {
-        if (currentSecondary) {
-          state.deepDiveSecondary = null;
-        } else {
-          state.deepDivePrimary = { dimType, name };
-        }
-      } else if (!currentSecondary) {
-        state.deepDiveSecondary = { dimType, name };
-      } else {
-        state.deepDivePrimary = { dimType, name };
-        state.deepDiveSecondary = null;
+      const select = document.getElementById("deepDiveCompare");
+      if (select) {
+        Array.from(select.options).forEach((o) => (o.selected = false));
       }
 
       renderDeepDive();
+    }
+
+    function computeEntitiesList(filteredKeys, dimType) {
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+      const names = new Set();
+      rows.forEach((r) => {
+        if (dimType === "REPRESENTANTE") {
+          if (r.representante) names.add(r.representante);
+        } else if (dimType === "CLIENTE") {
+          if (r.cliente) names.add(r.cliente);
+        } else if (dimType === "ESTADO") {
+          if (r.estado) names.add(r.estado);
+        } else if (dimType === "CATEGORIA") {
+          if (r.categoria) names.add(r.categoria);
+        }
+      });
+      return Array.from(names).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
+    }
+
+    function updateDeepDiveCompareSelect(filteredKeys) {
+      const select = document.getElementById("deepDiveCompare");
+      if (!select) return;
+
+      const dim = state.rankingDimension;
+      const names = computeEntitiesList(filteredKeys, dim);
+      const focus = state.deepDiveFocus;
+      const selected = new Set(state.deepDiveComparisons);
+
+      select.innerHTML = "";
+      names.forEach((name) => {
+        if (!name) return;
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        if (focus && name === focus.name) {
+          opt.selected = false;
+        } else {
+          opt.selected = selected.has(name);
+        }
+        select.appendChild(opt);
+      });
     }
 
     function updateRankings(filteredKeys) {
@@ -2171,17 +2309,17 @@
       tblCli.innerHTML = "";
       tblCat.innerHTML = "";
 
-      const primary = state.deepDivePrimary;
-      const secondary = state.deepDiveSecondary;
+      const focus = state.deepDiveFocus;
 
       const filteredKeys = getFilteredKeys();
-      if (!primary || !primary.name || !filteredKeys.length) {
+      if (!focus || !focus.name || !filteredKeys.length) {
         info.innerHTML = `
           <div><strong>Nenhum item selecionado.</strong></div>
           <small>
-            Use as listas de Tendências acima para escolher um foco.
-            O gráfico de linha mostrará a evolução do foco ao longo do tempo (e, opcionalmente, um segundo item para comparação).
-            O gráfico de pizza e as tabelas mostram a composição interna (clientes / categorias) do foco principal.
+            Use as listas de Tendências para escolher um foco
+            (representante, cliente, estado ou categoria). O gráfico de linha
+            mostrará a evolução ao longo do tempo; o gráfico de pizza e as tabelas
+            mostram a composição interna (clientes / categorias) do foco principal.
           </small>
         `;
         Plotly.purge(chartDiv);
@@ -2202,8 +2340,8 @@
       });
 
       const seriesPrimary = buildEntitySeries(
-        primary.dimType,
-        primary.name,
+        focus.dimType,
+        focus.name,
         filteredKeys
       );
       const statsPrimary = computeSeriesKpis(
@@ -2211,19 +2349,21 @@
         filteredKeys
       );
 
-      let seriesSecondary = null;
-      let statsSecondary = null;
-      if (secondary && secondary.name) {
-        seriesSecondary = buildEntitySeries(
-          secondary.dimType,
-          secondary.name,
+      const compNames = (state.deepDiveComparisons || []).filter(
+        (n) => n && n !== focus.name
+      );
+      const compSeries = [];
+      const compStats = [];
+
+      compNames.forEach((name) => {
+        const sVals = buildEntitySeries(
+          focus.dimType,
+          name,
           filteredKeys
         );
-        statsSecondary = computeSeriesKpis(
-          seriesSecondary,
-          filteredKeys
-        );
-      }
+        compSeries.push(sVals);
+        compStats.push(computeSeriesKpis(sVals, filteredKeys));
+      });
 
       const dimLabel = (dimType) =>
         dimType === "REPRESENTANTE"
@@ -2248,8 +2388,8 @@
       kpiCards.push(`
         <div class="deep-dive-kpi-item">
           <div class="deep-dive-kpi-title">${dimLabel(
-            primary.dimType
-          )}: ${primary.name}</div>
+            focus.dimType
+          )}: ${focus.name}</div>
           <div class="deep-dive-kpi-line">
             <span class="deep-dive-kpi-label">Total período</span>
             <span class="deep-dive-kpi-value">${formatVal(
@@ -2275,46 +2415,41 @@
         </div>
       `);
 
-      if (seriesSecondary && statsSecondary) {
-        const secShare =
+      compNames.forEach((name, idx) => {
+        const st = compStats[idx];
+        const share =
           companyTotal > 0
-            ? (
-                (statsSecondary.total / companyTotal) *
-                100
-              )
-                .toFixed(1)
-                .replace(".", ",") + "%"
+            ? ((st.total / companyTotal) * 100).toFixed(1).replace(".", ",") +
+              "%"
             : "—";
         kpiCards.push(`
           <div class="deep-dive-kpi-item">
-            <div class="deep-dive-kpi-title">${dimLabel(
-              secondary.dimType
-            )}: ${secondary.name}</div>
+            <div class="deep-dive-kpi-title">Comparar: ${name}</div>
             <div class="deep-dive-kpi-line">
               <span class="deep-dive-kpi-label">Total período</span>
               <span class="deep-dive-kpi-value">${formatVal(
-                statsSecondary.total
+                st.total
               )}</span>
             </div>
             <div class="deep-dive-kpi-line">
               <span class="deep-dive-kpi-label">Média mensal</span>
               <span class="deep-dive-kpi-value">${formatVal(
-                statsSecondary.mean
+                st.mean
               )}</span>
             </div>
             <div class="deep-dive-kpi-line">
               <span class="deep-dive-kpi-label">Meses com venda</span>
-              <span class="deep-dive-kpi-value">${
-                statsSecondary.active
-              } / ${statsSecondary.months}</span>
+              <span class="deep-dive-kpi-value">${st.active} / ${
+          st.months
+        }</span>
             </div>
             <div class="deep-dive-kpi-line">
               <span class="deep-dive-kpi-label">Participação</span>
-              <span class="deep-dive-kpi-value">${secShare}</span>
+              <span class="deep-dive-kpi-value">${share}</span>
             </div>
           </div>
         `);
-      }
+      });
 
       kpiDiv.innerHTML = kpiCards.join("");
 
@@ -2327,12 +2462,12 @@
           y: seriesPrimary,
           type: "scatter",
           mode: "lines+markers",
-          name: `${dimLabel(primary.dimType)} ${primary.name}`,
+          name: `${dimLabel(focus.dimType)} ${focus.name}`,
           line: {
             shape: "spline",
             width: 3,
             color: getColorForName(
-              `DD:${primary.dimType}:${primary.name}`
+              `DD:${focus.dimType}:${focus.name}`
             )
           },
           marker: {
@@ -2345,19 +2480,20 @@
         }
       ];
 
-      if (seriesSecondary && statsSecondary) {
+      compNames.forEach((name, idx) => {
+        const vals = compSeries[idx];
         tracesTrend.push({
           x: labels,
-          y: seriesSecondary,
+          y: vals,
           type: "scatter",
           mode: "lines+markers",
-          name: `${dimLabel(secondary.dimType)} ${secondary.name}`,
+          name: `Comparar: ${name}`,
           line: {
             shape: "spline",
             width: 3,
             dash: "dot",
             color: getColorForName(
-              `DD:${secondary.dimType}:${secondary.name}`
+              `DD:${focus.dimType}:${name}`
             )
           },
           marker: {
@@ -2368,7 +2504,7 @@
             ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
             : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
         });
-      }
+      });
 
       Plotly.react(
         trendDiv,
@@ -2417,23 +2553,21 @@
           : "Categoria";
 
       let infoHtml = `
-        <div><strong>${dimLabelFunc(primary.dimType)}: ${
-        primary.name
+        <div><strong>${dimLabelFunc(focus.dimType)}: ${
+        focus.name
       }</strong></div>
         <div>Total no período (foco principal): <strong>${formatVal(
           statsPrimary.total
         )}</strong></div>
       `;
-      if (secondary && statsSecondary) {
-        infoHtml += `<div>Comparando com: <strong>${dimLabelFunc(
-          secondary.dimType
-        )} ${secondary.name}</strong> — ${formatVal(
-          statsSecondary.total
-        )}</div>`;
+      if (compNames.length) {
+        infoHtml += `<div>Comparando com: <strong>${compNames.join(
+          ", "
+        )}</strong></div>`;
       }
 
-      if (primary.dimType === "REPRESENTANTE") {
-        const ch = computeClientHealthForRep(primary.name, filteredKeys);
+      if (focus.dimType === "REPRESENTANTE") {
+        const ch = computeClientHealthForRep(focus.name, filteredKeys);
         if (ch) {
           infoHtml += `<div>Saúde da carteira: <strong>Novos ${ch.novos}</strong> • <strong>Perdidos ${ch.perdidos}</strong> • <strong>Crescendo ${ch.crescendo}</strong> • <strong>Caindo ${ch.caindo}</strong> • <strong>Estáveis ${ch.estaveis}</strong> (total de ${ch.total} clientes)</div>`;
         }
@@ -2442,7 +2576,7 @@
       infoHtml += `
         <small>
           Distribuição interna considera o mesmo período e filtros da Nova Visão.
-          O gráfico de pizza e as tabelas abaixo sempre usam o foco principal (primeiro selecionado).
+          O gráfico de pizza e as tabelas sempre usam o foco principal (primeiro selecionado).
         </small>
       `;
       info.innerHTML = infoHtml;
@@ -2451,7 +2585,7 @@
         (r) =>
           keySet.has(r.key) &&
           rowPassesDimensionFilters(r) &&
-          matchesDim(r, primary.dimType, primary.name)
+          matchesDim(r, focus.dimType, focus.name)
       );
 
       if (!rows.length) {
@@ -2462,13 +2596,13 @@
       }
 
       let groupField, groupLabel;
-      if (primary.dimType === "REPRESENTANTE") {
+      if (focus.dimType === "REPRESENTANTE") {
         groupField = "cliente";
         groupLabel = "clientes";
-      } else if (primary.dimType === "CLIENTE") {
+      } else if (focus.dimType === "CLIENTE") {
         groupField = "categoria";
         groupLabel = "categorias";
-      } else if (primary.dimType === "ESTADO") {
+      } else if (focus.dimType === "ESTADO") {
         groupField = "categoria";
         groupLabel = "categorias";
       } else {
@@ -2512,7 +2646,7 @@
 
       const pieColors = labelsPie.map((lab) =>
         getColorForName(
-          `DDpie:${primary.dimType}:${primary.name}:${lab}`
+          `DDpie:${focus.dimType}:${focus.name}:${lab}`
         )
       );
 
@@ -2547,7 +2681,7 @@
       );
 
       function renderTableClientes() {
-        if (primary.dimType === "REPRESENTANTE") {
+        if (focus.dimType === "REPRESENTANTE") {
           const cliMap = new Map();
           rows.forEach((r) => {
             const c =
@@ -2575,17 +2709,17 @@
           });
           html += "</tbody></table>";
           tblCli.innerHTML = html;
-        } else if (primary.dimType === "CLIENTE") {
-          tblCli.innerHTML = `<h5>Cliente selecionado</h5><table><tbody><tr><td>${primary.name}</td></tr></tbody></table>`;
-        } else if (primary.dimType === "ESTADO") {
-          tblCli.innerHTML = `<h5>Estado selecionado</h5><table><tbody><tr><td>${primary.name}</td></tr></tbody></table>`;
+        } else if (focus.dimType === "CLIENTE") {
+          tblCli.innerHTML = `<h5>Cliente selecionado</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
+        } else if (focus.dimType === "ESTADO") {
+          tblCli.innerHTML = `<h5>Estado selecionado</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
         } else {
-          tblCli.innerHTML = `<h5>Categoria selecionada</h5><table><tbody><tr><td>${primary.name}</td></tr></tbody></table>`;
+          tblCli.innerHTML = `<h5>Categoria selecionada</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
         }
       }
 
       function renderTableCategorias() {
-        if (primary.dimType === "REPRESENTANTE") {
+        if (focus.dimType === "REPRESENTANTE") {
           const catMap = new Map();
           rows.forEach((r) => {
             const c =
@@ -2613,7 +2747,7 @@
           });
           html += "</tbody></table>";
           tblCat.innerHTML = html;
-        } else if (primary.dimType === "CLIENTE") {
+        } else if (focus.dimType === "CLIENTE") {
           const catMap = new Map();
           rows.forEach((r) => {
             const c =
@@ -2641,7 +2775,7 @@
           });
           html += "</tbody></table>";
           tblCat.innerHTML = html;
-        } else if (primary.dimType === "ESTADO") {
+        } else if (focus.dimType === "ESTADO") {
           const catMap = new Map();
           rows.forEach((r) => {
             const c =
@@ -2722,6 +2856,7 @@
         document.getElementById("metricVolSub").textContent = "—";
         clearRankings();
         Plotly.purge("chart");
+        updateDeepDiveCompareSelect(filteredKeys);
         renderDeepDive();
         return;
       }
@@ -2745,6 +2880,7 @@
         document.getElementById("metricVolSub").textContent = "—";
         clearRankings();
         Plotly.purge("chart");
+        updateDeepDiveCompareSelect(filteredKeys);
         renderDeepDive();
         return;
       }
@@ -2773,6 +2909,7 @@
       statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
 
       updateRankings(filteredKeys);
+      updateDeepDiveCompareSelect(filteredKeys);
       renderChart(filteredKeys, seriesMap);
       renderDeepDive();
     }

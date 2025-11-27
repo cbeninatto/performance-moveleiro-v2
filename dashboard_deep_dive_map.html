@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Deep Dive - Mapa de Clientes</title>
+  <title>Deep Dive · Mapa de Cidades</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Leaflet CSS -->
@@ -12,9 +12,6 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
-
-  <!-- D3 for CSV loading -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <style>
     :root {
@@ -126,7 +123,6 @@
     }
 
     .metric-btn {
-      position: relative;
       border: none;
       padding: 6px 12px;
       border-radius: 999px;
@@ -391,7 +387,7 @@
       <div class="card-header">
         <div class="card-header-titles">
           <h1>Deep Dive · Mapa de Cidades</h1>
-          <p>Visualização das cidades atendidas pelos representantes (a partir de clientes_relatorio_faturamento.csv)</p>
+          <p>Mesmos dados da Nova Visão Temporal (relatorio_faturamento.csv), agora projetados em mapa.</p>
         </div>
 
         <div class="metric-toggle">
@@ -443,14 +439,14 @@
           </div>
         </div>
 
-        <!-- Estado -->
+        <!-- Estado (opcional, independente do Nova Visão, mas útil no mapa) -->
         <div class="filter-group">
           <div class="filter-label">Estado</div>
           <select id="estado-filter">
             <option value="">Todos</option>
           </select>
           <div class="warning">
-            Os filtros replicam a lógica da <strong>Nova Visão Temporal</strong> para testes isolados.
+            Filtros de período e métrica são os mesmos da <strong>Nova Visão Temporal</strong>.
           </div>
         </div>
       </div>
@@ -458,7 +454,7 @@
       <div class="card-body">
         <div class="summary-row">
           <div class="summary-item">
-            <span class="summary-label">Total Métrica</span>
+            <span class="summary-label">Total da métrica</span>
             <span class="summary-value" id="total-metric">R$ 0,00</span>
           </div>
           <div class="summary-item">
@@ -476,7 +472,8 @@
     </div>
   </div>
 
-  <!-- Leaflet JS -->
+  <!-- D3 + Leaflet JS -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -487,26 +484,25 @@
     // ------------------------------
     // CONFIG: paths & column names
     // ------------------------------
-    const SALES_CSV_PATH = "data/clientes_relatorio_faturamento.csv";
-    const GEO_CSV_PATH = "data/cidades_br_geo.csv"; // CidadeCodigo,lat,lon
+    const SALES_CSV_PATH = "data/relatorio_faturamento.csv";
+    const CITY_GEO_CSV_PATH = "data/cidades_br_geo.csv";
 
-    // Adjust these if your CSV uses different names:
-    const COL_ESTADO_NOME = "EstadoNome";
-    const COL_ESTADO_CODIGO = "EstadoCodigo";
-    const COL_CIDADE_NOME = "CidadeNome";
-    const COL_CIDADE_CODIGO = "CidadeCodigo";
+    // Columns from relatorio_faturamento.csv
+    const COL_ESTADO = "Estado";
+    const COL_CIDADE = "Cidade";
     const COL_CLIENTE_CODIGO = "ClienteCodigo";
-    const COL_CLIENTE_NOME = "ClienteNome";
+    const COL_CLIENTE = "Cliente";
     const COL_QTD = "Quantidade";
     const COL_VALOR = "Valor";
     const COL_MES = "Mes";
     const COL_ANO = "Ano";
+    // Se quiser mais filtros depois: Representante, Categoria, etc.
 
     // ------------------------------
     // Global state
     // ------------------------------
     let rawSales = [];
-    let geoByCidade = new Map();
+    let geoByKey = new Map(); // key = "ESTADO|CIDADE" -> {lat, lon}
 
     let map = null;
     let cityLayer = null;
@@ -521,6 +517,9 @@
     // ------------------------------
     // Helpers
     // ------------------------------
+    function cityKey(estado, cidade) {
+      return (estado || "").trim().toUpperCase() + "|" + (cidade || "").trim().toUpperCase();
+    }
 
     function parseSalesRow(d) {
       const quantidade = Number(d[COL_QTD] || 0);
@@ -535,12 +534,10 @@
       }
 
       return {
-        estadoCodigo: d[COL_ESTADO_CODIGO],
-        estadoNome: d[COL_ESTADO_NOME],
-        cidadeCodigo: d[COL_CIDADE_CODIGO],
-        cidadeNome: d[COL_CIDADE_NOME],
+        estado: d[COL_ESTADO],
+        cidade: d[COL_CIDADE],
         clienteCodigo: d[COL_CLIENTE_CODIGO],
-        clienteNome: d[COL_CLIENTE_NOME],
+        clienteNome: d[COL_CLIENTE],
         quantidade,
         valor,
         ano,
@@ -552,10 +549,20 @@
     }
 
     function parseGeoRow(d) {
-      const cidadeCodigo = d["CidadeCodigo"];
+      const estado = d["Estado"];
+      const cidade = d["Cidade"];
       const lat = d.lat ? Number(d.lat) : Number(d.Lat) || Number(d.latitude);
       const lon = d.lon ? Number(d.lon) : Number(d.Lon) || Number(d.longitude);
-      return { cidadeCodigo, lat, lon };
+
+      if (!estado || !cidade || isNaN(lat) || isNaN(lon)) {
+        return null;
+      }
+
+      return {
+        key: cityKey(estado, cidade),
+        lat,
+        lon
+      };
     }
 
     function addMonths(base, delta) {
@@ -581,7 +588,6 @@
     // ------------------------------
     // Map init & update
     // ------------------------------
-
     function initMap() {
       map = L.map("sales-map").setView([-14.235, -51.9253], 4);
 
@@ -607,15 +613,13 @@
 
       const minRadius = 4;
       const maxRadius = 26;
-
       const bounds = [];
 
       cities.forEach((c) => {
         if (c.lat == null || c.lon == null) return;
 
         const metricValue = currentMetric === "valor" ? c.valor : c.quantidade;
-        const norm =
-          maxMetricValue > 0 ? metricValue / maxMetricValue : 0;
+        const norm = maxMetricValue > 0 ? metricValue / maxMetricValue : 0;
         const radius = minRadius + norm * (maxRadius - minRadius);
 
         const marker = L.circleMarker([c.lat, c.lon], {
@@ -626,7 +630,7 @@
 
         marker.bindPopup(
           `
-          <strong>${c.cidadeNome} - ${c.estadoNome}</strong><br/>
+          <strong>${c.cidade} - ${c.estado}</strong><br/>
           Faturamento: R$ ${c.valor.toLocaleString("pt-BR", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -649,10 +653,8 @@
     // ------------------------------
     // Filtering & aggregation
     // ------------------------------
-
     function filterAndAggregate() {
-      const estadoFilter =
-        document.getElementById("estado-filter").value || "";
+      const estadoFilter = document.getElementById("estado-filter").value || "";
       const start = currentStartDate;
       const end = currentEndDate;
 
@@ -663,17 +665,15 @@
         if (!row.date) continue;
         if (start && row.date < start) continue;
         if (end && row.date > end) continue;
-        if (estadoFilter && row.estadoNome !== estadoFilter) continue;
+        if (estadoFilter && row.estado !== estadoFilter) continue;
         if (row.lat == null || row.lon == null) continue;
 
-        const key = row.cidadeCodigo;
+        const key = cityKey(row.estado, row.cidade);
         let city = byCity.get(key);
         if (!city) {
           city = {
-            estadoNome: row.estadoNome,
-            estadoCodigo: row.estadoCodigo,
-            cidadeNome: row.cidadeNome,
-            cidadeCodigo: row.cidadeCodigo,
+            estado: row.estado,
+            cidade: row.cidade,
             lat: row.lat,
             lon: row.lon,
             valor: 0,
@@ -685,16 +685,15 @@
 
         city.valor += row.valor;
         city.quantidade += row.quantidade;
-        city._clientesSet.add(row.clienteCodigo);
-
-        clientsSet.add(row.clienteCodigo);
+        if (row.clienteCodigo) {
+          city._clientesSet.add(row.clienteCodigo);
+          clientsSet.add(row.clienteCodigo);
+        }
       }
 
       const aggregated = Array.from(byCity.values()).map((c) => ({
-        estadoNome: c.estadoNome,
-        estadoCodigo: c.estadoCodigo,
-        cidadeNome: c.cidadeNome,
-        cidadeCodigo: c.cidadeCodigo,
+        estado: c.estado,
+        cidade: c.cidade,
         lat: c.lat,
         lon: c.lon,
         valor: c.valor,
@@ -703,8 +702,7 @@
       }));
 
       const totalMetric = aggregated.reduce(
-        (acc, c) =>
-          acc + (currentMetric === "valor" ? c.valor : c.quantidade),
+        (acc, c) => acc + (currentMetric === "valor" ? c.valor : c.quantidade),
         0
       );
       const totalCities = aggregated.length;
@@ -730,15 +728,12 @@
           totalMetric.toLocaleString("pt-BR");
       }
 
-      totalCitiesEl.textContent =
-        totalCities.toLocaleString("pt-BR");
-      totalClientsEl.textContent =
-        totalClients.toLocaleString("pt-BR");
+      totalCitiesEl.textContent = totalCities.toLocaleString("pt-BR");
+      totalClientsEl.textContent = totalClients.toLocaleString("pt-BR");
     }
 
     function updateAll() {
-      const { aggregated, totalMetric, totalCities, totalClients } =
-        filterAndAggregate();
+      const { aggregated, totalMetric, totalCities, totalClients } = filterAndAggregate();
       updateSummary(totalMetric, totalCities, totalClients);
       updateMapMarkers(aggregated);
     }
@@ -746,7 +741,6 @@
     // ------------------------------
     // Period controls
     // ------------------------------
-
     function applyQuickPeriod(code) {
       if (!availableMinDate || !availableMaxDate) return;
 
@@ -822,9 +816,7 @@
         .querySelectorAll(".period-btn")
         .forEach((b) => b.classList.remove("active"));
 
-      const tudoBtn = document.querySelector(
-        '.period-btn[data-period="TUDO"]'
-      );
+      const tudoBtn = document.querySelector('.period-btn[data-period="TUDO"]');
       if (tudoBtn) tudoBtn.classList.add("active");
 
       updateAll();
@@ -833,40 +825,33 @@
     // ------------------------------
     // Event wiring
     // ------------------------------
-
     function setupEventHandlers() {
       // Métrica
-      document
-        .querySelectorAll(".metric-btn")
-        .forEach((btn) => {
-          btn.addEventListener("click", () => {
-            document
-              .querySelectorAll(".metric-btn")
-              .forEach((b) => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentMetric =
-              btn.dataset.metric === "quantidade"
-                ? "quantidade"
-                : "valor";
-            updateAll();
-          });
+      document.querySelectorAll(".metric-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".metric-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          currentMetric =
+            btn.dataset.metric === "quantidade" ? "quantidade" : "valor";
+          updateAll();
         });
+      });
 
       // Período rápido
-      document
-        .querySelectorAll(".period-btn")
-        .forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const code = btn.dataset.period;
-            document
-              .querySelectorAll(".period-btn")
-              .forEach((b) => b.classList.remove("active"));
-            btn.classList.add("active");
-            applyQuickPeriod(code);
-            syncMonthInputs();
-            updateAll();
-          });
+      document.querySelectorAll(".period-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const code = btn.dataset.period;
+          document
+            .querySelectorAll(".period-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          applyQuickPeriod(code);
+          syncMonthInputs();
+          updateAll();
         });
+      });
 
       // Aplicar / Reset
       document
@@ -887,12 +872,11 @@
     // ------------------------------
     // Data loading & init
     // ------------------------------
-
     function populateEstadoFilter() {
       const select = document.getElementById("estado-filter");
       const estados = new Set(
         rawSales
-          .map((r) => r.estadoNome)
+          .map((r) => r.estado)
           .filter((v) => v != null && v !== "")
       );
 
@@ -933,7 +917,8 @@
 
     function attachGeoToSales() {
       for (const row of rawSales) {
-        const geo = geoByCidade.get(row.cidadeCodigo);
+        const key = cityKey(row.estado, row.cidade);
+        const geo = geoByKey.get(key);
         if (geo) {
           row.lat = geo.lat;
           row.lon = geo.lon;
@@ -944,18 +929,14 @@
     async function loadData() {
       const [salesRaw, geoRaw] = await Promise.all([
         d3.csv(SALES_CSV_PATH, parseSalesRow),
-        d3.csv(GEO_CSV_PATH, parseGeoRow)
+        d3.csv(CITY_GEO_CSV_PATH)
       ]);
 
       rawSales = salesRaw;
-
-      geoRaw.forEach((g) => {
-        if (!g.cidadeCodigo) return;
-        if (g.lat == null || g.lon == null) return;
-        geoByCidade.set(g.cidadeCodigo, {
-          lat: g.lat,
-          lon: g.lon
-        });
+      geoRaw.forEach((d) => {
+        const parsed = parseGeoRow(d);
+        if (!parsed) return;
+        geoByKey.set(parsed.key, { lat: parsed.lat, lon: parsed.lon });
       });
 
       attachGeoToSales();
@@ -963,9 +944,7 @@
       populateEstadoFilter();
 
       // Default: Tudo
-      const tudoBtn = document.querySelector(
-        '.period-btn[data-period="TUDO"]'
-      );
+      const tudoBtn = document.querySelector('.period-btn[data-period="TUDO"]');
       if (tudoBtn) tudoBtn.classList.add("active");
       syncMonthInputs();
 
@@ -975,7 +954,6 @@
     // ------------------------------
     // Bootstrap
     // ------------------------------
-
     (function main() {
       initMap();
       setupEventHandlers();

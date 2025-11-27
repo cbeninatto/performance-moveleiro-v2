@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Deep Dive - Mapa de Clientes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <!-- D3 for CSV loading -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    :root {
+      --bg-body: #020617;
+      --bg-card: #020617;
+      --bg-elevated: #030712;
+      --border-subtle: #1f2937;
+      --border-strong: #4b5563;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --accent-strong: #0ea5e9;
+      --text-main: #e5e7eb;
+      --text-soft: #9ca3af;
+      --text-muted: #6b7280;
+      --danger: #f97373;
+      --radius-lg: 16px;
+      --radius-pill: 9999px;
+      --shadow-strong: 0 22px 55px rgba(15, 23, 42, 0.85);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 50%, #000 100%);
+      color: var(--text-main);
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 1200px;
+      background: linear-gradient(
+        145deg,
+        rgba(15, 23, 42, 0.98),
+        rgba(15, 23, 42, 0.96),
+        rgba(3, 7, 18, 0.98)
+      );
+      border-radius: 24px;
+      padding: 20px 24px 24px;
+      box-shadow: var(--shadow-strong);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      backdrop-filter: blur(16px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+    }
+
+    .card-header-titles h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header-titles h1::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #22c55e 0, #16a34a 40%, #16a34a00 70%);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.95);
+    }
+
+    .card-header-titles p {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .metric-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .metric-toggle-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .metric-toggle-group {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #0f172a, #020617);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    .metric-btn {
+      position: relative;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-width: 90px;
+    }
+
+    .metric-btn.active {
+      color: #f9fafb;
+      background: radial-gradient(circle at top left, #0ea5e9, #0369a1);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.7),
+        0 12px 30px rgba(8, 47, 73, 0.9);
+    }
+
+    .metric-btn:not(.active):hover {
+      color: #e5e7eb;
+      background: rgba(31, 41, 55, 0.8);
+    }
+
+    .card-filters {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) minmax(0, 0.9fr);
+      gap: 16px;
+      padding: 16px 0 18px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.75);
+    }
+
+    @media (max-width: 960px) {
+      .card-filters {
+        grid-template-columns: 1fr;
+      }
+
+      .card-header {
+        flex-direction: column;
+      }
+
+      .metric-toggle {
+        justify-content: space-between;
+        width: 100%;
+      }
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .period-btn {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      background: radial-gradient(circle at top left, #020617, #020617);
+      color: var(--text-soft);
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .period-btn:hover {
+      border-color: var(--accent);
+      color: #e5e7eb;
+      background: radial-gradient(circle at top left, #020617, #0b1120);
+    }
+
+    .period-btn.active {
+      border-color: var(--accent-strong);
+      background: radial-gradient(circle at top left, #0ea5e9, #0369a1);
+      color: #f9fafb;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.7),
+        0 12px 35px rgba(8, 47, 73, 0.9);
+    }
+
+    .date-range {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .date-range-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .date-range-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .date-range-inputs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .date-range-inputs span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    input[type="month"] {
+      background: radial-gradient(circle at top left, #020617, #020617);
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      padding: 6px 10px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      outline: none;
+      min-width: 130px;
+    }
+
+    input[type="month"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.8);
+    }
+
+    .range-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-left: 4px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: radial-gradient(circle at top left, #020617, #020617);
+      color: var(--text-soft);
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      border-color: var(--accent-strong);
+      color: #f9fafb;
+      background: radial-gradient(circle at top left, #0ea5e9, #0369a1);
+      box-shadow: 0 12px 30px rgba(8, 47, 73, 0.85);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-muted {
+      border-color: rgba(55, 65, 81, 0.9);
+      color: var(--text-muted);
+    }
+
+    .btn-muted:hover {
+      border-color: rgba(107, 114, 128, 0.9);
+      color: var(--text-main);
+    }
+
+    select {
+      background: radial-gradient(circle at top left, #020617, #020617);
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      padding: 6px 10px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.8);
+    }
+
+    .card-body {
+      padding-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .summary-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .summary-item {
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top left, #020617, #020617);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .summary-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+    }
+
+    .summary-value {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    #sales-map {
+      margin-top: 4px;
+      height: 480px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      box-shadow: 0 22px 45px rgba(15, 23, 42, 0.9);
+    }
+
+    .leaflet-container {
+      background: #020617;
+    }
+
+    .warning {
+      margin-top: 6px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .warning strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-titles">
+          <h1>Deep Dive · Mapa de Cidades</h1>
+          <p>Visualização das cidades atendidas pelos representantes (a partir de clientes_relatorio_faturamento.csv)</p>
+        </div>
+
+        <div class="metric-toggle">
+          <div class="metric-toggle-label">Métrica</div>
+          <div class="metric-toggle-group">
+            <button class="metric-btn active" data-metric="valor">
+              Faturamento
+            </button>
+            <button class="metric-btn" data-metric="quantidade">
+              Volume
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-filters">
+        <!-- Período rápido -->
+        <div class="filter-group">
+          <div class="filter-label">Período</div>
+          <div class="pill-group">
+            <button class="period-btn" data-period="3M">3M</button>
+            <button class="period-btn" data-period="6M">6M</button>
+            <button class="period-btn" data-period="9M">9M</button>
+            <button class="period-btn" data-period="1A">1A</button>
+            <button class="period-btn" data-period="2A">2A</button>
+            <button class="period-btn" data-period="3A">3A</button>
+            <button class="period-btn" data-period="5A">5A</button>
+            <button class="period-btn" data-period="TUDO">Tudo</button>
+          </div>
+        </div>
+
+        <!-- Intervalo personalizado -->
+        <div class="filter-group">
+          <div class="filter-label">Intervalo personalizado</div>
+          <div class="date-range">
+            <div class="date-range-block">
+              <span class="date-range-label">De / Até</span>
+              <div class="date-range-inputs">
+                <input type="month" id="from-month" />
+                <span>até</span>
+                <input type="month" id="to-month" />
+              </div>
+            </div>
+
+            <div class="range-actions">
+              <button id="apply-range" class="btn btn-primary">Aplicar</button>
+              <button id="reset-range" class="btn btn-muted">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado -->
+        <div class="filter-group">
+          <div class="filter-label">Estado</div>
+          <select id="estado-filter">
+            <option value="">Todos</option>
+          </select>
+          <div class="warning">
+            Os filtros replicam a lógica da <strong>Nova Visão Temporal</strong> para testes isolados.
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="summary-row">
+          <div class="summary-item">
+            <span class="summary-label">Total Métrica</span>
+            <span class="summary-value" id="total-metric">R$ 0,00</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Cidades atendidas</span>
+            <span class="summary-value" id="total-cities">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Clientes únicos</span>
+            <span class="summary-value" id="total-clients">0</span>
+          </div>
+        </div>
+
+        <div id="sales-map"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    // ------------------------------
+    // CONFIG: paths & column names
+    // ------------------------------
+    const SALES_CSV_PATH = "data/clientes_relatorio_faturamento.csv";
+    const GEO_CSV_PATH = "data/cidades_br_geo.csv"; // CidadeCodigo,lat,lon
+
+    // Adjust these if your CSV uses different names:
+    const COL_ESTADO_NOME = "EstadoNome";
+    const COL_ESTADO_CODIGO = "EstadoCodigo";
+    const COL_CIDADE_NOME = "CidadeNome";
+    const COL_CIDADE_CODIGO = "CidadeCodigo";
+    const COL_CLIENTE_CODIGO = "ClienteCodigo";
+    const COL_CLIENTE_NOME = "ClienteNome";
+    const COL_QTD = "Quantidade";
+    const COL_VALOR = "Valor";
+    const COL_MES = "Mes";
+    const COL_ANO = "Ano";
+
+    // ------------------------------
+    // Global state
+    // ------------------------------
+    let rawSales = [];
+    let geoByCidade = new Map();
+
+    let map = null;
+    let cityLayer = null;
+
+    let availableMinDate = null;
+    let availableMaxDate = null;
+    let currentStartDate = null;
+    let currentEndDate = null;
+
+    let currentMetric = "valor"; // "valor" | "quantidade"
+
+    // ------------------------------
+    // Helpers
+    // ------------------------------
+
+    function parseSalesRow(d) {
+      const quantidade = Number(d[COL_QTD] || 0);
+      const valor = Number(d[COL_VALOR] || 0);
+
+      const ano = d[COL_ANO] ? Number(d[COL_ANO]) : null;
+      const mes = d[COL_MES] ? Number(d[COL_MES]) : null;
+
+      let date = null;
+      if (ano && mes) {
+        date = new Date(ano, mes - 1, 1);
+      }
+
+      return {
+        estadoCodigo: d[COL_ESTADO_CODIGO],
+        estadoNome: d[COL_ESTADO_NOME],
+        cidadeCodigo: d[COL_CIDADE_CODIGO],
+        cidadeNome: d[COL_CIDADE_NOME],
+        clienteCodigo: d[COL_CLIENTE_CODIGO],
+        clienteNome: d[COL_CLIENTE_NOME],
+        quantidade,
+        valor,
+        ano,
+        mes,
+        date,
+        lat: null,
+        lon: null
+      };
+    }
+
+    function parseGeoRow(d) {
+      const cidadeCodigo = d["CidadeCodigo"];
+      const lat = d.lat ? Number(d.lat) : Number(d.Lat) || Number(d.latitude);
+      const lon = d.lon ? Number(d.lon) : Number(d.Lon) || Number(d.longitude);
+      return { cidadeCodigo, lat, lon };
+    }
+
+    function addMonths(base, delta) {
+      const d = new Date(base.getTime());
+      d.setMonth(d.getMonth() + delta);
+      return d;
+    }
+
+    function toMonthInputValue(date) {
+      if (!date) return "";
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      return `${y}-${m}`;
+    }
+
+    function fromMonthInputValue(value) {
+      if (!value) return null;
+      const [year, month] = value.split("-").map(Number);
+      if (!year || !month) return null;
+      return new Date(year, month - 1, 1);
+    }
+
+    // ------------------------------
+    // Map init & update
+    // ------------------------------
+
+    function initMap() {
+      map = L.map("sales-map").setView([-14.235, -51.9253], 4);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+
+      cityLayer = L.layerGroup().addTo(map);
+    }
+
+    function updateMapMarkers(cities) {
+      if (!cityLayer) return;
+
+      cityLayer.clearLayers();
+      if (!cities || !cities.length) return;
+
+      let maxMetricValue = 0;
+      for (const c of cities) {
+        const value = currentMetric === "valor" ? c.valor : c.quantidade;
+        if (value > maxMetricValue) maxMetricValue = value;
+      }
+
+      const minRadius = 4;
+      const maxRadius = 26;
+
+      const bounds = [];
+
+      cities.forEach((c) => {
+        if (c.lat == null || c.lon == null) return;
+
+        const metricValue = currentMetric === "valor" ? c.valor : c.quantidade;
+        const norm =
+          maxMetricValue > 0 ? metricValue / maxMetricValue : 0;
+        const radius = minRadius + norm * (maxRadius - minRadius);
+
+        const marker = L.circleMarker([c.lat, c.lon], {
+          radius,
+          weight: 1,
+          fillOpacity: 0.6
+        });
+
+        marker.bindPopup(
+          `
+          <strong>${c.cidadeNome} - ${c.estadoNome}</strong><br/>
+          Faturamento: R$ ${c.valor.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}<br/>
+          Volume: ${c.quantidade.toLocaleString("pt-BR")}<br/>
+          Clientes únicos: ${c.clientesCount.toLocaleString("pt-BR")}
+        `
+        );
+
+        marker.addTo(cityLayer);
+        bounds.push([c.lat, c.lon]);
+      });
+
+      if (bounds.length) {
+        const latLngBounds = L.latLngBounds(bounds);
+        map.fitBounds(latLngBounds.pad(0.2));
+      }
+    }
+
+    // ------------------------------
+    // Filtering & aggregation
+    // ------------------------------
+
+    function filterAndAggregate() {
+      const estadoFilter =
+        document.getElementById("estado-filter").value || "";
+      const start = currentStartDate;
+      const end = currentEndDate;
+
+      const byCity = new Map();
+      const clientsSet = new Set();
+
+      for (const row of rawSales) {
+        if (!row.date) continue;
+        if (start && row.date < start) continue;
+        if (end && row.date > end) continue;
+        if (estadoFilter && row.estadoNome !== estadoFilter) continue;
+        if (row.lat == null || row.lon == null) continue;
+
+        const key = row.cidadeCodigo;
+        let city = byCity.get(key);
+        if (!city) {
+          city = {
+            estadoNome: row.estadoNome,
+            estadoCodigo: row.estadoCodigo,
+            cidadeNome: row.cidadeNome,
+            cidadeCodigo: row.cidadeCodigo,
+            lat: row.lat,
+            lon: row.lon,
+            valor: 0,
+            quantidade: 0,
+            _clientesSet: new Set()
+          };
+          byCity.set(key, city);
+        }
+
+        city.valor += row.valor;
+        city.quantidade += row.quantidade;
+        city._clientesSet.add(row.clienteCodigo);
+
+        clientsSet.add(row.clienteCodigo);
+      }
+
+      const aggregated = Array.from(byCity.values()).map((c) => ({
+        estadoNome: c.estadoNome,
+        estadoCodigo: c.estadoCodigo,
+        cidadeNome: c.cidadeNome,
+        cidadeCodigo: c.cidadeCodigo,
+        lat: c.lat,
+        lon: c.lon,
+        valor: c.valor,
+        quantidade: c.quantidade,
+        clientesCount: c._clientesSet.size
+      }));
+
+      const totalMetric = aggregated.reduce(
+        (acc, c) =>
+          acc + (currentMetric === "valor" ? c.valor : c.quantidade),
+        0
+      );
+      const totalCities = aggregated.length;
+      const totalClients = clientsSet.size;
+
+      return { aggregated, totalMetric, totalCities, totalClients };
+    }
+
+    function updateSummary(totalMetric, totalCities, totalClients) {
+      const totalMetricEl = document.getElementById("total-metric");
+      const totalCitiesEl = document.getElementById("total-cities");
+      const totalClientsEl = document.getElementById("total-clients");
+
+      if (currentMetric === "valor") {
+        totalMetricEl.textContent =
+          "R$ " +
+          totalMetric.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+      } else {
+        totalMetricEl.textContent =
+          totalMetric.toLocaleString("pt-BR");
+      }
+
+      totalCitiesEl.textContent =
+        totalCities.toLocaleString("pt-BR");
+      totalClientsEl.textContent =
+        totalClients.toLocaleString("pt-BR");
+    }
+
+    function updateAll() {
+      const { aggregated, totalMetric, totalCities, totalClients } =
+        filterAndAggregate();
+      updateSummary(totalMetric, totalCities, totalClients);
+      updateMapMarkers(aggregated);
+    }
+
+    // ------------------------------
+    // Period controls
+    // ------------------------------
+
+    function applyQuickPeriod(code) {
+      if (!availableMinDate || !availableMaxDate) return;
+
+      const max = availableMaxDate;
+      let start = availableMinDate;
+
+      switch (code) {
+        case "3M":
+          start = addMonths(max, -2);
+          break;
+        case "6M":
+          start = addMonths(max, -5);
+          break;
+        case "9M":
+          start = addMonths(max, -8);
+          break;
+        case "1A":
+          start = addMonths(max, -11);
+          break;
+        case "2A":
+          start = addMonths(max, -23);
+          break;
+        case "3A":
+          start = addMonths(max, -35);
+          break;
+        case "5A":
+          start = addMonths(max, -59);
+          break;
+        case "TUDO":
+        default:
+          start = availableMinDate;
+          break;
+      }
+
+      currentStartDate = start;
+      currentEndDate = max;
+    }
+
+    function syncMonthInputs() {
+      const fromInput = document.getElementById("from-month");
+      const toInput = document.getElementById("to-month");
+      fromInput.value = toMonthInputValue(currentStartDate);
+      toInput.value = toMonthInputValue(currentEndDate);
+    }
+
+    function applyCustomRange() {
+      const fromInput = document.getElementById("from-month");
+      const toInput = document.getElementById("to-month");
+
+      const fromDate = fromMonthInputValue(fromInput.value);
+      const toDate = fromMonthInputValue(toInput.value);
+
+      if (!fromDate || !toDate) return;
+      if (fromDate > toDate) return;
+
+      currentStartDate = fromDate;
+      currentEndDate = toDate;
+
+      // Clear quick period selection
+      document
+        .querySelectorAll(".period-btn")
+        .forEach((b) => b.classList.remove("active"));
+
+      updateAll();
+    }
+
+    function resetRange() {
+      currentStartDate = availableMinDate;
+      currentEndDate = availableMaxDate;
+      syncMonthInputs();
+
+      document
+        .querySelectorAll(".period-btn")
+        .forEach((b) => b.classList.remove("active"));
+
+      const tudoBtn = document.querySelector(
+        '.period-btn[data-period="TUDO"]'
+      );
+      if (tudoBtn) tudoBtn.classList.add("active");
+
+      updateAll();
+    }
+
+    // ------------------------------
+    // Event wiring
+    // ------------------------------
+
+    function setupEventHandlers() {
+      // Métrica
+      document
+        .querySelectorAll(".metric-btn")
+        .forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll(".metric-btn")
+              .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentMetric =
+              btn.dataset.metric === "quantidade"
+                ? "quantidade"
+                : "valor";
+            updateAll();
+          });
+        });
+
+      // Período rápido
+      document
+        .querySelectorAll(".period-btn")
+        .forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const code = btn.dataset.period;
+            document
+              .querySelectorAll(".period-btn")
+              .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            applyQuickPeriod(code);
+            syncMonthInputs();
+            updateAll();
+          });
+        });
+
+      // Aplicar / Reset
+      document
+        .getElementById("apply-range")
+        .addEventListener("click", applyCustomRange);
+      document
+        .getElementById("reset-range")
+        .addEventListener("click", resetRange);
+
+      // Estado
+      document
+        .getElementById("estado-filter")
+        .addEventListener("change", () => {
+          updateAll();
+        });
+    }
+
+    // ------------------------------
+    // Data loading & init
+    // ------------------------------
+
+    function populateEstadoFilter() {
+      const select = document.getElementById("estado-filter");
+      const estados = new Set(
+        rawSales
+          .map((r) => r.estadoNome)
+          .filter((v) => v != null && v !== "")
+      );
+
+      const sorted = Array.from(estados).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
+
+      sorted.forEach((estado) => {
+        const opt = document.createElement("option");
+        opt.value = estado;
+        opt.textContent = estado;
+        select.appendChild(opt);
+      });
+    }
+
+    function computeDateRange() {
+      const dates = rawSales
+        .map((r) => r.date)
+        .filter((d) => d instanceof Date && !isNaN(d.getTime()));
+      if (!dates.length) return;
+
+      availableMinDate = new Date(
+        Math.min.apply(
+          null,
+          dates.map((d) => d.getTime())
+        )
+      );
+      availableMaxDate = new Date(
+        Math.max.apply(
+          null,
+          dates.map((d) => d.getTime())
+        )
+      );
+
+      currentStartDate = availableMinDate;
+      currentEndDate = availableMaxDate;
+    }
+
+    function attachGeoToSales() {
+      for (const row of rawSales) {
+        const geo = geoByCidade.get(row.cidadeCodigo);
+        if (geo) {
+          row.lat = geo.lat;
+          row.lon = geo.lon;
+        }
+      }
+    }
+
+    async function loadData() {
+      const [salesRaw, geoRaw] = await Promise.all([
+        d3.csv(SALES_CSV_PATH, parseSalesRow),
+        d3.csv(GEO_CSV_PATH, parseGeoRow)
+      ]);
+
+      rawSales = salesRaw;
+
+      geoRaw.forEach((g) => {
+        if (!g.cidadeCodigo) return;
+        if (g.lat == null || g.lon == null) return;
+        geoByCidade.set(g.cidadeCodigo, {
+          lat: g.lat,
+          lon: g.lon
+        });
+      });
+
+      attachGeoToSales();
+      computeDateRange();
+      populateEstadoFilter();
+
+      // Default: Tudo
+      const tudoBtn = document.querySelector(
+        '.period-btn[data-period="TUDO"]'
+      );
+      if (tudoBtn) tudoBtn.classList.add("active");
+      syncMonthInputs();
+
+      updateAll();
+    }
+
+    // ------------------------------
+    // Bootstrap
+    // ------------------------------
+
+    (function main() {
+      initMap();
+      setupEventHandlers();
+      loadData().catch((err) => {
+        console.error("Erro ao carregar dados:", err);
+      });
+    })();
+  </script>
+</body>
+</html>

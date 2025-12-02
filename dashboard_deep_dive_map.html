@@ -374,6 +374,29 @@
     }
 
     .leaflet-container { background: #020617; }
+
+    /* Legend */
+    #map-legend {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #map-legend span.bin {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #map-legend span.dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
   </style>
 </head>
 <body>
@@ -475,6 +498,27 @@
           </div>
 
           <div id="sales-map"></div>
+
+          <!-- Legend -->
+          <div id="map-legend">
+            <span style="text-transform:uppercase; letter-spacing:0.12em;">Faixas de cor</span>
+            <span class="bin">
+              <span class="dot" id="legend-dot-0" style="background:#22c55e;"></span>
+              <span id="legend-bin-0"></span>
+            </span>
+            <span class="bin">
+              <span class="dot" id="legend-dot-1" style="background:#eab308;"></span>
+              <span id="legend-bin-1"></span>
+            </span>
+            <span class="bin">
+              <span class="dot" id="legend-dot-2" style="background:#f97316;"></span>
+              <span id="legend-bin-2"></span>
+            </span>
+            <span class="bin">
+              <span class="dot" id="legend-dot-3" style="background:#ef4444;"></span>
+              <span id="legend-bin-3"></span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -507,6 +551,29 @@
     const COL_REP_CODIGO = "RepresentanteCodigo";
 
     // ------------------------------
+    // Binning config (edit as needed)
+    // ------------------------------
+
+    // Faturamento bins (R$)
+    const VALUE_BINS = [
+      { min: 1_000_000, color: "#22c55e", label: "R$ 1.000.000+" },          // Green
+      { min: 500_000,   color: "#eab308", label: "R$ 500.000 - 999.999" },   // Yellow
+      { min: 250_000,   color: "#f97316", label: "R$ 250.000 - 499.999" },   // Orange
+      { min: 0,         color: "#ef4444", label: "R$ 0 - 249.999" }          // Red
+    ];
+
+    // Volume bins (Quantidade)
+    const VOLUME_BINS = [
+      { min: 10_000, color: "#22c55e", label: "10.000+" },          // Green
+      { min: 5_000,  color: "#eab308", label: "5.000 - 9.999" },    // Yellow
+      { min: 2_500,  color: "#f97316", label: "2.500 - 4.999" },    // Orange
+      { min: 0,      color: "#ef4444", label: "0 - 2.499" }         // Red
+    ];
+
+    // Base radius for all dots
+    const BASE_RADIUS = 7;
+
+    // ------------------------------
     // Global state
     // ------------------------------
     let rawSales = [];
@@ -516,6 +583,7 @@
     let cityLayer = null;
 
     let availableMinDate = null;
+    let availableMaxDate = null;
     let currentStartDate = null;
     let currentEndDate = null;
 
@@ -607,6 +675,14 @@
       return new Date(year, month - 1, 1);
     }
 
+    function getMetricBin(value) {
+      const bins = currentMetric === "valor" ? VALUE_BINS : VOLUME_BINS;
+      for (const bin of bins) {
+        if (value >= bin.min) return bin;
+      }
+      return bins[bins.length - 1];
+    }
+
     // ------------------------------
     // Map init & update
     // ------------------------------
@@ -627,27 +703,20 @@
       cityLayer.clearLayers();
       if (!cities || !cities.length) return;
 
-      let maxMetricValue = 0;
-      for (const c of cities) {
-        const value = currentMetric === "valor" ? c.valor : c.quantidade;
-        if (value > maxMetricValue) maxMetricValue = value;
-      }
-
-      const minRadius = 4;
-      const maxRadius = 26;
       const bounds = [];
 
       cities.forEach((c) => {
         if (c.lat == null || c.lon == null) return;
 
         const metricValue = currentMetric === "valor" ? c.valor : c.quantidade;
-        const norm = maxMetricValue > 0 ? metricValue / maxMetricValue : 0;
-        const radius = minRadius + norm * (maxRadius - minRadius);
+        const bin = getMetricBin(metricValue);
 
         const marker = L.circleMarker([c.lat, c.lon], {
-          radius,
-          weight: 1,
-          fillOpacity: 0.6
+          radius: BASE_RADIUS,
+          color: bin.color,
+          weight: 1.5,
+          fillColor: bin.color,
+          fillOpacity: 0.7
         });
 
         marker.bindPopup(
@@ -658,7 +727,8 @@
             maximumFractionDigits: 2
           })}<br/>
           Volume: ${c.quantidade.toLocaleString("pt-BR")}<br/>
-          Clientes únicos: ${c.clientesCount.toLocaleString("pt-BR")}
+          Clientes únicos: ${c.clientesCount.toLocaleString("pt-BR")}<br/>
+          Faixa (${currentMetric === "valor" ? "Faturamento" : "Volume"}): ${bin.label}
         `
         );
 
@@ -766,9 +836,9 @@
     // Period controls
     // ------------------------------
     function applyQuickPeriod(code) {
-      if (!availableMinDate || !currentEndDate) return;
+      if (!availableMinDate || !availableMaxDate) return;
 
-      const max = currentEndDate || availableMinDate;
+      const max = availableMaxDate;
       let start = availableMinDate;
 
       switch (code) {
@@ -833,6 +903,7 @@
           document.querySelectorAll(".metric-btn").forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
           currentMetric = btn.dataset.metric === "quantidade" ? "quantidade" : "valor";
+          updateLegend();
           updateAll();
         });
       });
@@ -859,7 +930,7 @@
     }
 
     // ------------------------------
-    // Data loading & init
+    // Dropdowns & Legend
     // ------------------------------
     function populateEstadoFilter() {
       const select = document.getElementById("estado-filter");
@@ -934,6 +1005,19 @@
       console.log("Linhas com coordenadas:", withGeo);
     }
 
+    function updateLegend() {
+      const bins = currentMetric === "valor" ? VALUE_BINS : VOLUME_BINS;
+      bins.forEach((bin, idx) => {
+        const el = document.getElementById(`legend-bin-${idx}`);
+        const dot = document.getElementById(`legend-dot-${idx}`);
+        if (el) el.textContent = bin.label;
+        if (dot) dot.style.background = bin.color;
+      });
+    }
+
+    // ------------------------------
+    // Data loading & init
+    // ------------------------------
     async function loadData() {
       const salesRaw = await loadFlexibleCsv(SALES_CSV_PATH, parseSalesRow);
       const geoRaw = await loadFlexibleCsv(CITY_GEO_CSV_PATH, (d) => parseGeoRow(d));
@@ -951,6 +1035,7 @@
       computeDateRange();
       populateEstadoFilter();
       populateRepFilter();
+      updateLegend();
 
       const tudoBtn = document.querySelector('.pill-btn[data-period="TUDO"]');
       if (tudoBtn) tudoBtn.classList.add("active");

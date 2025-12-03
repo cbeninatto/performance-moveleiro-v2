@@ -341,113 +341,162 @@
           </div>
           <div class="card">
 
-            <!-- Métrica + Filtros -->
+            <!-- Métrica + Visão -->
             <div class="filters-row">
               <span class="filters-label">Métrica</span>
               <button class="btn-small" id="btnMetricFat">Faturamento</button>
               <button class="btn-small secondary" id="btnMetricVol">Volume</button>
 
-              <div class="top-right-wrap">
-                <span class="filters-label">Filtros</span>
+              <span class="filters-label" style="margin-left:16px;">Visão</span>
+              <button class="btn-small secondary" id="viewGeral">Geral</button>
+              <button class="btn-small" id="viewCategoria">Categoria</button>
+              <button class="btn-small" id="viewEstado">Estado</button>
+              <button class="btn-small" id="viewCliente">Cliente</button>
+              <button class="btn-small" id="viewRep">Representante</button>
+            </div>
 
-                <div class="field-group">
-                  <label class="field-label" for="filterClient">Cliente</label>
-                  <select id="filterClient"></select>
-                </div>
+            <!-- Filtros -->
+            <div class="filters-row">
+              <span class="filters-label">Filtros</span>
 
-                <div class="field-group">
-                  <label class="field-label" for="filterRep">Representante</label>
-                  <select id="filterRep"></select>
-                </div>
+              <div class="field-group">
+                <label class="field-label" for="filterClient">Cliente</label>
+                <select id="filterClient"></select>
+              </div>
 
-                <div class="field-group">
-                  <label class="field-label" for="filterState">Estado</label>
-                  <select id="filterState"></select>
-                </div>
+              <div class="field-group">
+                <label class="field-label" for="filterRep">Representante</label>
+                <select id="filterRep"></select>
+              </div>
 
-                <div class="field-group">
-                  <label class="field-label" for="filterCategory">Categoria</label>
-                  <select id="filterCategory"></select>
-                </div>
+              <div class="field-group">
+                <label class="field-label" for="filterState">Estado</label>
+                <select id="filterState"></select>
+              </div>
 
-                <div class="field-group">
-                  <label class="field-label" for="filterLinha">Linha</label>
-                  <select id="filterLinha"></select>
-                </div>
+              <div class="field-group">
+                <label class="field-label" for="filterCategory">Categoria</label>
+                <select id="filterCategory"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterLinha">Linha</label>
+                <select id="filterLinha"></select>
               </div>
             </div>
 
-            <!-- Período A -->
+            <!-- Modo de comparação -->
             <div class="filters-row">
-              <span class="filters-label">Período A</span>
-              <span>De</span>
-              <input type="month" lang="pt-BR" id="aFrom" />
-              <span>até</span>
-              <input type="month" lang="pt-BR" id="aTo" />
-              <button class="btn-small" id="aLast12">Últimos 12 meses</button>
-              <button class="btn-small secondary" id="aAll">Todo histórico</button>
-            </div>
-
-            <!-- Período B -->
-            <div class="filters-row">
-              <span class="filters-label">Período B</span>
-              <span>De</span>
-              <input type="month" lang="pt-BR" id="bFrom" />
-              <span>até</span>
-              <input type="month" lang="pt-BR" id="bTo" />
-              <button class="btn-small" id="bPrevYear">Mesmo período ano anterior A</button>
-              <button class="btn-small secondary" id="bPrevPeriod">Período anterior a A</button>
-            </div>
-
-            <!-- Aplicar / Reset -->
-            <div class="filters-row">
-              <button class="btn-small" id="btnApply">Aplicar comparação</button>
-              <button class="btn-small secondary" id="btnReset">Reset</button>
-              <span style="margin-left:auto;font-size:0.8rem;color:#6b7280;" id="statusText">
+              <span class="filters-label">Modo</span>
+              <select id="modeSelect">
+                <option value="period">Períodos A vs B</option>
+                <option value="monthYears">Mês x Anos</option>
+                <option value="yearsOverlay">Anos sobrepostos</option>
+              </select>
+              <span id="statusText" style="margin-left:auto;font-size:0.8rem;color:#6b7280;">
                 Carregando dados...
               </span>
+            </div>
+
+            <!-- Controles: Período A/B -->
+            <div id="modePeriodControls">
+              <div class="filters-row">
+                <span class="filters-label">Período A</span>
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="aFrom" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="aTo" />
+              </div>
+
+              <div class="filters-row">
+                <span class="filters-label">Período B</span>
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="bFrom" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="bTo" />
+              </div>
+
+              <div class="filters-row">
+                <button class="btn-small" id="btnApply">Aplicar comparação</button>
+                <button class="btn-small secondary" id="btnReset">Reset</button>
+              </div>
+            </div>
+
+            <!-- Controles: Mês x Anos -->
+            <div id="modeMonthYearsControls" style="display:none;">
+              <div class="filters-row">
+                <span class="filters-label">Mês</span>
+                <select id="monthYearsMonth">
+                  <option value="1">JAN</option>
+                  <option value="2">FEV</option>
+                  <option value="3">MAR</option>
+                  <option value="4">ABR</option>
+                  <option value="5">MAI</option>
+                  <option value="6">JUN</option>
+                  <option value="7">JUL</option>
+                  <option value="8">AGO</option>
+                  <option value="9">SET</option>
+                  <option value="10">OUT</option>
+                  <option value="11">NOV</option>
+                  <option value="12">DEZ</option>
+                </select>
+
+                <span class="filters-label">Anos (máx. 5)</span>
+                <select id="monthYearsYears" multiple size="5"></select>
+
+                <button class="btn-small" id="btnApplyMonthYears">Aplicar</button>
+              </div>
+            </div>
+
+            <!-- Controles: Anos sobrepostos -->
+            <div id="modeYearsOverlayControls" style="display:none;">
+              <div class="filters-row">
+                <span class="filters-label">Anos (máx. 5)</span>
+                <select id="yearsOverlayYears" multiple size="5"></select>
+                <button class="btn-small" id="btnApplyYearsOverlay">Aplicar</button>
+              </div>
             </div>
 
             <!-- Métricas resumo -->
             <div class="metrics-grid compare">
               <div class="metric-card">
-                <div class="metric-label">Período A — Total</div>
+                <div class="metric-label" id="metricLabelA">Período A — Total</div>
                 <div class="metric-value" id="metricATotal">—</div>
                 <div class="metric-sub" id="metricAPeriod">—</div>
               </div>
               <div class="metric-card">
-                <div class="metric-label">Período B — Total</div>
+                <div class="metric-label" id="metricLabelB">Período B — Total</div>
                 <div class="metric-value" id="metricBTotal">—</div>
                 <div class="metric-sub" id="metricBPeriod">—</div>
               </div>
               <div class="metric-card">
-                <div class="metric-label">Diferença absoluta (A - B)</div>
+                <div class="metric-label" id="metricLabelDiffAbs">Diferença absoluta</div>
                 <div class="metric-value" id="metricDiffAbs">—</div>
                 <div class="metric-sub" id="metricDiffAbsSub">—</div>
               </div>
               <div class="metric-card">
-                <div class="metric-label">Variação percentual</div>
+                <div class="metric-label" id="metricLabelDiffPct">Variação percentual</div>
                 <div class="metric-value" id="metricDiffPct">—</div>
                 <div class="metric-sub" id="metricDiffPctSub">—</div>
               </div>
             </div>
 
-            <!-- Gráfico linha -->
+            <!-- Gráfico principal -->
             <div class="chart-wrapper">
               <div id="chartTimeline" class="chart"></div>
             </div>
 
-            <!-- Gráfico barras totais -->
+            <!-- Gráfico secundário (usado só no modo Período) -->
             <div class="chart-wrapper">
               <div id="chartTotals" class="chart" style="height:260px;"></div>
             </div>
 
             <div class="status-line">
               <div id="statusInfo">
-                Use Período A e B para comparar Ano x Ano (ex: 2025 vs 2023), período vs período ou mês vs mês.
+                Use os modos para comparar Ano x Ano, período vs período ou mês vs mês.
               </div>
               <div class="status-pill" id="statusRange">
-                Período A: -- | Período B: --
+                Modo: -- • Visão: --
               </div>
             </div>
           </div>
@@ -469,6 +518,11 @@
       "#6d597a","#355070","#b56576","#003f5c","#ffa600"
     ];
 
+    const MONTH_NAMES = [
+      "JAN","FEV","MAR","ABR","MAI","JUN",
+      "JUL","AGO","SET","OUT","NOV","DEZ"
+    ];
+
     const familiesMap = new Map();
 
     const state = {
@@ -482,7 +536,11 @@
       filterCategory: "ALL",
       filterLinha: "ALL",
       periodA: { from: null, to: null },
-      periodB: { from: null, to: null }
+      periodB: { from: null, to: null },
+      viewMode: "GERAL",
+      mode: "period", // period | monthYears | yearsOverlay
+      monthYears: { month: null, years: [] },
+      yearsOverlay: { years: [] }
     };
 
     function getColor(i) {
@@ -507,11 +565,7 @@
       const [y, mStr] = key.split("-");
       const m = parseInt(mStr, 10);
       const shortYear = y.slice(-2);
-      const months = [
-        "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
-        "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"
-      ];
-      return (months[m - 1] || mStr) + " " + shortYear;
+      return (MONTH_NAMES[m - 1] || mStr) + " " + shortYear;
     }
 
     function periodLabel(fromKey, toKey) {
@@ -540,6 +594,14 @@
       const [y, m] = key.split("-");
       const ny = String(parseInt(y, 10) + delta);
       return ny + "-" + m;
+    }
+
+    function getAvailableYears() {
+      const years = new Set();
+      state.rows.forEach(r => {
+        if (r.ano) years.add(r.ano);
+      });
+      return Array.from(years).sort((a, b) => a - b);
     }
 
     function loadFamilies() {
@@ -719,6 +781,42 @@
       updateComparison();
     }
 
+    function viewModeLabel() {
+      if (state.viewMode === "CATEGORIA") return "Categoria";
+      if (state.viewMode === "ESTADO") return "Estado";
+      if (state.viewMode === "CLIENTE") return "Cliente";
+      if (state.viewMode === "REPRESENTANTE") return "Representante";
+      return "Geral";
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const map = {
+        "GERAL": document.getElementById("viewGeral"),
+        "CATEGORIA": document.getElementById("viewCategoria"),
+        "ESTADO": document.getElementById("viewEstado"),
+        "CLIENTE": document.getElementById("viewCliente"),
+        "REPRESENTANTE": document.getElementById("viewRep")
+      };
+      Object.entries(map).forEach(([m, btn]) => {
+        if (!btn) return;
+        btn.classList.toggle("secondary", state.viewMode !== m);
+      });
+      updateComparison();
+    }
+
+    function limitMultiSelect(selectEl, maxItems) {
+      const selected = Array.from(selectEl.selectedOptions).map(o => parseInt(o.value, 10));
+      if (selected.length > maxItems) {
+        alert("Selecione no máximo " + maxItems + " opções.");
+        const keep = selected.slice(0, maxItems);
+        Array.from(selectEl.options).forEach(o => {
+          const v = parseInt(o.value, 10);
+          o.selected = keep.includes(v);
+        });
+      }
+    }
+
     function initUI() {
       const keys = state.allKeys;
       const firstKey = keys[0];
@@ -734,10 +832,10 @@
         inp.max = lastKey;
       });
 
-      // Default: A = últimos 12 meses, B = mesmo período ano anterior
+      // Default: A = últimos 12 meses (ou todo histórico se menos de 12)
       const n = keys.length;
-      const last12StartIndex = n > 12 ? n - 12 : 0;
-      const aFromKey = keys[last12StartIndex];
+      const startIndex = n > 12 ? n - 12 : 0;
+      const aFromKey = keys[startIndex];
       const aToKey = lastKey;
 
       state.periodA.from = aFromKey;
@@ -745,6 +843,7 @@
       aFrom.value = aFromKey;
       aTo.value = aToKey;
 
+      // B = mesmo período ano anterior a A (se existir)
       const bFromKey = shiftYear(aFromKey, -1);
       const bToKey = shiftYear(aToKey, -1);
       state.periodB.from = bFromKey;
@@ -763,6 +862,14 @@
       btnFat.addEventListener("click", () => setMetric("FATURAMENTO"));
       btnVol.addEventListener("click", () => setMetric("VOLUME"));
       setMetric("FATURAMENTO");
+
+      // Visão
+      document.getElementById("viewGeral").addEventListener("click", () => setViewMode("GERAL"));
+      document.getElementById("viewCategoria").addEventListener("click", () => setViewMode("CATEGORIA"));
+      document.getElementById("viewEstado").addEventListener("click", () => setViewMode("ESTADO"));
+      document.getElementById("viewCliente").addEventListener("click", () => setViewMode("CLIENTE"));
+      document.getElementById("viewRep").addEventListener("click", () => setViewMode("REPRESENTANTE"));
+      setViewMode("GERAL");
 
       // Filtros
       document.getElementById("filterClient").addEventListener("change", (e) => {
@@ -786,73 +893,83 @@
         updateComparison();
       });
 
-      // Atalhos Período A
-      document.getElementById("aLast12").addEventListener("click", () => {
-        const keys = state.allKeys;
-        const n = keys.length;
-        const startIndex = n > 12 ? n - 12 : 0;
-        const fromK = keys[startIndex];
-        const toK = keys[n - 1];
-        state.periodA.from = fromK;
-        state.periodA.to = toK;
-        aFrom.value = fromK;
-        aTo.value = toK;
+      // Mode select
+      const modeSelect = document.getElementById("modeSelect");
+      modeSelect.addEventListener("change", (e) => {
+        state.mode = e.target.value;
+        syncModeVisibility();
         updateComparison();
       });
 
-      document.getElementById("aAll").addEventListener("click", () => {
-        const keys = state.allKeys;
-        const fromK = keys[0];
-        const toK = keys[keys.length - 1];
-        state.periodA.from = fromK;
-        state.periodA.to = toK;
-        aFrom.value = fromK;
-        aTo.value = toK;
-        updateComparison();
+      // Multi-select anos para mês x anos e anos sobrepostos
+      const years = getAvailableYears();
+      function fillYearMultiSelect(id) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = "";
+        years.forEach(y => {
+          const opt = document.createElement("option");
+          opt.value = y;
+          opt.textContent = y;
+          sel.appendChild(opt);
+        });
+      }
+      fillYearMultiSelect("monthYearsYears");
+      fillYearMultiSelect("yearsOverlayYears");
+
+      const monthYearsYearsSel = document.getElementById("monthYearsYears");
+      const yearsOverlayYearsSel = document.getElementById("yearsOverlayYears");
+
+      monthYearsYearsSel.addEventListener("change", () => {
+        limitMultiSelect(monthYearsYearsSel, 5);
+      });
+      yearsOverlayYearsSel.addEventListener("change", () => {
+        limitMultiSelect(yearsOverlayYearsSel, 5);
       });
 
-      // Atalhos Período B
-      document.getElementById("bPrevYear").addEventListener("click", () => {
-        const fromA = state.periodA.from;
-        const toA = state.periodA.to;
-        if (!fromA || !toA) return;
-        const fromB = shiftYear(fromA, -1);
-        const toB = shiftYear(toA, -1);
-        state.periodB.from = fromB;
-        state.periodB.to = toB;
-        bFrom.value = fromB;
-        bTo.value = toB;
-        updateComparison();
+      // Default: últimos até 5 anos selecionados
+      const defaultYears = years.slice(-5);
+      state.monthYears.years = defaultYears.slice();
+      state.yearsOverlay.years = defaultYears.slice();
+      Array.from(monthYearsYearsSel.options).forEach(o => {
+        if (defaultYears.includes(parseInt(o.value, 10))) o.selected = true;
+      });
+      Array.from(yearsOverlayYearsSel.options).forEach(o => {
+        if (defaultYears.includes(parseInt(o.value, 10))) o.selected = true;
       });
 
-      document.getElementById("bPrevPeriod").addEventListener("click", () => {
-        const keys = state.allKeys;
-        const fromA = state.periodA.from;
-        const toA = state.periodA.to;
-        if (!fromA || !toA) return;
+      // Default mês: mesmo mês do último key
+      const lastMonth = parseInt(lastKey.split("-")[1], 10);
+      state.monthYears.month = lastMonth;
+      document.getElementById("monthYearsMonth").value = String(lastMonth);
 
-        const keysA = keys.filter(k => k >= fromA && k <= toA);
-        if (!keysA.length) return;
-
-        const lenA = keysA.length;
-        const firstIndex = keys.indexOf(keysA[0]);
-        if (firstIndex === -1) return;
-        const prevEndIndex = firstIndex - 1;
-        if (prevEndIndex < 0) {
-          // sem período anterior suficiente
+      // Botões aplicar para modos secundários
+      document.getElementById("btnApplyMonthYears").addEventListener("click", () => {
+        const m = parseInt(document.getElementById("monthYearsMonth").value, 10);
+        const selectedYears = Array.from(monthYearsYearsSel.selectedOptions).map(o => parseInt(o.value, 10));
+        if (!selectedYears.length) {
+          alert("Selecione pelo menos um ano.");
           return;
         }
-        const prevStartIndex = Math.max(0, prevEndIndex - lenA + 1);
-        const fromB = keys[prevStartIndex];
-        const toB = keys[prevEndIndex];
-        state.periodB.from = fromB;
-        state.periodB.to = toB;
-        bFrom.value = fromB;
-        bTo.value = toB;
+        if (!m || m < 1 || m > 12) {
+          alert("Selecione um mês válido.");
+          return;
+        }
+        state.monthYears.month = m;
+        state.monthYears.years = selectedYears.slice(0, 5);
         updateComparison();
       });
 
-      // Aplicar / Reset
+      document.getElementById("btnApplyYearsOverlay").addEventListener("click", () => {
+        const selectedYears = Array.from(yearsOverlayYearsSel.selectedOptions).map(o => parseInt(o.value, 10));
+        if (!selectedYears.length) {
+          alert("Selecione pelo menos um ano.");
+          return;
+        }
+        state.yearsOverlay.years = selectedYears.slice(0, 5);
+        updateComparison();
+      });
+
+      // Aplicar / Reset (modo períodos)
       document.getElementById("btnApply").addEventListener("click", () => {
         const fA = aFrom.value;
         const tA = aTo.value;
@@ -900,8 +1017,28 @@
         state.filterCategory = "ALL";
         state.filterLinha = "ALL";
         populateFilterOptions();
+
+        state.mode = "period";
+        document.getElementById("modeSelect").value = "period";
+        syncModeVisibility();
+
         setMetric("FATURAMENTO");
+        setViewMode("GERAL");
+        document.getElementById("statusText").textContent = "Filtros resetados.";
+        updateComparison();
       });
+
+      syncModeVisibility();
+    }
+
+    function syncModeVisibility() {
+      const mode = state.mode;
+      document.getElementById("modePeriodControls").style.display =
+        mode === "period" ? "block" : "none";
+      document.getElementById("modeMonthYearsControls").style.display =
+        mode === "monthYears" ? "block" : "none";
+      document.getElementById("modeYearsOverlayControls").style.display =
+        mode === "yearsOverlay" ? "block" : "none";
     }
 
     function getPeriodSummary(period) {
@@ -957,7 +1094,47 @@
       };
     }
 
+    function getValueForMonthYear(year, month) {
+      const useFat = state.valueMode === "FATURAMENTO";
+      const valKey = useFat ? "valor" : "quantidade";
+      let total = 0;
+      state.rows.forEach(r => {
+        if (!rowPassesFilters(r)) return;
+        if (r.ano === year && r.mes === month) {
+          total += r[valKey] || 0;
+        }
+      });
+      return total;
+    }
+
+    function buildYearSeries(year) {
+      const vals = new Array(12).fill(0);
+      const useFat = state.valueMode === "FATURAMENTO";
+      const valKey = useFat ? "valor" : "quantidade";
+      state.rows.forEach(r => {
+        if (!rowPassesFilters(r)) return;
+        if (r.ano === year) {
+          const m = r.mes;
+          if (m >= 1 && m <= 12) {
+            vals[m - 1] += r[valKey] || 0;
+          }
+        }
+      });
+      return vals;
+    }
+
     function updateComparison() {
+      if (!state.rows.length) return;
+      if (state.mode === "monthYears") {
+        updateComparisonMonthYears();
+      } else if (state.mode === "yearsOverlay") {
+        updateComparisonYearsOverlay();
+      } else {
+        updateComparisonPeriod();
+      }
+    }
+
+    function updateComparisonPeriod() {
       const periodA = state.periodA;
       const periodB = state.periodB;
 
@@ -967,6 +1144,12 @@
       const isFat = state.valueMode === "FATURAMENTO";
       const unitLabel = isFat ? "Faturamento" : "Volume";
       const formatVal = (v) => isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      // Labels das métricas
+      document.getElementById("metricLabelA").textContent = "Período A — Total";
+      document.getElementById("metricLabelB").textContent = "Período B — Total";
+      document.getElementById("metricLabelDiffAbs").textContent = "Diferença absoluta (A - B)";
+      document.getElementById("metricLabelDiffPct").textContent = "Variação percentual";
 
       // Métricas
       document.getElementById("metricATotal").textContent = formatVal(sumA.total);
@@ -1005,8 +1188,7 @@
       const statusRange = document.getElementById("statusRange");
 
       statusRange.textContent =
-        `Período A: ${periodLabel(periodA.from, periodA.to)} | ` +
-        `Período B: ${periodLabel(periodB.from, periodB.to)}`;
+        `Modo: Períodos A vs B • Visão: ${viewModeLabel()}`;
 
       if (!sumA.monthsCount && !sumB.monthsCount) {
         statusInfo.textContent = "Sem dados para os períodos A e B com os filtros atuais.";
@@ -1028,12 +1210,218 @@
         "Comparação atualizada.";
     }
 
-    // NOVO: linha do tempo agregada por mês, sobrepondo A e B
+    function updateComparisonMonthYears() {
+      const month = state.monthYears.month;
+      let years = state.monthYears.years.slice();
+      const availYears = getAvailableYears();
+
+      if (!years.length) {
+        years = availYears.slice(-5);
+        state.monthYears.years = years.slice();
+      }
+
+      if (!month || month < 1 || month > 12) {
+        document.getElementById("statusInfo").textContent =
+          "Selecione um mês válido.";
+        Plotly.purge("chartTimeline");
+        Plotly.purge("chartTotals");
+        return;
+      }
+
+      const isFat = state.valueMode === "FATURAMENTO";
+      const unitLabel = isFat ? "Faturamento" : "Volume";
+      const formatVal = (v) => isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      const values = years.map(y => getValueForMonthYear(y, month));
+
+      // Métricas: comparamos último ano selecionado vs anterior
+      const sortedIdx = years
+        .map((y, idx) => ({ y, idx }))
+        .sort((a, b) => a.y - b.y)
+        .map(o => o.idx);
+
+      let lastIndex = null;
+      let prevIndex = null;
+      if (sortedIdx.length >= 1) {
+        lastIndex = sortedIdx[sortedIdx.length - 1];
+      }
+      if (sortedIdx.length >= 2) {
+        prevIndex = sortedIdx[sortedIdx.length - 2];
+      }
+
+      const labelA = document.getElementById("metricLabelA");
+      const labelB = document.getElementById("metricLabelB");
+      const labelDiffAbs = document.getElementById("metricLabelDiffAbs");
+      const labelDiffPct = document.getElementById("metricLabelDiffPct");
+
+      labelA.textContent = "Último ano selecionado";
+      labelB.textContent = "Ano anterior (se houver)";
+      labelDiffAbs.textContent = "Diferença absoluta (Último - Anterior)";
+      labelDiffPct.textContent = "Variação percentual";
+
+      if (lastIndex == null) {
+        document.getElementById("metricATotal").textContent = "—";
+        document.getElementById("metricAPeriod").textContent = "Sem anos selecionados";
+        document.getElementById("metricBTotal").textContent = "—";
+        document.getElementById("metricBPeriod").textContent = "—";
+        document.getElementById("metricDiffAbs").textContent = "—";
+        document.getElementById("metricDiffAbsSub").textContent = "—";
+        document.getElementById("metricDiffPct").textContent = "—";
+        document.getElementById("metricDiffPctSub").textContent = "—";
+      } else {
+        const lastYear = years[lastIndex];
+        const lastVal = values[lastIndex];
+
+        document.getElementById("metricATotal").textContent = formatVal(lastVal);
+        document.getElementById("metricAPeriod").textContent =
+          `Mês ${MONTH_NAMES[month - 1]} • Ano ${lastYear}`;
+
+        if (prevIndex == null) {
+          document.getElementById("metricBTotal").textContent = "—";
+          document.getElementById("metricBPeriod").textContent =
+            "Selecione pelo menos 2 anos para comparar.";
+          document.getElementById("metricDiffAbs").textContent = "—";
+          document.getElementById("metricDiffAbsSub").textContent = "—";
+          document.getElementById("metricDiffPct").textContent = "—";
+          document.getElementById("metricDiffPctSub").textContent = "—";
+        } else {
+          const prevYear = years[prevIndex];
+          const prevVal = values[prevIndex];
+
+          document.getElementById("metricBTotal").textContent = formatVal(prevVal);
+          document.getElementById("metricBPeriod").textContent =
+            `Mês ${MONTH_NAMES[month - 1]} • Ano ${prevYear}`;
+
+          const diffAbs = lastVal - prevVal;
+          const diffPct = prevVal > 0 ? (diffAbs / prevVal) * 100 : null;
+
+          document.getElementById("metricDiffAbs").textContent = formatVal(diffAbs);
+          document.getElementById("metricDiffAbsSub").textContent =
+            `Último - Anterior (${unitLabel})`;
+
+          if (diffPct == null) {
+            document.getElementById("metricDiffPct").textContent = "—";
+            document.getElementById("metricDiffPctSub").textContent =
+              "Sem base para calcular a variação (ano anterior = 0)";
+          } else {
+            const pctText = (diffPct >= 0 ? "+" : "") +
+              diffPct.toFixed(1).replace(".", ",") + "%";
+            document.getElementById("metricDiffPct").textContent = pctText;
+            document.getElementById("metricDiffPctSub").textContent =
+              "Variação sobre o ano anterior";
+          }
+        }
+      }
+
+      // Status
+      const statusInfo = document.getElementById("statusInfo");
+      const statusRange = document.getElementById("statusRange");
+      statusRange.textContent =
+        `Modo: Mês x Anos (${MONTH_NAMES[month - 1]}) • Visão: ${viewModeLabel()}`;
+      statusInfo.textContent =
+        `${unitLabel} no mês de ${MONTH_NAMES[month - 1]} para vários anos, após aplicar os filtros selecionados.`;
+
+      // Gráfico principal: eixo X = anos
+      renderMonthYearsChart(years, values, month);
+
+      // Gráfico secundário não usado neste modo
+      Plotly.purge("chartTotals");
+
+      document.getElementById("statusText").textContent =
+        "Comparação por mês/anos atualizada.";
+    }
+
+    function updateComparisonYearsOverlay() {
+      let years = state.yearsOverlay.years.slice();
+      const availYears = getAvailableYears();
+
+      if (!years.length) {
+        years = availYears.slice(-5);
+        state.yearsOverlay.years = years.slice();
+      }
+
+      if (!years.length) {
+        document.getElementById("statusInfo").textContent =
+          "Sem anos disponíveis para comparar.";
+        Plotly.purge("chartTimeline");
+        Plotly.purge("chartTotals");
+        return;
+      }
+
+      const isFat = state.valueMode === "FATURAMENTO";
+      const unitLabel = isFat ? "Faturamento" : "Volume";
+      const formatVal = (v) => isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      const series = years.map(y => buildYearSeries(y));
+      const totals = series.map(vals => vals.reduce((acc, v) => acc + v, 0));
+
+      // Métricas: maior ano, menor ano, média e diferença
+      let maxIdx = 0;
+      let minIdx = 0;
+      for (let i = 1; i < years.length; i++) {
+        if (totals[i] > totals[maxIdx]) maxIdx = i;
+        if (totals[i] < totals[minIdx]) minIdx = i;
+      }
+
+      const maxYear = years[maxIdx];
+      const minYear = years[minIdx];
+      const maxVal = totals[maxIdx];
+      const minVal = totals[minIdx];
+      const avgVal = totals.reduce((acc, v) => acc + v, 0) / totals.length;
+      const diffAbs = maxVal - minVal;
+      const diffPct = minVal > 0 ? (diffAbs / minVal) * 100 : null;
+
+      document.getElementById("metricLabelA").textContent = "Maior ano (total)";
+      document.getElementById("metricLabelB").textContent = "Menor ano (total)";
+      document.getElementById("metricLabelDiffAbs").textContent = "Diferença (Maior - Menor)";
+      document.getElementById("metricLabelDiffPct").textContent = "Variação entre maior e menor";
+
+      document.getElementById("metricATotal").textContent = formatVal(maxVal);
+      document.getElementById("metricAPeriod").textContent =
+        `Ano ${maxYear} • Soma anual`;
+
+      document.getElementById("metricBTotal").textContent = formatVal(minVal);
+      document.getElementById("metricBPeriod").textContent =
+        `Ano ${minYear} • Soma anual`;
+
+      document.getElementById("metricDiffAbs").textContent = formatVal(diffAbs);
+      document.getElementById("metricDiffAbsSub").textContent =
+        `Diferença entre maior e menor (${unitLabel})`;
+
+      if (diffPct == null) {
+        document.getElementById("metricDiffPct").textContent = "—";
+        document.getElementById("metricDiffPctSub").textContent =
+          "Sem base para calcular a variação (menor ano = 0)";
+      } else {
+        const pctText = (diffPct >= 0 ? "+" : "") +
+          diffPct.toFixed(1).replace(".", ",") + "%";
+        document.getElementById("metricDiffPct").textContent = pctText;
+        document.getElementById("metricDiffPctSub").textContent =
+          "Variação em relação ao menor ano";
+      }
+
+      // Status
+      const statusInfo = document.getElementById("statusInfo");
+      const statusRange = document.getElementById("statusRange");
+      statusRange.textContent =
+        `Modo: Anos sobrepostos • Visão: ${viewModeLabel()}`;
+      statusInfo.textContent =
+        `${unitLabel} mensal, com linhas sobrepostas para até 5 anos, após aplicar os filtros selecionados.`;
+
+      // Gráfico principal: eixo X = meses, uma linha por ano
+      renderYearsOverlayChart(years, series);
+
+      // Gráfico secundário não usado neste modo (opcionalmente poderia mostrar total por ano)
+      Plotly.purge("chartTotals");
+
+      document.getElementById("statusText").textContent =
+        "Comparação de anos sobrepostos atualizada.";
+    }
+
+    // Modo períodos: linha do tempo agregada por mês, sobrepondo A e B
     function renderTimeline(sumA, sumB) {
       const div = document.getElementById("chartTimeline");
-      const MONTHS = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
 
-      // Se não tiver nenhum dado em A nem B, limpa o gráfico
       if (!sumA.monthsCount && !sumB.monthsCount) {
         Plotly.purge(div);
         return;
@@ -1080,7 +1468,7 @@
       const aggA = buildMonthAgg(sumA);
       const aggB = buildMonthAgg(sumB);
 
-      const labels = monthsUsed.map(m => MONTHS[m - 1]);
+      const labels = monthsUsed.map(m => MONTH_NAMES[m - 1]);
       const yA = monthsUsed.map(m => aggA[m]);
       const yB = monthsUsed.map(m => aggB[m]);
 
@@ -1171,7 +1559,7 @@
         values.push(sumA.total);
         colors.push(getColor(0));
         text.push(
-          `${formatVal(sumA.total)}<br>${periodLabel(state.periodA.from, state.periodA.to)}`
+          `${formatVal(sumA.total)}\n${periodLabel(state.periodA.from, state.periodA.to)}`
         );
       }
 
@@ -1180,7 +1568,7 @@
         values.push(sumB.total);
         colors.push(getColor(1));
         text.push(
-          `${formatVal(sumB.total)}<br>${periodLabel(state.periodB.from, state.periodB.to)}`
+          `${formatVal(sumB.total)}\n${periodLabel(state.periodB.from, state.periodB.to)}`
         );
       }
 
@@ -1223,6 +1611,137 @@
       };
 
       Plotly.react(div, [trace], layout, { responsive: true });
+    }
+
+    function renderMonthYearsChart(years, values, month) {
+      const div = document.getElementById("chartTimeline");
+      if (!years.length) {
+        Plotly.purge(div);
+        return;
+      }
+
+      const isFat = state.valueMode === "FATURAMENTO";
+      const hoverTemplate = isFat
+        ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+        : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>";
+
+      const labels = years.map(y => String(y));
+
+      const trace = {
+        x: labels,
+        y: values,
+        type: "scatter",
+        mode: "lines+markers",
+        name: `Mês ${MONTH_NAMES[month - 1]}`,
+        line: { shape: "spline", width: 3, color: getColor(0) },
+        marker: { size: 7, line: { width: 1, color: "#ffffff" } },
+        hovertemplate: hoverTemplate
+      };
+
+      const layout = {
+        margin: { l: 60, r: 30, t: 30, b: 60 },
+        paper_bgcolor: "#ffffff",
+        plot_bgcolor: "#ffffff",
+        showlegend: true,
+        legend: {
+          orientation: "h",
+          yanchor: "bottom",
+          y: 1.05,
+          xanchor: "center",
+          x: 0.5,
+          font: { size: 10 }
+        },
+        hovermode: "x unified",
+        xaxis: {
+          type: "category",
+          tickangle: 0,
+          tickfont: { size: 11 },
+          showgrid: false,
+          zeroline: false
+        },
+        yaxis: {
+          title: "",
+          tickformat: ",.0f",
+          gridcolor: "#e9ecef",
+          zeroline: false,
+          automargin: true,
+          tickfont: { size: 11 },
+          autorange: true
+        },
+        title: {
+          text: `Histórico do mês ${MONTH_NAMES[month - 1]} por ano`,
+          font: { size: 14 }
+        }
+      };
+
+      Plotly.react(div, [trace], layout, { responsive: true });
+      Plotly.relayout(div, { "yaxis.autorange": true });
+    }
+
+    function renderYearsOverlayChart(years, series) {
+      const div = document.getElementById("chartTimeline");
+      if (!years.length) {
+        Plotly.purge(div);
+        return;
+      }
+
+      const labels = MONTH_NAMES.slice();
+      const isFat = state.valueMode === "FATURAMENTO";
+      const hoverTemplate = isFat
+        ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+        : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>";
+
+      const traces = years.map((y, idx) => ({
+        x: labels,
+        y: series[idx],
+        type: "scatter",
+        mode: "lines+markers",
+        name: String(y),
+        line: { shape: "spline", width: 3, color: getColor(idx) },
+        marker: { size: 6, line: { width: 1, color: "#ffffff" } },
+        hovertemplate: hoverTemplate
+      }));
+
+      const layout = {
+        margin: { l: 60, r: 30, t: 30, b: 80 },
+        paper_bgcolor: "#ffffff",
+        plot_bgcolor: "#ffffff",
+        showlegend: true,
+        legend: {
+          orientation: "h",
+          yanchor: "bottom",
+          y: 1.1,
+          xanchor: "center",
+          x: 0.5,
+          font: { size: 10 }
+        },
+        hovermode: "x unified",
+        xaxis: {
+          type: "category",
+          categoryorder: "array",
+          categoryarray: labels,
+          tickangle: -35,
+          tickfont: { size: 11 },
+          showgrid: false,
+          zeroline: false
+        },
+        yaxis: {
+          title: "",
+          tickformat: ",.0f",
+          gridcolor: "#e9ecef",
+          zeroline: false,
+          automargin: true,
+          tickfont: { size: 11 },
+          autorange: true
+        },
+        title: {
+          text: "Anos sobrepostos (curva mensal)",
+          font: { size: 14 }
+        }
+      };
+
+      Plotly.react(div, traces, layout, { responsive: true });
+      Plotly.relayout(div, { "yaxis.autorange": true });
     }
 
     document.addEventListener("DOMContentLoaded", () => {

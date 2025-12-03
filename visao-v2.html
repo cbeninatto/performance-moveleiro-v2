@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Openfield Moveleiro — Visão Geral Comparativa</title>
+  <title>Openfield Moveleiro — Nova Visão</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Inter font -->
@@ -134,6 +134,11 @@
       margin: 6px 0 10px;
     }
 
+    .filters-row-secondary {
+      margin-top: 2px;
+      margin-bottom: 10px;
+    }
+
     .filters-label {
       font-size: 0.76rem;
       font-weight: 600;
@@ -187,6 +192,42 @@
         "Segoe UI", sans-serif;
     }
 
+    .range-buttons {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .range-btn {
+      background: var(--accent-gold);
+      color: #000;
+      border: 1px solid var(--accent-gold-border);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background var(--transition-fast),
+        color var(--transition-fast), border-color var(--transition-fast),
+        transform 90ms ease-out;
+    }
+    .range-btn span {
+      font-size: 0.78rem;
+    }
+    .range-btn:hover,
+    .range-btn.active {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+      transform: translateY(-0.3px);
+    }
+
     .btn-small {
       background: #000;
       color: #fff;
@@ -229,11 +270,6 @@
       gap: 10px;
       margin: 10px 0 14px;
     }
-
-    .metrics-grid.compare {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
     .metric-card {
       background: #fafafa;
       border: 1px solid #eee;
@@ -262,11 +298,10 @@
       border: 1px solid rgba(148, 163, 184, 0.3);
       background: #fff;
       padding: 4px;
-      margin-top: 6px;
     }
     .chart {
       width: 100%;
-      height: 420px;
+      height: 520px;
     }
 
     .status-line {
@@ -287,16 +322,237 @@
       font-size: 0.7rem;
     }
 
+    /* Rankings / Tendências */
+    .trend-header {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .trend-dim-wrap {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .trend-mode-wrap {
+      margin-left: auto;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .trend-info {
+      margin-top: 4px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .ranking-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .ranking-card {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+    }
+    .ranking-card h4 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .ranking-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .ranking-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+      cursor: pointer;
+    }
+    .ranking-list li.disabled {
+      cursor: default;
+    }
+    .ranking-label {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ranking-value {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Deep Dive layout */
+    .deep-dive-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.1fr);
+      gap: 14px;
+      margin-top: 8px;
+      align-items: stretch;
+    }
+    .deep-dive-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .deep-dive-right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .deep-dive-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+    }
+    .deep-dive-kpi-item {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+    }
+    .deep-dive-kpi-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4b5563;
+      margin-bottom: 2px;
+    }
+    .deep-dive-kpi-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+    .deep-dive-kpi-label {
+      color: #6b7280;
+    }
+    .deep-dive-kpi-value {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .deep-dive-trend-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #fff;
+      padding: 4px;
+      min-height: 280px;  /* taller mini trend */
+      max-height: 340px;
+    }
+    .deep-dive-trend {
+      width: 100%;
+      height: 100%;
+    }
+
+    .deep-dive-chart-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #fff;
+      padding: 6px;
+      min-height: 380px;  /* taller main chart */
+      max-height: 460px;
+    }
+    .deep-dive-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    .deep-dive-tables {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .deep-dive-table {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      max-height: 260px;
+      overflow: auto;
+    }
+    .deep-dive-table h5 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .deep-dive-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .deep-dive-table th,
+    .deep-dive-table td {
+      padding: 2px 4px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      white-space: nowrap;
+    }
+    .deep-dive-table th:nth-child(1),
+    .deep-dive-table td:nth-child(1) {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .deep-dive-info {
+      font-size: 0.8rem;
+      color: var(--text-main);
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .deep-dive-info small {
+      color: var(--text-muted);
+    }
+
     @media (max-width: 900px) {
       .chart {
-        height: 380px;
+        height: 460px;
       }
-      .metrics-grid.compare {
+      .metrics-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ranking-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .deep-dive-layout {
+        grid-template-columns: 1fr;
+      }
+      .deep-dive-chart-wrapper {
+        min-height: 340px;
+        max-height: 420px;
+      }
+      .deep-dive-trend-wrapper {
+        min-height: 260px;
+        max-height: 320px;
       }
     }
     @media (max-width: 720px) {
-      .metrics-grid.compare {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .ranking-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -304,15 +560,20 @@
       .content {
         padding: 14px 10px 28px;
       }
+      .filters-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
       .chart {
-        height: 340px;
+        height: 380px;
       }
       .top-right-wrap {
         margin-left: 0;
       }
-      .filters-row {
-        flex-direction: column;
-        align-items: flex-start;
+    }
+    @media (max-width: 480px) {
+      .chart {
+        height: 340px;
       }
     }
   </style>
@@ -324,134 +585,274 @@
         <!-- TOP BAR -->
         <header class="top-bar">
           <div>
-            <div class="top-bar-title">OPENFIELD MOVELEIRO — Visão Geral Comparativa</div>
+            <div class="top-bar-title">OPENFIELD MOVELEIRO — Nova Visão</div>
             <div class="top-bar-sub">
-              Comparação de períodos (Ano a ano, período vs período, mês vs mês) com os mesmos filtros de Cliente / Representante / Estado / Categoria / Linha.
+              Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria / Linha + Visão por Estado / Cliente / Representante
             </div>
           </div>
           <div class="top-bar-updated">
-            Último mês com dados: <span id="updatedAt">--/----</span>
+            Atualizado: <span id="updatedAt">--/----</span>
           </div>
         </header>
 
-        <!-- VISÃO GERAL COMPARATIVA -->
+        <!-- MAIN VISÃO SECTION -->
         <section class="section">
           <div class="titlebar">
-            <span>📈 Visão Geral — Comparativo de Períodos</span>
+            <span>📊 Nova Visão Temporal</span>
           </div>
           <div class="card">
-
-            <!-- Métrica + Filtros -->
+            <!-- PERIOD + MÉTRICA (TOP) -->
             <div class="filters-row">
-              <span class="filters-label">Métrica</span>
-              <button class="btn-small" id="btnMetricFat">Faturamento</button>
-              <button class="btn-small secondary" id="btnMetricVol">Volume</button>
+              <span class="filters-label">Período</span>
 
+              <!-- 3M 6M 9M 1A 2A 3A 5A TUDO -->
+              <div class="range-buttons" id="rangeButtons">
+                <button class="range-btn" data-range="3M"><span>3M</span></button>
+                <button class="range-btn" data-range="6M"><span>6M</span></button>
+                <button class="range-btn" data-range="9M"><span>9M</span></button>
+                <button class="range-btn" data-range="1A"><span>1A</span></button>
+                <button class="range-btn" data-range="2A"><span>2A</span></button>
+                <button class="range-btn" data-range="3A"><span>3A</span></button>
+                <button class="range-btn" data-range="5A"><span>5A</span></button>
+                <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
+              </div>
+
+              <!-- Right-aligned: De/Até + Aplicar/Reset + Métrica FAT/VOL -->
               <div class="top-right-wrap">
-                <span class="filters-label">Filtros</span>
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="fromPeriod" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="toPeriod" />
+                <button class="btn-small" id="applyCustom">Aplicar</button>
+                <button class="btn-small secondary" id="resetCustom">Reset</button>
 
-                <div class="field-group">
-                  <label class="field-label" for="filterClient">Cliente</label>
-                  <select id="filterClient"></select>
-                </div>
-
-                <div class="field-group">
-                  <label class="field-label" for="filterRep">Representante</label>
-                  <select id="filterRep"></select>
-                </div>
-
-                <div class="field-group">
-                  <label class="field-label" for="filterState">Estado</label>
-                  <select id="filterState"></select>
-                </div>
-
-                <div class="field-group">
-                  <label class="field-label" for="filterCategory">Categoria</label>
-                  <select id="filterCategory"></select>
-                </div>
-
-                <div class="field-group">
-                  <label class="field-label" for="filterLinha">Linha</label>
-                  <select id="filterLinha"></select>
-                </div>
+                <span class="field-label" style="margin-left:8px;">Métrica</span>
+                <button class="btn-small" id="btnFaturamento">Faturamento</button>
+                <button class="btn-small secondary" id="btnVolume">Volume</button>
               </div>
             </div>
 
-            <!-- Período A -->
+            <!-- VISÃO BUTTONS (inclui GERAL) -->
             <div class="filters-row">
-              <span class="filters-label">Período A</span>
-              <span>De</span>
-              <input type="month" lang="pt-BR" id="aFrom" />
-              <span>até</span>
-              <input type="month" lang="pt-BR" id="aTo" />
-              <button class="btn-small" id="aLast12">Últimos 12 meses</button>
-              <button class="btn-small secondary" id="aAll">Todo histórico</button>
+              <span class="filters-label">Visão</span>
+              <button class="btn-small secondary" id="btnViewGeral">Geral</button>
+              <button class="btn-small" id="btnViewCategoria">Categoria</button>
+              <button class="btn-small secondary" id="btnViewEstado">Estado</button>
+              <button class="btn-small secondary" id="btnViewCliente">Cliente</button>
+              <button class="btn-small secondary" id="btnViewRep">Representante</button>
             </div>
 
-            <!-- Período B -->
-            <div class="filters-row">
-              <span class="filters-label">Período B</span>
-              <span>De</span>
-              <input type="month" lang="pt-BR" id="bFrom" />
-              <span>até</span>
-              <input type="month" lang="pt-BR" id="bTo" />
-              <button class="btn-small" id="bPrevYear">Mesmo período ano anterior A</button>
-              <button class="btn-small secondary" id="bPrevPeriod">Período anterior a A</button>
+            <!-- INCLUDE FILTERS -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Filtros</span>
+
+              <div class="field-group">
+                <label class="field-label" for="filterClient">Cliente</label>
+                <select id="filterClient"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterRep">Representante</label>
+                <select id="filterRep"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterState">Estado</label>
+                <select id="filterState"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterCategory">Categoria</label>
+                <select id="filterCategory"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="filterLinha">Linha</label>
+                <select id="filterLinha"></select>
+              </div>
             </div>
 
-            <!-- Aplicar / Reset -->
-            <div class="filters-row">
-              <button class="btn-small" id="btnApply">Aplicar comparação</button>
-              <button class="btn-small secondary" id="btnReset">Reset</button>
-              <span style="margin-left:auto;font-size:0.8rem;color:#6b7280;" id="statusText">
-                Carregando dados...
+            <!-- EXCLUDE FILTERS -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Excluir</span>
+
+              <div class="field-group">
+                <label class="field-label" for="excludeClient">Cliente</label>
+                <select id="excludeClient"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="excludeRep">Representante</label>
+                <select id="excludeRep"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="excludeState">Estado</label>
+                <select id="excludeState"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="excludeCategory">Categoria</label>
+                <select id="excludeCategory"></select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="excludeLinha">Linha</label>
+                <select id="excludeLinha"></select>
+              </div>
+            </div>
+
+            <!-- METRICS -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">Média mensal</div>
+                <div class="metric-value" id="metricChange">—</div>
+                <div class="metric-sub" id="metricChangeSub">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Total no período</div>
+                <div class="metric-value" id="metricMean">—</div>
+                <div class="metric-sub" id="metricMeanSub">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Destaques</div>
+                <div class="metric-value" id="metricVol">—</div>
+                <div class="metric-sub" id="metricVolSub">—</div>
+              </div>
+            </div>
+
+            <!-- CHART -->
+            <div class="chart-wrapper">
+              <div id="chart" class="chart"></div>
+            </div>
+
+            <!-- TENDÊNCIAS HEADER -->
+            <div class="trend-header">
+              <span class="filters-label">Tendências</span>
+
+              <span class="trend-dim-wrap">
+                <button class="btn-small" id="trendDimRep">Representante</button>
+                <button class="btn-small secondary" id="trendDimCli">Cliente</button>
+                <button class="btn-small secondary" id="trendDimEst">Estado</button>
+                <button class="btn-small secondary" id="trendDimCat">Categoria</button>
+                <button class="btn-small secondary" id="trendReset">Reset</button>
+              </span>
+
+              <span class="trend-mode-wrap">
+                <span class="field-label" style="margin-right:4px;">Métrica</span>
+                <button class="btn-small" id="trendModeFat">Faturamento</button>
+                <button class="btn-small secondary" id="trendModeVol">Volume</button>
               </span>
             </div>
-
-            <!-- Métricas resumo -->
-            <div class="metrics-grid compare">
-              <div class="metric-card">
-                <div class="metric-label">Período A — Total</div>
-                <div class="metric-value" id="metricATotal">—</div>
-                <div class="metric-sub" id="metricAPeriod">—</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-label">Período B — Total</div>
-                <div class="metric-value" id="metricBTotal">—</div>
-                <div class="metric-sub" id="metricBPeriod">—</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-label">Diferença absoluta (A - B)</div>
-                <div class="metric-value" id="metricDiffAbs">—</div>
-                <div class="metric-sub" id="metricDiffAbsSub">—</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-label">Variação percentual</div>
-                <div class="metric-value" id="metricDiffPct">—</div>
-                <div class="metric-sub" id="metricDiffPctSub">—</div>
-              </div>
+            <div class="trend-info">
+              Comparando a soma da segunda metade do período selecionado com a soma da primeira metade para cada dimensão.
+              Clique em um item para focar. Use o seletor de comparação no Deep Dive para comparar até 3 outros itens.
             </div>
 
-            <!-- Gráfico linha -->
-            <div class="chart-wrapper">
-              <div id="chartTimeline" class="chart"></div>
-            </div>
-
-            <!-- Gráfico barras totais -->
-            <div class="chart-wrapper">
-              <div id="chartTotals" class="chart" style="height:260px;"></div>
+            <!-- RANKINGS -->
+            <div class="ranking-grid" id="rankingGrid">
+              <div class="ranking-card">
+                <h4 id="rankingTopTitle">Maiores no período — Representante</h4>
+                <ul class="ranking-list" id="rankingTop"></ul>
+              </div>
+              <div class="ranking-card">
+                <h4 id="rankingRisingTitle">Ganhando espaço — Representante</h4>
+                <ul class="ranking-list" id="rankingRising"></ul>
+              </div>
+              <div class="ranking-card">
+                <h4 id="rankingFallingTitle">Perdendo espaço — Representante</h4>
+                <ul class="ranking-list" id="rankingFalling"></ul>
+              </div>
             </div>
 
             <div class="status-line">
-              <div id="statusInfo">
-                Use Período A e B para comparar Ano x Ano (ex: 2025 vs 2023), período vs período ou mês vs mês.
+              <div id="statusInfo">Carregando dados...</div>
+              <div class="status-pill" id="statusRange">Período: --</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DEEP DIVE SECTION -->
+        <section class="section">
+          <div class="titlebar">
+            <span>🔎 Deep Dive</span>
+          </div>
+          <div class="card">
+
+            <!-- Deep Dive filters: period + metric (mirrors main) -->
+            <div class="filters-row">
+              <span class="filters-label">Período</span>
+              <div class="range-buttons" id="ddRangeButtons">
+                <button class="range-btn" data-range="3M"><span>3M</span></button>
+                <button class="range-btn" data-range="6M"><span>6M</span></button>
+                <button class="range-btn" data-range="9M"><span>9M</span></button>
+                <button class="range-btn" data-range="1A"><span>1A</span></button>
+                <button class="range-btn" data-range="2A"><span>2A</span></button>
+                <button class="range-btn" data-range="3A"><span>3A</span></button>
+                <button class="range-btn" data-range="5A"><span>5A</span></button>
+                <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
               </div>
-              <div class="status-pill" id="statusRange">
-                Período A: -- | Período B: --
+
+              <div class="top-right-wrap">
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="ddFromPeriod" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="ddToPeriod" />
+                <button class="btn-small" id="ddApplyCustom">Aplicar</button>
+                <button class="btn-small secondary" id="ddResetCustom">Reset</button>
+
+                <span class="field-label" style="margin-left:8px;">Métrica</span>
+                <button class="btn-small" id="ddBtnFaturamento">Faturamento</button>
+                <button class="btn-small secondary" id="ddBtnVolume">Volume</button>
+              </div>
+            </div>
+
+            <!-- Deep Dive compare selector -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Comparar</span>
+              <div class="field-group">
+                <label class="field-label" for="deepDiveCompare">Comparar com (máx. 3)</label>
+                <select id="deepDiveCompare" multiple size="4"></select>
+              </div>
+            </div>
+
+            <p style="font-size:0.8rem;color:#4b5563;margin:0 0 6px;">
+              Selecione um item nas listas de Tendências para definir o foco principal.
+              Use o seletor acima para comparar até 3 outros itens da mesma dimensão (Representante, Cliente, Estado ou Categoria).
+            </p>
+
+            <div class="deep-dive-layout">
+              <div class="deep-dive-left">
+                <div class="deep-dive-kpis" id="deepDiveKpis"></div>
+
+                <div class="deep-dive-trend-wrapper">
+                  <div id="deepDiveTrend" class="deep-dive-trend"></div>
+                </div>
+
+                <div class="deep-dive-chart-wrapper">
+                  <div id="deepDiveChart" class="deep-dive-chart"></div>
+                </div>
+              </div>
+
+              <div class="deep-dive-right">
+                <div class="deep-dive-info" id="deepDiveInfo">
+                  <div><strong>Nenhum item selecionado.</strong></div>
+                  <small>
+                    Use as listas de Tendências para escolher um foco (representante, cliente, estado ou categoria).
+                    O gráfico de linha mostra a evolução no tempo; o gráfico de pizza e as tabelas mostram a composição interna
+                    (clientes / categorias) para o foco principal.
+                  </small>
+                </div>
+
+                <div class="deep-dive-tables">
+                  <div class="deep-dive-table" id="deepDiveTableClientes"></div>
+                  <div class="deep-dive-table" id="deepDiveTableCategorias"></div>
+                </div>
               </div>
             </div>
           </div>
         </section>
+
       </div>
     </main>
   </div>
@@ -470,24 +871,43 @@
     ];
 
     const familiesMap = new Map();
+    const colorMap = new Map();
+    let colorIndex = 0;
+
+    function getColorForName(name) {
+      if (!colorMap.has(name)) {
+        const c = ARIZONA_PALETTE[colorIndex % ARIZONA_PALETTE.length];
+        colorMap.set(name, c);
+        colorIndex++;
+      }
+      return colorMap.get(name);
+    }
 
     const state = {
       rows: [],
-      allKeys: [],
+      allKeysSorted: [],
       keyToLabel: new Map(),
-      valueMode: "FATURAMENTO", // FATURAMENTO ou VOLUME
+      range: "ALL",
+      customFrom: null,
+      customTo: null,
+      valueMode: "FATURAMENTO",
+      valueLabel: "Faturamento",
+      viewMode: "CATEGORIA", // GERAL, CATEGORIA, ESTADO, CLIENTE, REPRESENTANTE
       filterClient: "ALL",
       filterRep: "ALL",
       filterState: "ALL",
       filterCategory: "ALL",
       filterLinha: "ALL",
-      periodA: { from: null, to: null },
-      periodB: { from: null, to: null }
+      excludeClient: "NONE",
+      excludeRep: "NONE",
+      excludeState: "NONE",
+      excludeCategory: "NONE",
+      excludeLinha: "NONE",
+      rankingDimension: "REPRESENTANTE",
+      currentChart: null,
+      deepDiveFocus: null,          // { dimType, name }
+      deepDiveComparisons: []       // [name1, name2, ...] up to 3
     };
-
-    function getColor(i) {
-      return ARIZONA_PALETTE[i % ARIZONA_PALETTE.length];
-    }
 
     function normalizeDesc(str) {
       return (str || "").toString().trim().toUpperCase();
@@ -514,14 +934,6 @@
       return (months[m - 1] || mStr) + " " + shortYear;
     }
 
-    function periodLabel(fromKey, toKey) {
-      if (!fromKey || !toKey) return "--";
-      if (fromKey === toKey) {
-        return "Mês: " + labelFromKey(fromKey);
-      }
-      return labelFromKey(fromKey) + " – " + labelFromKey(toKey);
-    }
-
     function detectDelimiter(text) {
       const sample = text.slice(0, 1000);
       const commas = (sample.match(/,/g) || []).length;
@@ -533,13 +945,6 @@
       return Array.from(new Set(values)).sort((a, b) =>
         a.localeCompare(b, "pt-BR")
       );
-    }
-
-    function shiftYear(key, delta) {
-      if (!key) return null;
-      const [y, m] = key.split("-");
-      const ny = String(parseInt(y, 10) + delta);
-      return ny + "-" + m;
     }
 
     function loadFamilies() {
@@ -586,21 +991,21 @@
             complete: (results) => processData(results.data || []),
             error: (err) => {
               console.error(err);
-              document.getElementById("statusText").textContent =
+              document.getElementById("statusInfo").textContent =
                 "Erro ao processar o CSV.";
             }
           });
         })
         .catch((err) => {
           console.error(err);
-          document.getElementById("statusText").textContent =
+          document.getElementById("statusInfo").textContent =
             "Erro ao carregar o arquivo de dados.";
         });
     }
 
     function processData(rows) {
       if (!rows.length) {
-        document.getElementById("statusText").textContent =
+        document.getElementById("statusInfo").textContent =
           "Nenhum dado encontrado.";
         return;
       }
@@ -635,7 +1040,8 @@
           (row["Estado"] || "").toString().trim() || "Sem Estado";
 
         const descKey = normalizeDesc(row["Descricao"]);
-        const linha = familiesMap.get(descKey) || "Sem Linha";
+        const linha =
+          familiesMap.get(descKey) || "Sem Linha";
 
         normalized.push({
           key,
@@ -654,435 +1060,1085 @@
 
       const allKeysSorted = Array.from(keySet).sort();
       if (!allKeysSorted.length) {
-        document.getElementById("statusText").textContent =
+        document.getElementById("statusInfo").textContent =
           "Nenhum dado válido para exibir.";
         return;
       }
 
       state.rows = normalized;
-      state.allKeys = allKeysSorted;
+      state.allKeysSorted = allKeysSorted;
       state.keyToLabel = keyToLabel;
 
       initUI();
-      updateComparison();
+      updateAll();
     }
 
-    function rowPassesFilters(r) {
+    function rowPassesDimensionFilters(r) {
       if (state.filterClient !== "ALL" && r.cliente !== state.filterClient) return false;
       if (state.filterRep !== "ALL" && r.representante !== state.filterRep) return false;
       if (state.filterState !== "ALL" && r.estado !== state.filterState) return false;
       if (state.filterCategory !== "ALL" && r.categoria !== state.filterCategory) return false;
       if (state.filterLinha !== "ALL" && r.linha !== state.filterLinha) return false;
+
+      if (state.excludeClient !== "NONE" && r.cliente === state.excludeClient) return false;
+      if (state.excludeRep !== "NONE" && r.representante === state.excludeRep) return false;
+      if (state.excludeState !== "NONE" && r.estado === state.excludeState) return false;
+      if (state.excludeCategory !== "NONE" && r.categoria === state.excludeCategory) return false;
+      if (state.excludeLinha !== "NONE" && r.linha === state.excludeLinha) return false;
+
       return true;
     }
 
-    function populateFilterOptions() {
-      const rows = state.rows;
-      const clients = uniqueSorted(rows.map(r => r.cliente || "Sem Cliente"));
-      const reps = uniqueSorted(rows.map(r => r.representante || "Sem Representante"));
-      const states = uniqueSorted(rows.map(r => r.estado || "Sem Estado"));
-      const cats = uniqueSorted(rows.map(r => r.categoria || "Sem Categoria"));
-      const linhas = uniqueSorted(rows.map(r => r.linha || "Sem Linha"));
-
-      function fillSelect(id, values, allLabel) {
-        const sel = document.getElementById(id);
-        sel.innerHTML = "";
-        const optAll = document.createElement("option");
-        optAll.value = "ALL";
-        optAll.textContent = allLabel;
-        sel.appendChild(optAll);
-        values.forEach(v => {
-          const o = document.createElement("option");
-          o.value = v;
-          o.textContent = v;
-          sel.appendChild(o);
-        });
-        sel.value = "ALL";
-      }
-
-      fillSelect("filterClient", clients, "Todos os clientes");
-      fillSelect("filterRep", reps, "Todos os representantes");
-      fillSelect("filterState", states, "Todos os estados");
-      fillSelect("filterCategory", cats, "Todas as categorias");
-      fillSelect("filterLinha", linhas, "Todas as linhas");
+    function matchesDim(r, dimType, name) {
+      if (dimType === "REPRESENTANTE") return r.representante === name;
+      if (dimType === "CLIENTE") return r.cliente === name;
+      if (dimType === "ESTADO") return r.estado === name;
+      if (dimType === "CATEGORIA") return r.categoria === name;
+      return false;
     }
 
     function initUI() {
-      const keys = state.allKeys;
+      const keys = state.allKeysSorted;
       const firstKey = keys[0];
       const lastKey = keys[keys.length - 1];
 
-      const aFrom = document.getElementById("aFrom");
-      const aTo = document.getElementById("aTo");
-      const bFrom = document.getElementById("bFrom");
-      const bTo = document.getElementById("bTo");
+      const fromInputTop = document.getElementById("fromPeriod");
+      const toInputTop = document.getElementById("toPeriod");
+      const fromInputDD = document.getElementById("ddFromPeriod");
+      const toInputDD = document.getElementById("ddToPeriod");
 
-      [aFrom, aTo, bFrom, bTo].forEach(inp => {
-        inp.min = firstKey;
-        inp.max = lastKey;
-      });
+      fromInputTop.min = firstKey;
+      fromInputTop.max = lastKey;
+      toInputTop.min = firstKey;
+      toInputTop.max = lastKey;
 
-      // Default: A = últimos 12 meses, B = mesmo período ano anterior
-      const n = keys.length;
-      const last12StartIndex = n > 12 ? n - 12 : 0;
-      const aFromKey = keys[last12StartIndex];
-      const aToKey = lastKey;
+      fromInputDD.min = firstKey;
+      fromInputDD.max = lastKey;
+      toInputDD.min = firstKey;
+      toInputDD.max = lastKey;
 
-      state.periodA.from = aFromKey;
-      state.periodA.to = aToKey;
-      aFrom.value = aFromKey;
-      aTo.value = aToKey;
+      state.customFrom = firstKey;
+      state.customTo = lastKey;
 
-      const bFromKey = shiftYear(aFromKey, -1);
-      const bToKey = shiftYear(aToKey, -1);
-      state.periodB.from = bFromKey;
-      state.periodB.to = bToKey;
-      bFrom.value = bFromKey;
-      bTo.value = bToKey;
+      function syncDateInputs() {
+        const fromVal = state.customFrom || firstKey;
+        const toVal = state.customTo || lastKey;
+        fromInputTop.value = fromVal;
+        toInputTop.value = toVal;
+        fromInputDD.value = fromVal;
+        toInputDD.value = toVal;
+      }
+      syncDateInputs();
 
-      const lastLabel = state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+      const lastLabel =
+        state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
       document.getElementById("updatedAt").textContent = lastLabel;
 
-      populateFilterOptions();
+      const rangeButtonsMain = document.querySelectorAll(
+        "#rangeButtons .range-btn"
+      );
+      const rangeButtonsDD = document.querySelectorAll(
+        "#ddRangeButtons .range-btn"
+      );
 
-      // Métrica
-      const btnFat = document.getElementById("btnMetricFat");
-      const btnVol = document.getElementById("btnMetricVol");
-      function setMetric(mode) {
-        state.valueMode = mode;
-        const isFat = mode === "FATURAMENTO";
-        btnFat.classList.toggle("secondary", !isFat);
-        btnVol.classList.toggle("secondary", isFat);
-        updateComparison();
-      }
-      btnFat.addEventListener("click", () => setMetric("FATURAMENTO"));
-      btnVol.addEventListener("click", () => setMetric("VOLUME"));
-      setMetric("FATURAMENTO");
-
-      // Filtros
-      document.getElementById("filterClient").addEventListener("change", (e) => {
-        state.filterClient = e.target.value;
-        updateComparison();
-      });
-      document.getElementById("filterRep").addEventListener("change", (e) => {
-        state.filterRep = e.target.value;
-        updateComparison();
-      });
-      document.getElementById("filterState").addEventListener("change", (e) => {
-        state.filterState = e.target.value;
-        updateComparison();
-      });
-      document.getElementById("filterCategory").addEventListener("change", (e) => {
-        state.filterCategory = e.target.value;
-        updateComparison();
-      });
-      document.getElementById("filterLinha").addEventListener("change", (e) => {
-        state.filterLinha = e.target.value;
-        updateComparison();
-      });
-
-      // Atalhos Período A
-      document.getElementById("aLast12").addEventListener("click", () => {
-        const keys = state.allKeys;
-        const n = keys.length;
-        const startIndex = n > 12 ? n - 12 : 0;
-        const fromK = keys[startIndex];
-        const toK = keys[n - 1];
-        state.periodA.from = fromK;
-        state.periodA.to = toK;
-        aFrom.value = fromK;
-        aTo.value = toK;
-        updateComparison();
-      });
-
-      document.getElementById("aAll").addEventListener("click", () => {
-        const keys = state.allKeys;
-        const fromK = keys[0];
-        const toK = keys[keys.length - 1];
-        state.periodA.from = fromK;
-        state.periodA.to = toK;
-        aFrom.value = fromK;
-        aTo.value = toK;
-        updateComparison();
-      });
-
-      // Atalhos Período B
-      document.getElementById("bPrevYear").addEventListener("click", () => {
-        const fromA = state.periodA.from;
-        const toA = state.periodA.to;
-        if (!fromA || !toA) return;
-        const fromB = shiftYear(fromA, -1);
-        const toB = shiftYear(toA, -1);
-        state.periodB.from = fromB;
-        state.periodB.to = toB;
-        bFrom.value = fromB;
-        bTo.value = toB;
-        updateComparison();
-      });
-
-      document.getElementById("bPrevPeriod").addEventListener("click", () => {
-        const keys = state.allKeys;
-        const fromA = state.periodA.from;
-        const toA = state.periodA.to;
-        if (!fromA || !toA) return;
-
-        const keysA = keys.filter(k => k >= fromA && k <= toA);
-        if (!keysA.length) return;
-
-        const lenA = keysA.length;
-        const firstIndex = keys.indexOf(keysA[0]);
-        if (firstIndex === -1) return;
-        const prevEndIndex = firstIndex - 1;
-        if (prevEndIndex < 0) {
-          // sem período anterior suficiente
-          return;
-        }
-        const prevStartIndex = Math.max(0, prevEndIndex - lenA + 1);
-        const fromB = keys[prevStartIndex];
-        const toB = keys[prevEndIndex];
-        state.periodB.from = fromB;
-        state.periodB.to = toB;
-        bFrom.value = fromB;
-        bTo.value = toB;
-        updateComparison();
-      });
-
-      // Aplicar / Reset
-      document.getElementById("btnApply").addEventListener("click", () => {
-        const fA = aFrom.value;
-        const tA = aTo.value;
-        const fB = bFrom.value;
-        const tB = bTo.value;
-
-        if (!fA || !tA || !fB || !tB) {
-          alert("Preencha todos os meses de início e fim para A e B.");
-          return;
-        }
-        if (fA > tA || fB > tB) {
-          alert("Período inválido. O mês inicial não pode ser maior que o final.");
-          return;
-        }
-
-        state.periodA.from = fA;
-        state.periodA.to = tA;
-        state.periodB.from = fB;
-        state.periodB.to = tB;
-        updateComparison();
-      });
-
-      document.getElementById("btnReset").addEventListener("click", () => {
-        // volta para: A = últimos 12 meses, B = mesmo período ano anterior
-        const keys = state.allKeys;
-        const firstKey = keys[0];
-        const lastKey = keys[keys.length - 1];
-        const n = keys.length;
-        const startIndex = n > 12 ? n - 12 : 0;
-        const aFromKey2 = keys[startIndex];
-        const aToKey2 = lastKey;
-        state.periodA.from = aFromKey2;
-        state.periodA.to = aToKey2;
-        aFrom.value = aFromKey2;
-        aTo.value = aToKey2;
-
-        const bFromKey2 = shiftYear(aFromKey2, -1);
-        const bToKey2 = shiftYear(aToKey2, -1);
-        state.periodB.from = bFromKey2;
-        state.periodB.to = bToKey2;
-        bFrom.value = bFromKey2;
-        bTo.value = bToKey2;
-
-        state.filterClient = "ALL";
-        state.filterRep = "ALL";
-        state.filterState = "ALL";
-        state.filterCategory = "ALL";
-        state.filterLinha = "ALL";
-        populateFilterOptions();
-        setMetric("FATURAMENTO");
-      });
-
-      function setMetric(mode) {
-        state.valueMode = mode;
-        const isFat = mode === "FATURAMENTO";
-        document.getElementById("btnMetricFat").classList.toggle("secondary", !isFat);
-        document.getElementById("btnMetricVol").classList.toggle("secondary", isFat);
-        updateComparison();
+      function updateActiveRangeButtons() {
+        const allBtns = [...rangeButtonsMain, ...rangeButtonsDD];
+        allBtns.forEach((b) => {
+          if (!b.dataset.range) return;
+          if (state.range === "CUSTOM") {
+            b.classList.remove("active");
+          } else {
+            b.classList.toggle("active", b.dataset.range === state.range);
+          }
+        });
       }
 
-      // já chamamos setMetric("FATURAMENTO") acima
+      function applyRange(rangeCode) {
+        state.range = rangeCode;
+        updateActiveRangeButtons();
+        updateAll();
+      }
+
+      rangeButtonsMain.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          applyRange(btn.dataset.range || "ALL");
+        });
+      });
+      rangeButtonsDD.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          applyRange(btn.dataset.range || "ALL");
+        });
+      });
+
+      function handleCustomApply(fromVal, toVal) {
+        if (!fromVal || !toVal) {
+          alert("Selecione mês/ano inicial e final.");
+          return;
+        }
+        const all = state.allKeysSorted;
+        const fromIdx = all.indexOf(fromVal);
+        const toIdx = all.indexOf(toVal);
+        if (fromIdx === -1 || toIdx === -1 || fromIdx > toIdx) {
+          alert("Período inválido.");
+          return;
+        }
+        state.customFrom = fromVal;
+        state.customTo = toVal;
+        state.range = "CUSTOM";
+        updateActiveRangeButtons();
+        syncDateInputs();
+        updateAll();
+      }
+
+      document
+        .getElementById("applyCustom")
+        .addEventListener("click", () => {
+          handleCustomApply(fromInputTop.value, toInputTop.value);
+        });
+      document
+        .getElementById("ddApplyCustom")
+        .addEventListener("click", () => {
+          handleCustomApply(fromInputDD.value, toInputDD.value);
+        });
+
+      function resetCustom() {
+        state.customFrom = firstKey;
+        state.customTo = lastKey;
+        state.range = "ALL";
+        syncDateInputs();
+        updateActiveRangeButtons();
+        updateAll();
+      }
+
+      document
+        .getElementById("resetCustom")
+        .addEventListener("click", resetCustom);
+      document
+        .getElementById("ddResetCustom")
+        .addEventListener("click", resetCustom);
+
+      const btnFat = document.getElementById("btnFaturamento");
+      const btnVol = document.getElementById("btnVolume");
+      const btnFat2 = document.getElementById("trendModeFat");
+      const btnVol2 = document.getElementById("trendModeVol");
+      const btnFat3 = document.getElementById("ddBtnFaturamento");
+      const btnVol3 = document.getElementById("ddBtnVolume");
+
+      function setMode(mode) {
+        state.valueMode = mode;
+        state.valueLabel =
+          mode === "FATURAMENTO" ? "Faturamento" : "Volume";
+
+        const isFat = mode === "FATURAMENTO";
+
+        [btnFat, btnFat2, btnFat3].forEach((b) => {
+          if (!b) return;
+          b.classList.toggle("secondary", !isFat);
+        });
+        [btnVol, btnVol2, btnVol3].forEach((b) => {
+          if (!b) return;
+          b.classList.toggle("secondary", isFat);
+        });
+
+        updateAll();
+      }
+
+      btnFat.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol.addEventListener("click", () => setMode("VOLUME"));
+      btnFat2.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol2.addEventListener("click", () => setMode("VOLUME"));
+      btnFat3.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol3.addEventListener("click", () => setMode("VOLUME"));
+
+      const btnViewGeral = document.getElementById("btnViewGeral");
+      const btnViewCat = document.getElementById("btnViewCategoria");
+      const btnViewEst = document.getElementById("btnViewEstado");
+      const btnViewCli = document.getElementById("btnViewCliente");
+      const btnViewRep = document.getElementById("btnViewRep");
+
+      function setView(mode) {
+        state.viewMode = mode;
+
+        const mapping = [
+          ["GERAL", btnViewGeral],
+          ["CATEGORIA", btnViewCat],
+          ["ESTADO", btnViewEst],
+          ["CLIENTE", btnViewCli],
+          ["REPRESENTANTE", btnViewRep]
+        ];
+        mapping.forEach(([val, btn]) => {
+          if (!btn) return;
+          btn.classList.toggle("secondary", mode !== val);
+        });
+
+        updateAll();
+      }
+
+      btnViewGeral.addEventListener("click", () => setView("GERAL"));
+      btnViewCat.addEventListener("click", () => setView("CATEGORIA"));
+      btnViewEst.addEventListener("click", () => setView("ESTADO"));
+      btnViewCli.addEventListener("click", () => setView("CLIENTE"));
+      btnViewRep.addEventListener("click", () => setView("REPRESENTANTE"));
+
+      document
+        .getElementById("filterClient")
+        .addEventListener("change", (e) => {
+          state.filterClient = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterRep")
+        .addEventListener("change", (e) => {
+          state.filterRep = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterState")
+        .addEventListener("change", (e) => {
+          state.filterState = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterCategory")
+        .addEventListener("change", (e) => {
+          state.filterCategory = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterLinha")
+        .addEventListener("change", (e) => {
+          state.filterLinha = e.target.value;
+          updateAll();
+        });
+
+      document
+        .getElementById("excludeClient")
+        .addEventListener("change", (e) => {
+          state.excludeClient = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeRep")
+        .addEventListener("change", (e) => {
+          state.excludeRep = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeState")
+        .addEventListener("change", (e) => {
+          state.excludeState = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeCategory")
+        .addEventListener("change", (e) => {
+          state.excludeCategory = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeLinha")
+        .addEventListener("change", (e) => {
+          state.excludeLinha = e.target.value;
+          updateAll();
+        });
+
+      const btnTrendRep = document.getElementById("trendDimRep");
+      const btnTrendCli = document.getElementById("trendDimCli");
+      const btnTrendEst = document.getElementById("trendDimEst");
+      const btnTrendCat = document.getElementById("trendDimCat");
+      const btnTrendReset = document.getElementById("trendReset");
+
+      function setRankingDimension(dim) {
+        state.rankingDimension = dim;
+
+        btnTrendRep.classList.toggle("secondary", dim !== "REPRESENTANTE");
+        btnTrendCli.classList.toggle("secondary", dim !== "CLIENTE");
+        btnTrendEst.classList.toggle("secondary", dim !== "ESTADO");
+        btnTrendCat.classList.toggle("secondary", dim !== "CATEGORIA");
+
+        const dimLabel =
+          dim === "CLIENTE"
+            ? "Cliente"
+            : dim === "ESTADO"
+            ? "Estado"
+            : dim === "CATEGORIA"
+            ? "Categoria"
+            : "Representante";
+
+        document.getElementById("rankingTopTitle").textContent =
+          "Maiores no período — " + dimLabel;
+        document.getElementById("rankingRisingTitle").textContent =
+          "Ganhando espaço — " + dimLabel;
+        document.getElementById("rankingFallingTitle").textContent =
+          "Perdendo espaço — " + dimLabel;
+
+        state.deepDiveFocus = null;
+        state.deepDiveComparisons = [];
+        renderDeepDive();
+
+        updateAll();
+      }
+
+      btnTrendRep.addEventListener("click", () =>
+        setRankingDimension("REPRESENTANTE")
+      );
+      btnTrendCli.addEventListener("click", () =>
+        setRankingDimension("CLIENTE")
+      );
+      btnTrendEst.addEventListener("click", () =>
+        setRankingDimension("ESTADO")
+      );
+      btnTrendCat.addEventListener("click", () =>
+        setRankingDimension("CATEGORIA")
+      );
+
+      btnTrendReset.addEventListener("click", () => {
+        state.deepDiveFocus = null;
+        state.deepDiveComparisons = [];
+        setRankingDimension("REPRESENTANTE");
+        renderDeepDive();
+      });
+
+      const ddCompareSelect = document.getElementById("deepDiveCompare");
+      ddCompareSelect.addEventListener("change", (e) => {
+        const options = Array.from(e.target.options);
+        let selected = options.filter((o) => o.selected).map((o) => o.value);
+
+        if (selected.length > 3) {
+          alert("Selecione no máximo 3 itens para comparação.");
+          selected = selected.slice(0, 3);
+          options.forEach((o) => {
+            o.selected = selected.includes(o.value);
+          });
+        }
+
+        if (state.deepDiveFocus) {
+          const focusName = state.deepDiveFocus.name;
+          selected = selected.filter((n) => n !== focusName);
+        }
+
+        state.deepDiveComparisons = selected.slice(0, 3);
+        renderDeepDive();
+      });
+
+      setView("CATEGORIA");
+      setMode("FATURAMENTO");
+      setRankingDimension("REPRESENTANTE");
+      updateActiveRangeButtons();
     }
 
-    function getPeriodSummary(period) {
-      const from = period.from;
-      const to = period.to;
-      const allKeys = state.allKeys;
-      if (!from || !to) {
-        return {
-          keys: [],
-          map: new Map(),
-          values: [],
-          total: 0,
-          activeMonths: 0,
-          monthsCount: 0
-        };
-      }
+    function refillSelect(selectId, values, allLabel, keyName, allValue = "ALL") {
+      const select = document.getElementById(selectId);
+      const currentValue = state[keyName];
+      select.innerHTML = "";
 
-      const keysInRange = allKeys.filter(k => k >= from && k <= to);
-      if (!keysInRange.length) {
-        return {
-          keys: [],
-          map: new Map(),
-          values: [],
-          total: 0,
-          activeMonths: 0,
-          monthsCount: 0
-        };
-      }
+      const optAll = document.createElement("option");
+      optAll.value = allValue;
+      optAll.textContent = allLabel;
+      select.appendChild(optAll);
 
-      const map = new Map();
-      keysInRange.forEach(k => map.set(k, 0));
-      const useFat = state.valueMode === "FATURAMENTO";
-      const valKey = useFat ? "valor" : "quantidade";
-
-      state.rows.forEach(r => {
-        if (!rowPassesFilters(r)) return;
-        if (r.key < from || r.key > to) return;
-        const v = r[valKey] || 0;
-        map.set(r.key, (map.get(r.key) || 0) + v);
+      values.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
       });
 
-      const values = keysInRange.map(k => map.get(k) || 0);
-      const total = values.reduce((acc, v) => acc + v, 0);
-      const active = values.filter(v => v > 0).length;
+      if (currentValue !== allValue && values.includes(currentValue)) {
+        select.value = currentValue;
+      } else {
+        select.value = allValue;
+        state[keyName] = allValue;
+      }
+    }
+
+    function updateFilterOptions(filteredKeys) {
+      const rows = state.rows;
+      const keySet = new Set(filteredKeys);
+      const rowsBase = rows.filter((r) => keySet.has(r.key));
+
+      const rowsForClients = rowsBase.filter(
+        (r) =>
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const clientValues = uniqueSorted(rowsForClients.map((r) => r.cliente));
+      refillSelect(
+        "filterClient",
+        clientValues,
+        "Todos os clientes",
+        "filterClient",
+        "ALL"
+      );
+
+      const rowsForReps = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const repValues = uniqueSorted(rowsForReps.map((r) => r.representante));
+      refillSelect(
+        "filterRep",
+        repValues,
+        "Todos os representantes",
+        "filterRep",
+        "ALL"
+      );
+
+      const rowsForStates = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const stateValues = uniqueSorted(rowsForStates.map((r) => r.estado));
+      refillSelect(
+        "filterState",
+        stateValues,
+        "Todos os estados",
+        "filterState",
+        "ALL"
+      );
+
+      const rowsForCats = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const catValues = uniqueSorted(rowsForCats.map((r) => r.categoria));
+      refillSelect(
+        "filterCategory",
+        catValues,
+        "Todas as categorias",
+        "filterCategory",
+        "ALL"
+      );
+
+      const rowsForLinha = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory)
+      );
+      const linhaValues = uniqueSorted(rowsForLinha.map((r) => r.linha));
+      refillSelect(
+        "filterLinha",
+        linhaValues,
+        "Todas as linhas",
+        "filterLinha",
+        "ALL"
+      );
+
+      refillSelect(
+        "excludeClient",
+        clientValues,
+        "Nenhum cliente",
+        "excludeClient",
+        "NONE"
+      );
+      refillSelect(
+        "excludeRep",
+        repValues,
+        "Nenhum representante",
+        "excludeRep",
+        "NONE"
+      );
+      refillSelect(
+        "excludeState",
+        stateValues,
+        "Nenhum estado",
+        "excludeState",
+        "NONE"
+      );
+      refillSelect(
+        "excludeCategory",
+        catValues,
+        "Nenhuma categoria",
+        "excludeCategory",
+        "NONE"
+      );
+      refillSelect(
+        "excludeLinha",
+        linhaValues,
+        "Nenhuma linha",
+        "excludeLinha",
+        "NONE"
+      );
+    }
+
+    function getFilteredKeys() {
+      const keys = state.allKeysSorted;
+      if (!keys.length) return [];
+
+      if (state.range === "CUSTOM") {
+        const from = state.customFrom || keys[0];
+        const to = state.customTo || keys[keys.length - 1];
+        const fi = keys.indexOf(from);
+        const ti = keys.indexOf(to);
+        if (fi === -1 || ti === -1 || fi > ti) return [];
+        return keys.slice(fi, ti + 1);
+      }
+
+      if (
+        ["3M", "6M", "9M", "1A", "2A", "3A", "5A"].includes(state.range)
+      ) {
+        let n = 0;
+        if (state.range === "3M") n = 3;
+        else if (state.range === "6M") n = 6;
+        else if (state.range === "9M") n = 9;
+        else if (state.range === "1A") n = 12;
+        else if (state.range === "2A") n = 24;
+        else if (state.range === "3A") n = 36;
+        else if (state.range === "5A") n = 60;
+
+        if (keys.length <= n) return keys.slice();
+        return keys.slice(keys.length - n);
+      }
+
+      return keys.slice();
+    }
+
+    function buildSeriesForCurrentFilters(filteredKeys) {
+      const keySet = new Set(filteredKeys);
+      const byGroup = new Map();
+      const useFaturamento = state.valueMode === "FATURAMENTO";
+
+      for (const r of state.rows) {
+        if (!keySet.has(r.key)) continue;
+        if (!rowPassesDimensionFilters(r)) continue;
+
+        let group;
+        if (state.viewMode === "GERAL") {
+          group = "Geral";
+        } else if (state.viewMode === "ESTADO") {
+          group = r.estado;
+        } else if (state.viewMode === "CLIENTE") {
+          group = r.cliente;
+        } else if (state.viewMode === "REPRESENTANTE") {
+          group = r.representante;
+        } else {
+          group = r.categoria;
+        }
+
+        const val = useFaturamento ? r.valor : r.quantidade;
+        if (!byGroup.has(group)) byGroup.set(group, new Map());
+        const m = byGroup.get(group);
+        m.set(r.key, (m.get(r.key) || 0) + (isNaN(val) ? 0 : val));
+      }
+
+      return byGroup;
+    }
+
+    function computeBasicStats(totals) {
+      const n = totals.length;
+      if (!n) {
+        return {
+          mean: NaN,
+          total: NaN,
+          bestIdx: -1,
+          worstIdx: -1,
+          count: 0
+        };
+      }
+
+      let total = 0;
+      for (let i = 0; i < n; i++) {
+        const v = totals[i];
+        total += isFinite(v) ? v : 0;
+      }
+      const mean = total / n;
+
+      let bestIdx = 0;
+      let worstIdx = 0;
+      for (let i = 1; i < n; i++) {
+        if (totals[i] > totals[bestIdx]) bestIdx = i;
+        if (totals[i] < totals[worstIdx]) worstIdx = i;
+      }
 
       return {
-        keys: keysInRange,
-        map,
-        values,
+        mean,
         total,
-        activeMonths: active,
-        monthsCount: keysInRange.length
+        bestIdx,
+        worstIdx,
+        count: n
       };
     }
 
-    function updateComparison() {
-      const periodA = state.periodA;
-      const periodB = state.periodB;
+    function recalcMetricsFromLegend() {
+      const chart = state.currentChart;
+      if (!chart || !chart.keys.length) return;
 
-      const sumA = getPeriodSummary(periodA);
-      const sumB = getPeriodSummary(periodB);
+      const gd = document.getElementById("chart");
+      const visibleNames = new Set();
 
-      const isFat = state.valueMode === "FATURAMENTO";
-      const unitLabel = isFat ? "Faturamento" : "Volume";
-      const formatVal = (v) => isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
-
-      // Métricas
-      document.getElementById("metricATotal").textContent = formatVal(sumA.total);
-      document.getElementById("metricAPeriod").textContent =
-        sumA.monthsCount
-          ? `${periodLabel(periodA.from, periodA.to)} • ${sumA.monthsCount} meses`
-          : "Sem dados para o período A";
-
-      document.getElementById("metricBTotal").textContent = formatVal(sumB.total);
-      document.getElementById("metricBPeriod").textContent =
-        sumB.monthsCount
-          ? `${periodLabel(periodB.from, periodB.to)} • ${sumB.monthsCount} meses`
-          : "Sem dados para o período B";
-
-      const diffAbs = sumA.total - sumB.total;
-      const diffPct = sumB.total > 0 ? (diffAbs / sumB.total) * 100 : null;
-
-      document.getElementById("metricDiffAbs").textContent = formatVal(diffAbs);
-      document.getElementById("metricDiffAbsSub").textContent =
-        `A - B (${unitLabel})`;
-
-      if (diffPct == null) {
-        document.getElementById("metricDiffPct").textContent = "—";
-        document.getElementById("metricDiffPctSub").textContent =
-          "Sem base para calcular a variação (B = 0)";
-      } else {
-        const pctText = (diffPct >= 0 ? "+" : "") +
-          diffPct.toFixed(1).replace(".", ",") + "%";
-        document.getElementById("metricDiffPct").textContent = pctText;
-        document.getElementById("metricDiffPctSub").textContent =
-          "Variação sobre o período B";
+      if (gd && gd.data && gd.data.length) {
+        gd.data.forEach((trace) => {
+          if (trace.visible === "legendonly") return;
+          if (!trace.name || trace.name === "Total") return;
+          visibleNames.add(trace.name);
+        });
       }
 
-      // Status
-      const statusInfo = document.getElementById("statusInfo");
-      const statusRange = document.getElementById("statusRange");
-
-      statusRange.textContent =
-        `Período A: ${periodLabel(periodA.from, periodA.to)} | ` +
-        `Período B: ${periodLabel(periodB.from, periodB.to)}`;
-
-      if (!sumA.monthsCount && !sumB.monthsCount) {
-        statusInfo.textContent = "Sem dados para os períodos A e B com os filtros atuais.";
-      } else if (!sumB.monthsCount) {
-        statusInfo.textContent = "Atenção: não há dados para o período B com os filtros atuais.";
-      } else if (!sumA.monthsCount) {
-        statusInfo.textContent = "Atenção: não há dados para o período A com os filtros atuais.";
-      } else {
-        statusInfo.textContent =
-          `${unitLabel} comparado entre A e B, após aplicar os filtros selecionados.`;
-      }
-
-      // Linha do tempo
-      renderTimeline(sumA, sumB);
-      // Barras de totais
-      renderTotalsBar(sumA, sumB);
-
-      document.getElementById("statusText").textContent =
-        "Comparação atualizada.";
-    }
-
-    function renderTimeline(sumA, sumB) {
-      const div = document.getElementById("chartTimeline");
-      const keysUnionSet = new Set([...sumA.keys, ...sumB.keys]);
-      const keysUnion = Array.from(keysUnionSet).sort();
-      if (!keysUnion.length) {
-        Plotly.purge(div);
+      if (!visibleNames.size) {
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
         return;
       }
 
-      const labels = keysUnion.map(k => state.keyToLabel.get(k) || labelFromKey(k));
-      const yA = keysUnion.map(k => sumA.map.get(k) || 0);
-      const yB = keysUnion.map(k => sumB.map.get(k) || 0);
+      const totals = [];
+      for (let i = 0; i < chart.keys.length; i++) {
+        let sum = 0;
+        chart.series.forEach((s) => {
+          if (visibleNames.has(s.name)) {
+            sum += s.values[i] || 0;
+          }
+        });
+        totals.push(sum);
+      }
 
+      const stats = computeBasicStats(totals);
       const isFat = state.valueMode === "FATURAMENTO";
-      const hoverTemplate = isFat
-        ? "<b>%{x}</b><br>Período %{customdata}<br>R$ %{y:,.2f}<extra></extra>"
-        : "<b>%{x}</b><br>Período %{customdata}<br>%{y:,.0f} un<extra></extra>";
+      const formatVal = (v) => {
+        if (!isFinite(v)) return "—";
+        return isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+      };
 
-      const traces = [];
+      document.getElementById("metricChange").textContent =
+        formatVal(stats.mean);
+      document.getElementById("metricChangeSub").textContent =
+        stats.count ? `Em ${stats.count} meses` : "Sem dados suficientes";
 
-      if (sumA.monthsCount) {
-        const periodLabelA = periodLabel(state.periodA.from, state.periodA.to);
-        traces.push({
-          x: labels,
-          y: yA,
-          type: "scatter",
-          mode: "lines+markers",
-          name: "Período A",
-          line: { shape: "spline", width: 3, color: getColor(0) },
-          marker: { size: 7, line: { width: 1, color: "#ffffff" } },
-          customdata: Array(labels.length).fill(periodLabelA),
-          hovertemplate: hoverTemplate
+      document.getElementById("metricMean").textContent =
+        formatVal(stats.total);
+      document.getElementById("metricMeanSub").textContent =
+        stats.count ? `Soma de ${stats.count} meses` : "Sem dados suficientes";
+
+      if (stats.count && stats.bestIdx >= 0 && stats.worstIdx >= 0) {
+        const bestLabel =
+          state.keyToLabel.get(chart.keys[stats.bestIdx]) ||
+          labelFromKey(chart.keys[stats.bestIdx]);
+        const worstLabel =
+          state.keyToLabel.get(chart.keys[stats.worstIdx]) ||
+          labelFromKey(chart.keys[stats.worstIdx]);
+
+        const bestVal = formatVal(totals[stats.bestIdx]);
+        const worstVal = formatVal(totals[stats.worstIdx]);
+
+        document.getElementById("metricVol").textContent =
+          `Melhor: ${bestLabel} — ${bestVal}`;
+        document.getElementById("metricVolSub").textContent =
+          `Pior: ${worstLabel} — ${worstVal}`;
+      } else {
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+      }
+    }
+
+    function clearRankings() {
+      ["rankingTop", "rankingRising", "rankingFalling"].forEach((id) => {
+        const ul = document.getElementById(id);
+        if (!ul) return;
+        ul.innerHTML = "";
+        const li = document.createElement("li");
+        li.textContent = "Sem dados";
+        li.classList.add("disabled");
+        ul.appendChild(li);
+      });
+    }
+
+    function setDeepDive(dimType, name) {
+      state.deepDiveFocus = { dimType, name };
+      state.deepDiveComparisons = [];
+
+      const select = document.getElementById("deepDiveCompare");
+      if (select) {
+        Array.from(select.options).forEach((o) => (o.selected = false));
+      }
+
+      renderDeepDive();
+    }
+
+    function computeEntitiesList(filteredKeys, dimType) {
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+      const names = new Set();
+      rows.forEach((r) => {
+        if (dimType === "REPRESENTANTE") {
+          if (r.representante) names.add(r.representante);
+        } else if (dimType === "CLIENTE") {
+          if (r.cliente) names.add(r.cliente);
+        } else if (dimType === "ESTADO") {
+          if (r.estado) names.add(r.estado);
+        } else if (dimType === "CATEGORIA") {
+          if (r.categoria) names.add(r.categoria);
+        }
+      });
+      return Array.from(names).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
+    }
+
+    function updateDeepDiveCompareSelect(filteredKeys) {
+      const select = document.getElementById("deepDiveCompare");
+      if (!select) return;
+
+      const dim = state.rankingDimension;
+      const names = computeEntitiesList(filteredKeys, dim);
+      const focus = state.deepDiveFocus;
+      const selected = new Set(state.deepDiveComparisons);
+
+      select.innerHTML = "";
+      names.forEach((name) => {
+        if (!name) return;
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        if (focus && name === focus.name) {
+          opt.selected = false;
+        } else {
+          opt.selected = selected.has(name);
+        }
+        select.appendChild(opt);
+      });
+    }
+
+    function updateRankings(filteredKeys) {
+      const ulTop = document.getElementById("rankingTop");
+      const ulRising = document.getElementById("rankingRising");
+      const ulFalling = document.getElementById("rankingFalling");
+      ulTop.innerHTML = "";
+      ulRising.innerHTML = "";
+      ulFalling.innerHTML = "";
+
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+
+      if (!rows.length || filteredKeys.length === 0) {
+        clearRankings();
+        return;
+      }
+
+      const useFat = state.valueMode === "FATURAMENTO";
+      const valKey = useFat ? "valor" : "quantidade";
+
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, idx) => keyIndex.set(k, idx));
+      const nKeys = filteredKeys.length;
+      const mid = Math.floor(nKeys / 2) || 1;
+
+      const statsMap = new Map();
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        if (idx == null) return;
+
+        let dimVal;
+        if (state.rankingDimension === "CLIENTE") {
+          dimVal = r.cliente;
+        } else if (state.rankingDimension === "ESTADO") {
+          dimVal = r.estado;
+        } else if (state.rankingDimension === "CATEGORIA") {
+          dimVal = r.categoria;
+        } else {
+          dimVal = r.representante;
+        }
+
+        const v = r[valKey] || 0;
+        if (!statsMap.has(dimVal)) {
+          statsMap.set(dimVal, {
+            total: 0,
+            totalA: 0,
+            totalB: 0,
+            clients: new Set()
+          });
+        }
+        const st = statsMap.get(dimVal);
+        st.total += v;
+        if (idx < mid) st.totalA += v;
+        else st.totalB += v;
+        st.clients.add(r.cliente);
+      });
+
+      const trendFloor = useFat ? 1000 : 50;
+      const entities = [];
+      statsMap.forEach((st, name) => {
+        if (!name || !name.toString().trim()) return;
+        const total = st.total;
+        if (!total) return;
+
+        const varAbs = st.totalB - st.totalA;
+        const clientsCount = st.clients.size;
+        if (st.totalA + st.totalB < trendFloor) {
+          entities.push({
+            name,
+            total,
+            totalA: st.totalA,
+            totalB: st.totalB,
+            varAbs: 0,
+            clientsCount
+          });
+        } else {
+          entities.push({
+            name,
+            total,
+            totalA: st.totalA,
+            totalB: st.totalB,
+            varAbs,
+            clientsCount
+          });
+        }
+      });
+
+      if (!entities.length) {
+        clearRankings();
+        return;
+      }
+
+      const maxItems = state.rankingDimension === "CLIENTE" ? 20 : 10;
+
+      const grandTotal = entities.reduce((acc, e) => acc + e.total, 0);
+      const topArr = [...entities]
+        .sort((a, b) => b.total - a.total)
+        .slice(0, maxItems);
+
+      const dimLabelTop =
+        state.rankingDimension === "CLIENTE"
+          ? "Cliente"
+          : state.rankingDimension === "ESTADO"
+          ? "Estado"
+          : state.rankingDimension === "CATEGORIA"
+          ? "Categoria"
+          : "Representante";
+
+      if (state.rankingDimension === "CLIENTE") {
+        document.getElementById("rankingTopTitle").textContent =
+          `Maiores no período — Cliente (${topArr.length} / ${entities.length})`;
+      } else {
+        document.getElementById("rankingTopTitle").textContent =
+          `Maiores no período — ${dimLabelTop}`;
+      }
+
+      topArr.forEach((e, idx) => {
+        const li = document.createElement("li");
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "ranking-label";
+        labelSpan.textContent =
+          state.rankingDimension === "REPRESENTANTE"
+            ? `${idx + 1}. ${e.name} (${e.clientsCount} clientes)`
+            : `${idx + 1}. ${e.name}`;
+        const valSpan = document.createElement("span");
+        valSpan.className = "ranking-value";
+
+        const valueText = useFat
+          ? formatCurrencyBRL(e.total)
+          : formatNumberBR(e.total) + " un";
+
+        const pct = grandTotal > 0 ? Math.round((e.total / grandTotal) * 100) : 0;
+        valSpan.textContent = `${valueText}  • ${pct}%`;
+
+        li.appendChild(labelSpan);
+        li.appendChild(valSpan);
+
+        li.addEventListener("click", () => {
+          setDeepDive(state.rankingDimension, e.name);
+        });
+
+        ulTop.appendChild(li);
+      });
+
+      const risingArr = entities
+        .filter((e) => e.varAbs > 0)
+        .sort((a, b) => b.varAbs - a.varAbs)
+        .slice(0, maxItems);
+
+      if (!risingArr.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem dados relevantes";
+        li.classList.add("disabled");
+        ulRising.appendChild(li);
+      } else {
+        risingArr.forEach((e, idx) => {
+          const li = document.createElement("li");
+          const labelSpan = document.createElement("span");
+          labelSpan.className = "ranking-label";
+          labelSpan.textContent = `${idx + 1}. ${e.name}`;
+          const valSpan = document.createElement("span");
+          valSpan.className = "ranking-value";
+
+          const deltaVal = Math.abs(e.varAbs);
+          const valueText = useFat
+            ? formatCurrencyBRL(deltaVal)
+            : formatNumberBR(deltaVal) + " un";
+          const pctNum =
+            e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
+          const pctTxt = `${Math.round(pctNum)}%`;
+
+          valSpan.textContent = `+${valueText}  • +${pctTxt}`;
+
+          li.appendChild(labelSpan);
+          li.appendChild(valSpan);
+
+          li.addEventListener("click", () => {
+            setDeepDive(state.rankingDimension, e.name);
+          });
+
+          ulRising.appendChild(li);
         });
       }
 
-      if (sumB.monthsCount) {
-        const periodLabelB = periodLabel(state.periodB.from, state.periodB.to);
+      const fallingArr = entities
+        .filter((e) => e.varAbs < 0)
+        .sort((a, b) => a.varAbs - b.varAbs)
+        .slice(0, maxItems);
+
+      if (!fallingArr.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem dados relevantes";
+        li.classList.add("disabled");
+        ulFalling.appendChild(li);
+      } else {
+        fallingArr.forEach((e, idx) => {
+          const li = document.createElement("li");
+          const labelSpan = document.createElement("span");
+          labelSpan.className = "ranking-label";
+          labelSpan.textContent = `${idx + 1}. ${e.name}`;
+          const valSpan = document.createElement("span");
+          valSpan.className = "ranking-value";
+
+          const deltaVal = Math.abs(e.varAbs);
+          const valueText = useFat
+            ? formatCurrencyBRL(deltaVal)
+            : formatNumberBR(deltaVal) + " un";
+          const pctNum =
+            e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
+          const pctTxt = `${Math.round(Math.abs(pctNum))}%`;
+
+          valSpan.textContent = `-${valueText}  • -${pctTxt}`;
+
+          li.appendChild(labelSpan);
+          li.appendChild(valSpan);
+
+          li.addEventListener("click", () => {
+            setDeepDive(state.rankingDimension, e.name);
+          });
+
+          ulFalling.appendChild(li);
+        });
+      }
+    }
+
+    function renderChart(filteredKeys, seriesMap) {
+      const labels = filteredKeys.map(
+        (k) => state.keyToLabel.get(k) || labelFromKey(k)
+      );
+
+      let entries = Array.from(seriesMap.entries());
+      entries.sort((a, b) => {
+        const sumA = filteredKeys.reduce(
+          (acc, k) => acc + (a[1].get(k) || 0),
+          0
+        );
+        const sumB = filteredKeys.reduce(
+          (acc, k) => acc + (b[1].get(k) || 0),
+          0
+        );
+        return sumB - sumA;
+      });
+
+      if (state.viewMode === "CLIENTE" && entries.length > 10) {
+        entries = entries.slice(0, 10);
+      }
+
+      const totalPerKey = filteredKeys.map((key) => {
+        let sum = 0;
+        entries.forEach(([_, map]) => {
+          sum += map.get(key) || 0;
+        });
+        return sum;
+      });
+
+      const traces = [];
+      const chartSeries = [];
+      const isFat = state.valueMode === "FATURAMENTO";
+
+      entries.forEach(([groupName, map]) => {
+        const vals = filteredKeys.map((k) => map.get(k) || 0);
+        const legendName = isFat
+          ? `${groupName} (R$)`
+          : `${groupName} (un)`;
+
+        chartSeries.push({ name: legendName, values: vals });
+
+        const baseTemplate = isFat
+          ? `<b>${groupName}</b><br>R$ %{y:,.2f}<extra></extra>`
+          : `<b>${groupName}</b><br>%{y:,.0f} un<extra></extra>`;
+
         traces.push({
           x: labels,
-          y: yB,
+          y: vals,
           type: "scatter",
           mode: "lines+markers",
-          name: "Período B",
-          line: { shape: "spline", width: 3, color: getColor(1), dash: "dot" },
-          marker: { size: 7, line: { width: 1, color: "#ffffff" } },
-          customdata: Array(labels.length).fill(periodLabelB),
-          hovertemplate: hoverTemplate
+          name: legendName,
+          line: {
+            shape: "spline",
+            width: 3,
+            color: getColorForName(groupName)
+          },
+          marker: {
+            size: 7,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: baseTemplate
         });
+      });
+
+      if (filteredKeys.length) {
+        traces.push({
+          x: labels,
+          y: totalPerKey,
+          type: "scatter",
+          mode: "lines",
+          name: "Total",
+          line: { width: 0 },
+          marker: { size: 0 },
+          opacity: 0,
+          showlegend: false,
+          hovertemplate: isFat
+            ? `<br><b>Total: R$ %{y:,.2f}</b><extra></extra>`
+            : `<br><b>Total: %{y:,.0f} un</b><extra></extra>`
+        });
+      }
+
+      state.currentChart = {
+        keys: filteredKeys.slice(),
+        series: chartSeries
+      };
+
+      let tickVals = labels.slice();
+      let tickText = labels.slice();
+      if (labels.length > 18) {
+        const step = labels.length > 36 ? 3 : 2;
+        tickVals = [];
+        tickText = [];
+        for (let i = 0; i < labels.length; i += step) {
+          tickVals.push(labels[i]);
+          tickText.push(labels[i]);
+        }
       }
 
       const layout = {
@@ -1103,6 +2159,8 @@
           type: "category",
           categoryorder: "array",
           categoryarray: labels,
+          tickvals: tickVals,
+          ticktext: tickText,
           tickangle: -35,
           tickfont: { size: 11 },
           showgrid: false,
@@ -1120,77 +2178,740 @@
         }
       };
 
-      Plotly.react(div, traces, layout, { responsive: true });
-      Plotly.relayout(div, { "yaxis.autorange": true });
+      const chartDiv = document.getElementById("chart");
+
+      Plotly.react(chartDiv, traces, layout, {
+        responsive: true
+      });
+
+      Plotly.relayout(chartDiv, { "yaxis.autorange": true });
+
+      if (!chartDiv._metricsHooked) {
+        chartDiv.on("plotly_restyle", () => {
+          recalcMetricsFromLegend();
+        });
+        chartDiv.on("plotly_legendclick", () => {
+          setTimeout(recalcMetricsFromLegend, 0);
+        });
+        chartDiv._metricsHooked = true;
+      }
+
+      recalcMetricsFromLegend();
     }
 
-    function renderTotalsBar(sumA, sumB) {
-      const div = document.getElementById("chartTotals");
-      const labels = [];
-      const values = [];
-      const colors = [];
-      const text = [];
+    function computeClientHealthForRep(name, filteredKeys) {
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, i) => keyIndex.set(k, i));
+      const nKeys = filteredKeys.length;
+      if (!nKeys) return null;
 
-      const isFat = state.valueMode === "FATURAMENTO";
-      const formatVal = (v) => isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+      const mid = Math.floor(nKeys / 2) || 1;
+      const valKey = state.valueMode === "FATURAMENTO" ? "valor" : "quantidade";
 
-      if (sumA.monthsCount) {
-        labels.push("Período A");
-        values.push(sumA.total);
-        colors.push(getColor(0));
-        text.push(
-          `${formatVal(sumA.total)}<br>${periodLabel(state.periodA.from, state.periodA.to)}`
-        );
+      const rows = state.rows.filter(
+        (r) =>
+          keyIndex.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          r.representante === name
+      );
+
+      const clients = new Map();
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        const v = r[valKey] || 0;
+        const cli = (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+        if (!clients.has(cli)) clients.set(cli, { A: 0, B: 0 });
+        const st = clients.get(cli);
+        if (idx < mid) st.A += v;
+        else st.B += v;
+      });
+
+      let novos = 0;
+      let perdidos = 0;
+      let crescendo = 0;
+      let caindo = 0;
+      let estaveis = 0;
+      const threshold = 0.15;
+
+      clients.forEach((st) => {
+        const A = st.A;
+        const B = st.B;
+        if (A === 0 && B > 0) {
+          novos++;
+        } else if (A > 0 && B === 0) {
+          perdidos++;
+        } else if (A > 0 && B > 0) {
+          if (B > A * (1 + threshold)) crescendo++;
+          else if (B < A * (1 - threshold)) caindo++;
+          else estaveis++;
+        }
+      });
+
+      return {
+        novos,
+        perdidos,
+        crescendo,
+        caindo,
+        estaveis,
+        total: clients.size
+      };
+    }
+
+    function buildEntitySeries(dimType, name, filteredKeys) {
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, i) => keyIndex.set(k, i));
+      const n = filteredKeys.length;
+      const vals = new Array(n).fill(0);
+      const valKey = state.valueMode === "FATURAMENTO" ? "valor" : "quantidade";
+
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) =>
+          keySet.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          matchesDim(r, dimType, name)
+      );
+
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        if (idx == null) return;
+        const v = r[valKey] || 0;
+        vals[idx] += v;
+      });
+
+      return vals;
+    }
+
+    function computeSeriesKpis(vals, filteredKeys) {
+      const n = vals.length;
+      if (!n) return { total: 0, mean: 0, active: 0 };
+
+      let total = 0;
+      let active = 0;
+      for (let i = 0; i < n; i++) {
+        const v = vals[i] || 0;
+        total += v;
+        if (v > 0) active++;
       }
+      const mean = total / n;
+      return { total, mean, active, months: n };
+    }
 
-      if (sumB.monthsCount) {
-        labels.push("Período B");
-        values.push(sumB.total);
-        colors.push(getColor(1));
-        text.push(
-          `${formatVal(sumB.total)}<br>${periodLabel(state.periodB.from, state.periodB.to)}`
-        );
-      }
+    function renderDeepDive() {
+      const info = document.getElementById("deepDiveInfo");
+      const chartDiv = document.getElementById("deepDiveChart");
+      const trendDiv = document.getElementById("deepDiveTrend");
+      const kpiDiv = document.getElementById("deepDiveKpis");
+      const tblCli = document.getElementById("deepDiveTableClientes");
+      const tblCat = document.getElementById("deepDiveTableCategorias");
 
-      if (!labels.length) {
-        Plotly.purge(div);
+      kpiDiv.innerHTML = "";
+      tblCli.innerHTML = "";
+      tblCat.innerHTML = "";
+
+      const focus = state.deepDiveFocus;
+
+      const filteredKeys = getFilteredKeys();
+      if (!focus || !focus.name || !filteredKeys.length) {
+        info.innerHTML = `
+          <div><strong>Nenhum item selecionado.</strong></div>
+          <small>
+            Use as listas de Tendências para escolher um foco
+            (representante, cliente, estado ou categoria). O gráfico de linha
+            mostrará a evolução ao longo do tempo; o gráfico de pizza e as tabelas
+            mostram a composição interna (clientes / categorias) do foco principal.
+          </small>
+        `;
+        Plotly.purge(chartDiv);
+        Plotly.purge(trendDiv);
         return;
       }
 
-      const trace = {
-        x: labels,
-        y: values,
-        type: "bar",
-        marker: { color: colors },
-        text: text,
-        textposition: "auto",
-        hovertemplate: isFat
-          ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
-          : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
-      };
+      const keySet = new Set(filteredKeys);
+      const useFat = state.valueMode === "FATURAMENTO";
+      const valKey = useFat ? "valor" : "quantidade";
 
-      const layout = {
-        margin: { l: 60, r: 30, t: 30, b: 40 },
-        paper_bgcolor: "#ffffff",
-        plot_bgcolor: "#ffffff",
-        showlegend: false,
-        xaxis: {
-          showgrid: false,
-          tickfont: { size: 11 }
-        },
-        yaxis: {
-          tickformat: ",.0f",
-          gridcolor: "#e9ecef",
-          zeroline: false,
-          automargin: true
-        },
-        title: {
-          text: "Totais por período",
-          font: { size: 14 }
+      const companyRows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+      let companyTotal = 0;
+      companyRows.forEach((r) => {
+        companyTotal += r[valKey] || 0;
+      });
+
+      const seriesPrimary = buildEntitySeries(
+        focus.dimType,
+        focus.name,
+        filteredKeys
+      );
+      const statsPrimary = computeSeriesKpis(
+        seriesPrimary,
+        filteredKeys
+      );
+
+      const compNames = (state.deepDiveComparisons || []).filter(
+        (n) => n && n !== focus.name
+      );
+      const compSeries = [];
+      const compStats = [];
+
+      compNames.forEach((name) => {
+        const sVals = buildEntitySeries(
+          focus.dimType,
+          name,
+          filteredKeys
+        );
+        compSeries.push(sVals);
+        compStats.push(computeSeriesKpis(sVals, filteredKeys));
+      });
+
+      const dimLabel = (dimType) =>
+        dimType === "REPRESENTANTE"
+          ? "Representante"
+          : dimType === "CLIENTE"
+          ? "Cliente"
+          : dimType === "ESTADO"
+          ? "Estado"
+          : "Categoria";
+
+      const formatVal = (v) =>
+        useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      const kpiCards = [];
+
+      const primaryShare =
+        companyTotal > 0
+          ? ((statsPrimary.total / companyTotal) * 100).toFixed(1).replace(".", ",") +
+            "%"
+          : "—";
+
+      kpiCards.push(`
+        <div class="deep-dive-kpi-item">
+          <div class="deep-dive-kpi-title">${dimLabel(
+            focus.dimType
+          )}: ${focus.name}</div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Total período</span>
+            <span class="deep-dive-kpi-value">${formatVal(
+              statsPrimary.total
+            )}</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Média mensal</span>
+            <span class="deep-dive-kpi-value">${formatVal(
+              statsPrimary.mean
+            )}</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Meses com venda</span>
+            <span class="deep-dive-kpi-value">${statsPrimary.active} / ${
+        statsPrimary.months
+      }</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Participação</span>
+            <span class="deep-dive-kpi-value">${primaryShare}</span>
+          </div>
+        </div>
+      `);
+
+      compNames.forEach((name, idx) => {
+        const st = compStats[idx];
+        const share =
+          companyTotal > 0
+            ? ((st.total / companyTotal) * 100).toFixed(1).replace(".", ",") +
+              "%"
+            : "—";
+        kpiCards.push(`
+          <div class="deep-dive-kpi-item">
+            <div class="deep-dive-kpi-title">Comparar: ${name}</div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Total período</span>
+              <span class="deep-dive-kpi-value">${formatVal(
+                st.total
+              )}</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Média mensal</span>
+              <span class="deep-dive-kpi-value">${formatVal(
+                st.mean
+              )}</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Meses com venda</span>
+              <span class="deep-dive-kpi-value">${st.active} / ${
+          st.months
+        }</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Participação</span>
+              <span class="deep-dive-kpi-value">${share}</span>
+            </div>
+          </div>
+        `);
+      });
+
+      kpiDiv.innerHTML = kpiCards.join("");
+
+      const labels = filteredKeys.map(
+        (k) => state.keyToLabel.get(k) || labelFromKey(k)
+      );
+      const tracesTrend = [
+        {
+          x: labels,
+          y: seriesPrimary,
+          type: "scatter",
+          mode: "lines+markers",
+          name: `${dimLabel(focus.dimType)} ${focus.name}`,
+          line: {
+            shape: "spline",
+            width: 3,
+            color: getColorForName(
+              `DD:${focus.dimType}:${focus.name}`
+            )
+          },
+          marker: {
+            size: 6,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: useFat
+            ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+            : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
         }
-      };
+      ];
 
-      Plotly.react(div, [trace], layout, { responsive: true });
+      compNames.forEach((name, idx) => {
+        const vals = compSeries[idx];
+        tracesTrend.push({
+          x: labels,
+          y: vals,
+          type: "scatter",
+          mode: "lines+markers",
+          name: `Comparar: ${name}`,
+          line: {
+            shape: "spline",
+            width: 3,
+            dash: "dot",
+            color: getColorForName(
+              `DD:${focus.dimType}:${name}`
+            )
+          },
+          marker: {
+            size: 6,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: useFat
+            ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+            : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
+        });
+      });
+
+      Plotly.react(
+        trendDiv,
+        tracesTrend,
+        {
+          margin: { l: 50, r: 20, t: 20, b: 50 },
+          paper_bgcolor: "#ffffff",
+          plot_bgcolor: "#ffffff",
+          showlegend: true,
+          legend: {
+            orientation: "h",
+            yanchor: "bottom",
+            y: 1.02,
+            xanchor: "center",
+            x: 0.5,
+            font: { size: 10 }
+          },
+          hovermode: "x unified",
+          xaxis: {
+            type: "category",
+            categoryorder: "array",
+            categoryarray: labels,
+            showgrid: false,
+            tickangle: -30,
+            tickfont: { size: 10 }
+          },
+          yaxis: {
+            title: "",
+            gridcolor: "#e9ecef",
+            zeroline: false,
+            automargin: true,
+            autorange: true
+          }
+        },
+        { responsive: true }
+      );
+      Plotly.relayout(trendDiv, { "yaxis.autorange": true });
+
+      const dimLabelFunc = (dimType) =>
+        dimType === "REPRESENTANTE"
+          ? "Representante"
+          : dimType === "CLIENTE"
+          ? "Cliente"
+          : dimType === "ESTADO"
+          ? "Estado"
+          : "Categoria";
+
+      let infoHtml = `
+        <div><strong>${dimLabelFunc(focus.dimType)}: ${
+        focus.name
+      }</strong></div>
+        <div>Total no período (foco principal): <strong>${formatVal(
+          statsPrimary.total
+        )}</strong></div>
+      `;
+      if (compNames.length) {
+        infoHtml += `<div>Comparando com: <strong>${compNames.join(
+          ", "
+        )}</strong></div>`;
+      }
+
+      if (focus.dimType === "REPRESENTANTE") {
+        const ch = computeClientHealthForRep(focus.name, filteredKeys);
+        if (ch) {
+          infoHtml += `<div>Saúde da carteira: <strong>Novos ${ch.novos}</strong> • <strong>Perdidos ${ch.perdidos}</strong> • <strong>Crescendo ${ch.crescendo}</strong> • <strong>Caindo ${ch.caindo}</strong> • <strong>Estáveis ${ch.estaveis}</strong> (total de ${ch.total} clientes)</div>`;
+        }
+      }
+
+      infoHtml += `
+        <small>
+          Distribuição interna considera o mesmo período e filtros da Nova Visão.
+          O gráfico de pizza e as tabelas sempre usam o foco principal (primeiro selecionado).
+        </small>
+      `;
+      info.innerHTML = infoHtml;
+
+      const rows = state.rows.filter(
+        (r) =>
+          keySet.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          matchesDim(r, focus.dimType, focus.name)
+      );
+
+      if (!rows.length) {
+        tblCli.innerHTML = "<em>Sem dados para os filtros atuais.</em>";
+        tblCat.innerHTML = "<em>Sem dados para os filtros atuais.</em>";
+        Plotly.purge(chartDiv);
+        return;
+      }
+
+      let groupField, groupLabel;
+      if (focus.dimType === "REPRESENTANTE") {
+        groupField = "cliente";
+        groupLabel = "clientes";
+      } else if (focus.dimType === "CLIENTE") {
+        groupField = "categoria";
+        groupLabel = "categorias";
+      } else if (focus.dimType === "ESTADO") {
+        groupField = "categoria";
+        groupLabel = "categorias";
+      } else {
+        groupField = "cliente";
+        groupLabel = "clientes";
+      }
+
+      const groupMap = new Map();
+      let totalVal = 0;
+
+      rows.forEach((r) => {
+        const keyG =
+          (r[groupField] || "Outros").toString().trim() || "Outros";
+        const v = r[valKey] || 0;
+        totalVal += v;
+        groupMap.set(keyG, (groupMap.get(keyG) || 0) + v);
+      });
+
+      const groups = Array.from(groupMap.entries()).sort(
+        (a, b) => b[1] - a[1]
+      );
+
+      const maxSlices = 15;
+      const labelsPie = [];
+      const valuesPie = [];
+      let othersTotal = 0;
+
+      groups.forEach(([gName, gVal], idx) => {
+        if (idx < maxSlices) {
+          labelsPie.push(gName);
+          valuesPie.push(gVal);
+        } else {
+          othersTotal += gVal;
+        }
+      });
+
+      if (othersTotal > 0) {
+        labelsPie.push("Outros");
+        valuesPie.push(othersTotal);
+      }
+
+      const pieColors = labelsPie.map((lab) =>
+        getColorForName(
+          `DDpie:${focus.dimType}:${focus.name}:${lab}`
+        )
+      );
+
+      Plotly.react(
+        chartDiv,
+        [
+          {
+            type: "pie",
+            labels: labelsPie,
+            values: valuesPie,
+            textinfo: "label+percent",
+            insidetextorientation: "radial",
+            hovertemplate: useFat
+              ? "<b>%{label}</b><br>R$ %{value:,.2f} (%{percent})<extra></extra>"
+              : "<b>%{label}</b><br>%{value:,.0f} un (%{percent})<extra></extra>",
+            marker: {
+              colors: pieColors
+            }
+          }
+        ],
+        {
+          margin: { t: 30, l: 20, r: 20, b: 20 },
+          paper_bgcolor: "#ffffff",
+          plot_bgcolor: "#ffffff",
+          showlegend: false,
+          title: {
+            text: `Distribuição por ${groupLabel}`,
+            font: { size: 14 }
+          }
+        },
+        { responsive: true }
+      );
+
+      function renderTableClientes() {
+        if (focus.dimType === "REPRESENTANTE") {
+          const cliMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.cliente || "Sem Cliente").toString().trim() ||
+              "Sem Cliente";
+            const v = r[valKey] || 0;
+            cliMap.set(c, (cliMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(cliMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCli.innerHTML = "<em>Sem clientes neste período.</em>";
+            return;
+          }
+          let html = `<h5>Clientes do representante</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCli.innerHTML = html;
+        } else if (focus.dimType === "CLIENTE") {
+          tblCli.innerHTML = `<h5>Cliente selecionado</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
+        } else if (focus.dimType === "ESTADO") {
+          tblCli.innerHTML = `<h5>Estado selecionado</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
+        } else {
+          tblCli.innerHTML = `<h5>Categoria selecionada</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
+        }
+      }
+
+      function renderTableCategorias() {
+        if (focus.dimType === "REPRESENTANTE") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias (todos os clientes)</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else if (focus.dimType === "CLIENTE") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias deste cliente</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else if (focus.dimType === "ESTADO") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias neste estado</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else {
+          const cliMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.cliente || "Sem Cliente").toString().trim() ||
+              "Sem Cliente";
+            const v = r[valKey] || 0;
+            cliMap.set(c, (cliMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(cliMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem clientes nesta categoria.</em>";
+            return;
+          }
+          let html = `<h5>Clientes desta categoria</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        }
+      }
+
+      renderTableClientes();
+      renderTableCategorias();
+    }
+
+    function updateAll() {
+      const filteredKeys = getFilteredKeys();
+      updateFilterOptions(filteredKeys);
+
+      const statusInfo = document.getElementById("statusInfo");
+      const statusRange = document.getElementById("statusRange");
+
+      if (!filteredKeys.length) {
+        statusInfo.textContent = "Nenhum dado para o período selecionado.";
+        statusRange.textContent = "Período: --";
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        clearRankings();
+        Plotly.purge("chart");
+        updateDeepDiveCompareSelect(filteredKeys);
+        renderDeepDive();
+        return;
+      }
+
+      const seriesMap = buildSeriesForCurrentFilters(filteredKeys);
+
+      if (!seriesMap.size) {
+        statusInfo.textContent = "Nenhum dado para os filtros selecionados.";
+        const firstKey = filteredKeys[0];
+        const lastKey = filteredKeys[filteredKeys.length - 1];
+        const labelFrom =
+          state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
+        const labelTo =
+          state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+        statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        clearRankings();
+        Plotly.purge("chart");
+        updateDeepDiveCompareSelect(filteredKeys);
+        renderDeepDive();
+        return;
+      }
+
+      if (state.viewMode === "CLIENTE") {
+        statusInfo.textContent =
+          "Dados carregados • Top 10 clientes no período";
+      } else if (state.viewMode === "ESTADO") {
+        statusInfo.textContent = "Dados carregados • Visão por estado";
+      } else if (state.viewMode === "REPRESENTANTE") {
+        statusInfo.textContent =
+          "Dados carregados • Visão por representante";
+      } else if (state.viewMode === "GERAL") {
+        statusInfo.textContent = "Dados carregados • Visão geral";
+      } else {
+        statusInfo.textContent =
+          "Dados carregados • Visão por categoria";
+      }
+
+      const firstKey = filteredKeys[0];
+      const lastKey = filteredKeys[filteredKeys.length - 1];
+      const labelFrom =
+        state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
+      const labelTo =
+        state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+      statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
+
+      updateRankings(filteredKeys);
+      updateDeepDiveCompareSelect(filteredKeys);
+      renderChart(filteredKeys, seriesMap);
+      renderDeepDive();
     }
 
     document.addEventListener("DOMContentLoaded", () => {

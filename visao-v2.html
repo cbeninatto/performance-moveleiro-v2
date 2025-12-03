@@ -14,7 +14,7 @@
   />
 
   <!-- Plotly & PapaParse -->
-  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <script src="https://cdn.plot.ly/2.32.0/plotly.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
@@ -181,6 +181,11 @@
       outline: none;
       border-color: var(--accent-gold);
       box-shadow: 0 0 0 1px rgba(245, 185, 95, 0.6);
+    }
+
+    .compare-select {
+      min-width: 220px;
+      max-width: 360px;
     }
 
     input[type="month"] {
@@ -395,29 +400,13 @@
       white-space: nowrap;
     }
 
-    /* Deep Dive layout */
-    .deep-dive-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.1fr);
-      gap: 14px;
-      margin-top: 8px;
-      align-items: stretch;
-    }
-    .deep-dive-left {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .deep-dive-right {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
+    /* Deep Dive layout (single column now) */
     .deep-dive-kpis {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 8px;
+      margin-top: 6px;
+      margin-bottom: 8px;
     }
     .deep-dive-kpi-item {
       background: #fafafa;
@@ -443,6 +432,13 @@
     .deep-dive-kpi-value {
       font-weight: 600;
       white-space: nowrap;
+      text-align: right;
+    }
+    .deep-dive-health-link {
+      font-size: 0.75rem;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-left: 4px;
     }
 
     .deep-dive-trend-wrapper {
@@ -450,12 +446,65 @@
       border: 1px solid rgba(148, 163, 184, 0.3);
       background: #fff;
       padding: 4px;
-      min-height: 280px;  /* taller mini trend */
+      min-height: 280px;
       max-height: 340px;
+      margin-bottom: 8px;
     }
     .deep-dive-trend {
       width: 100%;
       height: 100%;
+    }
+
+    .deep-dive-info {
+      font-size: 0.8rem;
+      color: var(--text-main);
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .deep-dive-info small {
+      color: var(--text-muted);
+    }
+
+    .deep-dive-health {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      margin-bottom: 8px;
+      max-height: 320px;
+      overflow: auto;
+    }
+    .deep-dive-health h5 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .deep-dive-health table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .deep-dive-health th,
+    .deep-dive-health td {
+      padding: 2px 4px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      white-space: nowrap;
+    }
+    .deep-dive-health th:nth-child(1),
+    .deep-dive-health td:nth-child(1) {
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .deep-dive-chart-wrapper {
@@ -463,8 +512,9 @@
       border: 1px solid rgba(148, 163, 184, 0.3);
       background: #fff;
       padding: 6px;
-      min-height: 380px;  /* taller main chart */
+      min-height: 380px;
       max-height: 460px;
+      margin-bottom: 8px;
     }
     .deep-dive-chart {
       width: 100%;
@@ -475,6 +525,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      margin-top: 4px;
     }
     .deep-dive-table {
       background: #fafafa;
@@ -511,21 +562,6 @@
       text-overflow: ellipsis;
     }
 
-    .deep-dive-info {
-      font-size: 0.8rem;
-      color: var(--text-main);
-      background: #fafafa;
-      border-radius: 10px;
-      border: 1px solid #eee;
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .deep-dive-info small {
-      color: var(--text-muted);
-    }
-
     @media (max-width: 900px) {
       .chart {
         height: 460px;
@@ -535,9 +571,6 @@
       }
       .ranking-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .deep-dive-layout {
-        grid-template-columns: 1fr;
       }
       .deep-dive-chart-wrapper {
         min-height: 340px;
@@ -605,7 +638,6 @@
             <div class="filters-row">
               <span class="filters-label">Período</span>
 
-              <!-- 3M 6M 9M 1A 2A 3A 5A TUDO -->
               <div class="range-buttons" id="rangeButtons">
                 <button class="range-btn" data-range="3M"><span>3M</span></button>
                 <button class="range-btn" data-range="6M"><span>6M</span></button>
@@ -617,7 +649,6 @@
                 <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
               </div>
 
-              <!-- Right-aligned: De/Até + Aplicar/Reset + Métrica FAT/VOL -->
               <div class="top-right-wrap">
                 <span>De</span>
                 <input type="month" lang="pt-BR" id="fromPeriod" />
@@ -812,7 +843,7 @@
               <span class="filters-label">Comparar</span>
               <div class="field-group">
                 <label class="field-label" for="deepDiveCompare">Comparar com (máx. 3)</label>
-                <select id="deepDiveCompare" multiple size="4"></select>
+                <select id="deepDiveCompare" class="compare-select" multiple></select>
               </div>
             </div>
 
@@ -821,34 +852,34 @@
               Use o seletor acima para comparar até 3 outros itens da mesma dimensão (Representante, Cliente, Estado ou Categoria).
             </p>
 
-            <div class="deep-dive-layout">
-              <div class="deep-dive-left">
-                <div class="deep-dive-kpis" id="deepDiveKpis"></div>
+            <!-- Deep Dive content - single column -->
+            <div class="deep-dive-kpis" id="deepDiveKpis"></div>
 
-                <div class="deep-dive-trend-wrapper">
-                  <div id="deepDiveTrend" class="deep-dive-trend"></div>
-                </div>
+            <div class="deep-dive-trend-wrapper">
+              <div id="deepDiveTrend" class="deep-dive-trend"></div>
+            </div>
 
-                <div class="deep-dive-chart-wrapper">
-                  <div id="deepDiveChart" class="deep-dive-chart"></div>
-                </div>
-              </div>
+            <div class="deep-dive-info" id="deepDiveInfo">
+              <div><strong>Nenhum item selecionado.</strong></div>
+              <small>
+                Use as listas de Tendências para escolher um foco
+                (representante, cliente, estado ou categoria). O gráfico de linha
+                mostrará a evolução ao longo do tempo; o gráfico de pizza e as tabelas
+                mostram a composição interna (clientes / categorias) do foco principal.
+              </small>
+            </div>
 
-              <div class="deep-dive-right">
-                <div class="deep-dive-info" id="deepDiveInfo">
-                  <div><strong>Nenhum item selecionado.</strong></div>
-                  <small>
-                    Use as listas de Tendências para escolher um foco (representante, cliente, estado ou categoria).
-                    O gráfico de linha mostra a evolução no tempo; o gráfico de pizza e as tabelas mostram a composição interna
-                    (clientes / categorias) para o foco principal.
-                  </small>
-                </div>
+            <div class="deep-dive-health" id="deepDiveHealth">
+              <em>Saúde da carteira detalhada será exibida aqui quando você clicar em “Saúde da carteira” para um representante.</em>
+            </div>
 
-                <div class="deep-dive-tables">
-                  <div class="deep-dive-table" id="deepDiveTableClientes"></div>
-                  <div class="deep-dive-table" id="deepDiveTableCategorias"></div>
-                </div>
-              </div>
+            <div class="deep-dive-chart-wrapper">
+              <div id="deepDiveChart" class="deep-dive-chart"></div>
+            </div>
+
+            <div class="deep-dive-tables">
+              <div class="deep-dive-table" id="deepDiveTableClientes"></div>
+              <div class="deep-dive-table" id="deepDiveTableCategorias"></div>
             </div>
           </div>
         </section>
@@ -905,8 +936,8 @@
       excludeLinha: "NONE",
       rankingDimension: "REPRESENTANTE",
       currentChart: null,
-      deepDiveFocus: null,          // { dimType, name }
-      deepDiveComparisons: []       // [name1, name2, ...] up to 3
+      deepDiveFocus: null,
+      deepDiveComparisons: []
     };
 
     function normalizeDesc(str) {
@@ -1452,6 +1483,38 @@
       }
     }
 
+    function getFilteredKeys() {
+      const keys = state.allKeysSorted;
+      if (!keys.length) return [];
+
+      if (state.range === "CUSTOM") {
+        const from = state.customFrom || keys[0];
+        const to = state.customTo || keys[keys.length - 1];
+        const fi = keys.indexOf(from);
+        const ti = keys.indexOf(to);
+        if (fi === -1 || ti === -1 || fi > ti) return [];
+        return keys.slice(fi, ti + 1);
+      }
+
+      if (
+        ["3M", "6M", "9M", "1A", "2A", "3A", "5A"].includes(state.range)
+      ) {
+        let n = 0;
+        if (state.range === "3M") n = 3;
+        else if (state.range === "6M") n = 6;
+        else if (state.range === "9M") n = 9;
+        else if (state.range === "1A") n = 12;
+        else if (state.range === "2A") n = 24;
+        else if (state.range === "3A") n = 36;
+        else if (state.range === "5A") n = 60;
+
+        if (keys.length <= n) return keys.slice();
+        return keys.slice(keys.length - n);
+      }
+
+      return keys.slice();
+    }
+
     function updateFilterOptions(filteredKeys) {
       const rows = state.rows;
       const keySet = new Set(filteredKeys);
@@ -1572,38 +1635,6 @@
         "excludeLinha",
         "NONE"
       );
-    }
-
-    function getFilteredKeys() {
-      const keys = state.allKeysSorted;
-      if (!keys.length) return [];
-
-      if (state.range === "CUSTOM") {
-        const from = state.customFrom || keys[0];
-        const to = state.customTo || keys[keys.length - 1];
-        const fi = keys.indexOf(from);
-        const ti = keys.indexOf(to);
-        if (fi === -1 || ti === -1 || fi > ti) return [];
-        return keys.slice(fi, ti + 1);
-      }
-
-      if (
-        ["3M", "6M", "9M", "1A", "2A", "3A", "5A"].includes(state.range)
-      ) {
-        let n = 0;
-        if (state.range === "3M") n = 3;
-        else if (state.range === "6M") n = 6;
-        else if (state.range === "9M") n = 9;
-        else if (state.range === "1A") n = 12;
-        else if (state.range === "2A") n = 24;
-        else if (state.range === "3A") n = 36;
-        else if (state.range === "5A") n = 60;
-
-        if (keys.length <= n) return keys.slice();
-        return keys.slice(keys.length - n);
-      }
-
-      return keys.slice();
     }
 
     function buildSeriesForCurrentFilters(filteredKeys) {
@@ -2199,27 +2230,43 @@
       recalcMetricsFromLegend();
     }
 
-    function computeClientHealthForRep(name, filteredKeys) {
+    function computeClientHealthFullForRep(name, filteredKeys) {
       const keyIndex = new Map();
       filteredKeys.forEach((k, i) => keyIndex.set(k, i));
       const nKeys = filteredKeys.length;
-      if (!nKeys) return null;
+      if (!nKeys) {
+        return {
+          summary: {
+            novos: 0,
+            perdidos: 0,
+            crescendo: 0,
+            caindo: 0,
+            estaveis: 0,
+            total: 0
+          },
+          details: []
+        };
+      }
 
       const mid = Math.floor(nKeys / 2) || 1;
       const valKey = state.valueMode === "FATURAMENTO" ? "valor" : "quantidade";
+      const keySet = new Set(filteredKeys);
 
       const rows = state.rows.filter(
         (r) =>
-          keyIndex.has(r.key) &&
+          keySet.has(r.key) &&
           rowPassesDimensionFilters(r) &&
           r.representante === name
       );
 
       const clients = new Map();
+
       rows.forEach((r) => {
         const idx = keyIndex.get(r.key);
+        if (idx == null) return;
         const v = r[valKey] || 0;
-        const cli = (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+        const cli =
+          (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
         if (!clients.has(cli)) clients.set(cli, { A: 0, B: 0 });
         const st = clients.get(cli);
         if (idx < mid) st.A += v;
@@ -2232,28 +2279,50 @@
       let caindo = 0;
       let estaveis = 0;
       const threshold = 0.15;
+      const details = [];
 
-      clients.forEach((st) => {
+      clients.forEach((st, cliente) => {
         const A = st.A;
         const B = st.B;
+        let status = "Estável";
+
         if (A === 0 && B > 0) {
+          status = "Novo";
           novos++;
         } else if (A > 0 && B === 0) {
+          status = "Perdido";
           perdidos++;
         } else if (A > 0 && B > 0) {
-          if (B > A * (1 + threshold)) crescendo++;
-          else if (B < A * (1 - threshold)) caindo++;
-          else estaveis++;
+          if (B > A * (1 + threshold)) {
+            status = "Crescendo";
+            crescendo++;
+          } else if (B < A * (1 - threshold)) {
+            status = "Caindo";
+            caindo++;
+          } else {
+            status = "Estável";
+            estaveis++;
+          }
+        } else {
+          estaveis++;
         }
+
+        const total = A + B;
+        details.push({ cliente, status, A, B, total });
       });
 
+      details.sort((a, b) => b.total - a.total);
+
       return {
-        novos,
-        perdidos,
-        crescendo,
-        caindo,
-        estaveis,
-        total: clients.size
+        summary: {
+          novos,
+          perdidos,
+          crescendo,
+          caindo,
+          estaveis,
+          total: clients.size
+        },
+        details
       };
     }
 
@@ -2284,7 +2353,7 @@
 
     function computeSeriesKpis(vals, filteredKeys) {
       const n = vals.length;
-      if (!n) return { total: 0, mean: 0, active: 0 };
+      if (!n) return { total: 0, mean: 0, active: 0, months: 0 };
 
       let total = 0;
       let active = 0;
@@ -2293,8 +2362,63 @@
         total += v;
         if (v > 0) active++;
       }
-      const mean = total / n;
+      const mean = n ? total / n : 0;
       return { total, mean, active, months: n };
+    }
+
+    function renderDeepDiveHealth(repName, health, useFat) {
+      const healthDiv = document.getElementById("deepDiveHealth");
+      if (!health) {
+        healthDiv.innerHTML =
+          "<em>Não foi possível calcular a saúde da carteira para este representante.</em>";
+        return;
+      }
+
+      const fmtVal = (v) =>
+        useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      let html = `<h5>Saúde da carteira — ${repName}</h5>`;
+      html += `<p style="margin:0 0 4px;font-size:0.78rem;">
+        Novos: <strong>${health.summary.novos}</strong> • 
+        Perdidos: <strong>${health.summary.perdidos}</strong> • 
+        Crescendo: <strong>${health.summary.crescendo}</strong> • 
+        Caindo: <strong>${health.summary.caindo}</strong> • 
+        Estáveis: <strong>${health.summary.estaveis}</strong> 
+        (total de ${health.summary.total} clientes)
+      </p>`;
+
+      if (!health.details.length) {
+        html += "<em>Sem clientes para detalhar neste período.</em>";
+      } else {
+        html += `<table><thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Status</th>
+            <th>Período A</th>
+            <th>Período B</th>
+            <th>Total</th>
+          </tr>
+        </thead><tbody>`;
+        const totalRep = health.details.reduce((acc, d) => acc + d.total, 0);
+        health.details.forEach((d) => {
+          const pct =
+            totalRep > 0
+              ? (d.total / totalRep) * 100
+              : 0;
+          html += `<tr>
+            <td>${d.cliente}</td>
+            <td>${d.status}</td>
+            <td>${fmtVal(d.A)}</td>
+            <td>${fmtVal(d.B)}</td>
+            <td>${fmtVal(d.total)} (${pct
+            .toFixed(1)
+            .replace(".", ",")}%)</td>
+          </tr>`;
+        });
+        html += "</tbody></table>";
+      }
+
+      healthDiv.innerHTML = html;
     }
 
     function renderDeepDive() {
@@ -2304,10 +2428,13 @@
       const kpiDiv = document.getElementById("deepDiveKpis");
       const tblCli = document.getElementById("deepDiveTableClientes");
       const tblCat = document.getElementById("deepDiveTableCategorias");
+      const healthDiv = document.getElementById("deepDiveHealth");
 
       kpiDiv.innerHTML = "";
       tblCli.innerHTML = "";
       tblCat.innerHTML = "";
+      healthDiv.innerHTML =
+        "<em>Saúde da carteira detalhada será exibida aqui quando você clicar em “Saúde da carteira” para um representante.</em>";
 
       const focus = state.deepDiveFocus;
 
@@ -2377,6 +2504,16 @@
       const formatVal = (v) =>
         useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
 
+      const healthByRep = new Map();
+      if (focus.dimType === "REPRESENTANTE") {
+        const hMain = computeClientHealthFullForRep(focus.name, filteredKeys);
+        healthByRep.set(focus.name, hMain);
+        compNames.forEach((name) => {
+          const h = computeClientHealthFullForRep(name, filteredKeys);
+          healthByRep.set(name, h);
+        });
+      }
+
       const kpiCards = [];
 
       const primaryShare =
@@ -2385,11 +2522,17 @@
             "%"
           : "—";
 
+      let primaryHealthLine = "";
+      if (focus.dimType === "REPRESENTANTE") {
+        const h = healthByRep.get(focus.name);
+        if (h) {
+          primaryHealthLine = `Novos ${h.summary.novos} • Perdidos ${h.summary.perdidos} • Crescendo ${h.summary.crescendo} • Caindo ${h.summary.caindo} • Estáveis ${h.summary.estaveis} (${h.summary.total} clientes)`;
+        }
+      }
+
       kpiCards.push(`
         <div class="deep-dive-kpi-item">
-          <div class="deep-dive-kpi-title">${dimLabel(
-            focus.dimType
-          )}: ${focus.name}</div>
+          <div class="deep-dive-kpi-title">${dimLabel(focus.dimType)}: ${focus.name}</div>
           <div class="deep-dive-kpi-line">
             <span class="deep-dive-kpi-label">Total período</span>
             <span class="deep-dive-kpi-value">${formatVal(
@@ -2412,6 +2555,17 @@
             <span class="deep-dive-kpi-label">Participação</span>
             <span class="deep-dive-kpi-value">${primaryShare}</span>
           </div>
+          ${
+            focus.dimType === "REPRESENTANTE"
+              ? `<div class="deep-dive-kpi-line">
+                  <span class="deep-dive-kpi-label">Saúde da carteira</span>
+                  <span class="deep-dive-kpi-value">
+                    <span class="deep-dive-health-link" data-rep="${focus.name}">Ver detalhes</span>
+                    ${primaryHealthLine ? "<br/>" + primaryHealthLine : ""}
+                  </span>
+                </div>`
+              : ""
+          }
         </div>
       `);
 
@@ -2422,6 +2576,24 @@
             ? ((st.total / companyTotal) * 100).toFixed(1).replace(".", ",") +
               "%"
             : "—";
+
+        let healthLine = "";
+        let healthLinkHtml = "";
+        if (focus.dimType === "REPRESENTANTE") {
+          const h = healthByRep.get(name);
+          if (h) {
+            healthLine = `Novos ${h.summary.novos} • Perdidos ${h.summary.perdidos} • Crescendo ${h.summary.crescendo} • Caindo ${h.summary.caindo} • Estáveis ${h.summary.estaveis} (${h.summary.total} clientes)`;
+            healthLinkHtml = `
+              <div class="deep-dive-kpi-line">
+                <span class="deep-dive-kpi-label">Saúde da carteira</span>
+                <span class="deep-dive-kpi-value">
+                  <span class="deep-dive-health-link" data-rep="${name}">Ver detalhes</span>
+                  ${healthLine ? "<br/>" + healthLine : ""}
+                </span>
+              </div>`;
+          }
+        }
+
         kpiCards.push(`
           <div class="deep-dive-kpi-item">
             <div class="deep-dive-kpi-title">Comparar: ${name}</div>
@@ -2447,38 +2619,72 @@
               <span class="deep-dive-kpi-label">Participação</span>
               <span class="deep-dive-kpi-value">${share}</span>
             </div>
+            ${healthLinkHtml || ""}
           </div>
         `);
       });
 
       kpiDiv.innerHTML = kpiCards.join("");
 
+      info.innerHTML = `
+        <div><strong>${dimLabel(focus.dimType)} selecionado: ${
+        focus.name
+      }</strong></div>
+        <small>
+          O gráfico de linha acima mostra a evolução deste ${
+            dimLabel(focus.dimType).toLowerCase()
+          } ao longo do tempo (e dos itens selecionados em “Comparar”).
+          O gráfico de pizza e as tabelas abaixo mostram a composição interna
+          (clientes / categorias) para o foco principal, respeitando o mesmo período
+          e filtros da Nova Visão.
+        </small>
+      `;
+
+      if (focus.dimType === "REPRESENTANTE") {
+        const links = document.querySelectorAll(".deep-dive-health-link");
+        links.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const repName = link.getAttribute("data-rep");
+            let h = healthByRep.get(repName);
+            if (!h) {
+              h = computeClientHealthFullForRep(repName, filteredKeys);
+              healthByRep.set(repName, h);
+            }
+            renderDeepDiveHealth(repName, h, useFat);
+          });
+        });
+      } else {
+        healthDiv.innerHTML =
+          "<em>Saúde da carteira detalhada está disponível apenas para a visão por Representante.</em>";
+      }
+
       const labels = filteredKeys.map(
         (k) => state.keyToLabel.get(k) || labelFromKey(k)
       );
-      const tracesTrend = [
-        {
-          x: labels,
-          y: seriesPrimary,
-          type: "scatter",
-          mode: "lines+markers",
-          name: `${dimLabel(focus.dimType)} ${focus.name}`,
-          line: {
-            shape: "spline",
-            width: 3,
-            color: getColorForName(
-              `DD:${focus.dimType}:${focus.name}`
-            )
-          },
-          marker: {
-            size: 6,
-            line: { width: 1, color: "#ffffff" }
-          },
-          hovertemplate: useFat
-            ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
-            : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
-        }
-      ];
+      const tracesTrend = [];
+
+      tracesTrend.push({
+        x: labels,
+        y: seriesPrimary,
+        type: "scatter",
+        mode: "lines+markers",
+        name: `${dimLabel(focus.dimType)} ${focus.name}`,
+        line: {
+          shape: "spline",
+          width: 3,
+          color: getColorForName(
+            `DD:${focus.dimType}:${focus.name}`
+          )
+        },
+        marker: {
+          size: 6,
+          line: { width: 1, color: "#ffffff" }
+        },
+        hovertemplate: useFat
+          ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+          : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
+      });
 
       compNames.forEach((name, idx) => {
         const vals = compSeries[idx];
@@ -2491,7 +2697,6 @@
           line: {
             shape: "spline",
             width: 3,
-            dash: "dot",
             color: getColorForName(
               `DD:${focus.dimType}:${name}`
             )
@@ -2505,6 +2710,18 @@
             : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
         });
       });
+
+      let ddTickVals = labels.slice();
+      let ddTickText = labels.slice();
+      if (labels.length > 18) {
+        const step = labels.length > 36 ? 3 : 2;
+        ddTickVals = [];
+        ddTickText = [];
+        for (let i = 0; i < labels.length; i += step) {
+          ddTickVals.push(labels[i]);
+          ddTickText.push(labels[i]);
+        }
+      }
 
       Plotly.react(
         trendDiv,
@@ -2527,6 +2744,8 @@
             type: "category",
             categoryorder: "array",
             categoryarray: labels,
+            tickvals: ddTickVals,
+            ticktext: ddTickText,
             showgrid: false,
             tickangle: -30,
             tickfont: { size: 10 }
@@ -2542,44 +2761,6 @@
         { responsive: true }
       );
       Plotly.relayout(trendDiv, { "yaxis.autorange": true });
-
-      const dimLabelFunc = (dimType) =>
-        dimType === "REPRESENTANTE"
-          ? "Representante"
-          : dimType === "CLIENTE"
-          ? "Cliente"
-          : dimType === "ESTADO"
-          ? "Estado"
-          : "Categoria";
-
-      let infoHtml = `
-        <div><strong>${dimLabelFunc(focus.dimType)}: ${
-        focus.name
-      }</strong></div>
-        <div>Total no período (foco principal): <strong>${formatVal(
-          statsPrimary.total
-        )}</strong></div>
-      `;
-      if (compNames.length) {
-        infoHtml += `<div>Comparando com: <strong>${compNames.join(
-          ", "
-        )}</strong></div>`;
-      }
-
-      if (focus.dimType === "REPRESENTANTE") {
-        const ch = computeClientHealthForRep(focus.name, filteredKeys);
-        if (ch) {
-          infoHtml += `<div>Saúde da carteira: <strong>Novos ${ch.novos}</strong> • <strong>Perdidos ${ch.perdidos}</strong> • <strong>Crescendo ${ch.crescendo}</strong> • <strong>Caindo ${ch.caindo}</strong> • <strong>Estáveis ${ch.estaveis}</strong> (total de ${ch.total} clientes)</div>`;
-        }
-      }
-
-      infoHtml += `
-        <small>
-          Distribuição interna considera o mesmo período e filtros da Nova Visão.
-          O gráfico de pizza e as tabelas sempre usam o foco principal (primeiro selecionado).
-        </small>
-      `;
-      info.innerHTML = infoHtml;
 
       const rows = state.rows.filter(
         (r) =>

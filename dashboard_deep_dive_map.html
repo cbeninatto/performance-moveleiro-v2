@@ -397,6 +397,114 @@
       height: 10px;
       border-radius: 999px;
     }
+
+    /* Clients card */
+    .clients-card {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top left, #020617, #020617);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .clients-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .clients-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .clients-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .clients-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .clients-table-wrapper {
+      margin-top: 4px;
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      overflow: hidden;
+      background: radial-gradient(circle at top left, #020617, #020617);
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    table.clients-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    table.clients-table thead {
+      position: sticky;
+      top: 0;
+      background: radial-gradient(circle at top left, #020617, #020617);
+      z-index: 1;
+    }
+
+    table.clients-table th,
+    table.clients-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+    }
+
+    table.clients-table th {
+      text-align: left;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    table.clients-table td {
+      color: var(--text-main);
+    }
+
+    table.clients-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .cell-name {
+      width: 50%;
+    }
+
+    .client-name {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    .client-code {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .cell-number {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -408,7 +516,7 @@
             <h1>Deep Dive · Mapa de Cidades</h1>
             <p>
               Mesmos dados da Nova Visão Temporal (<code>relatorio_faturamento.csv</code>),
-              agora em mapa por cidade e representante.
+              agora em mapa por cidade, representante e lista de clientes.
             </p>
           </div>
 
@@ -519,6 +627,34 @@
               <span id="legend-bin-3"></span>
             </span>
           </div>
+
+          <!-- Clients list card -->
+          <div class="clients-card">
+            <div class="clients-card-header">
+              <div>
+                <div class="clients-title">Clientes na cidade selecionada</div>
+                <div class="clients-subtitle" id="clients-subtitle">
+                  Clique em um ponto no mapa para ver os clientes.
+                </div>
+              </div>
+              <div class="clients-meta" id="clients-meta"></div>
+            </div>
+
+            <div class="clients-table-wrapper">
+              <table class="clients-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Faturamento</th>
+                    <th>Volume</th>
+                  </tr>
+                </thead>
+                <tbody id="clients-table-body">
+                  <!-- linhas geradas via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -550,28 +686,13 @@
     const COL_REP = "Representante";
     const COL_REP_CODIGO = "RepresentanteCodigo";
 
-    // ------------------------------
-    // Binning config (edit as needed)
-    // ------------------------------
-
-    // Faturamento bins (R$)
-    const VALUE_BINS = [
-      { min: 1_000_000, color: "#22c55e", label: "R$ 1.000.000+" },          // Green
-      { min: 500_000,   color: "#eab308", label: "R$ 500.000 - 999.999" },   // Yellow
-      { min: 250_000,   color: "#f97316", label: "R$ 250.000 - 499.999" },   // Orange
-      { min: 0,         color: "#ef4444", label: "R$ 0 - 249.999" }          // Red
-    ];
-
-    // Volume bins (Quantidade)
-    const VOLUME_BINS = [
-      { min: 10_000, color: "#22c55e", label: "10.000+" },          // Green
-      { min: 5_000,  color: "#eab308", label: "5.000 - 9.999" },    // Yellow
-      { min: 2_500,  color: "#f97316", label: "2.500 - 4.999" },    // Orange
-      { min: 0,      color: "#ef4444", label: "0 - 2.499" }         // Red
-    ];
-
-    // Base radius for all dots
+    // Binning colors & base radius
+    const BIN_COLORS = ["#22c55e", "#eab308", "#f97316", "#ef4444"];
     const BASE_RADIUS = 7;
+
+    // Dynamic bins (recomputed on every filter update)
+    let currentValueBins = [];
+    let currentVolumeBins = [];
 
     // ------------------------------
     // Global state
@@ -588,6 +709,7 @@
     let currentEndDate = null;
 
     let currentMetric = "valor"; // "valor" | "quantidade"
+    let selectedCity = null;     // { estado, cidade }
 
     // ------------------------------
     // Helpers
@@ -675,8 +797,85 @@
       return new Date(year, month - 1, 1);
     }
 
+    function buildDynamicBins(values, isValor) {
+      const fmt = isValor
+        ? (v) => "R$ " + v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })
+        : (v) => v.toLocaleString("pt-BR");
+
+      const cleaned = values
+        .filter((v) => v != null && !isNaN(v) && v >= 0)
+        .sort((a, b) => a - b);
+
+      if (!cleaned.length) {
+        // Fallback: static ranges
+        if (isValor) {
+          return [
+            { min: 1_000_000, color: BIN_COLORS[0], label: "R$ 1.000.000+" },
+            { min: 500_000,   color: BIN_COLORS[1], label: "R$ 500.000 - 999.999" },
+            { min: 250_000,   color: BIN_COLORS[2], label: "R$ 250.000 - 499.999" },
+            { min: 0,         color: BIN_COLORS[3], label: "R$ 0 - 249.999" }
+          ];
+        } else {
+          return [
+            { min: 10_000, color: BIN_COLORS[0], label: "10.000+" },
+            { min: 5_000,  color: BIN_COLORS[1], label: "5.000 - 9.999" },
+            { min: 2_500,  color: BIN_COLORS[2], label: "2.500 - 4.999" },
+            { min: 0,      color: BIN_COLORS[3], label: "0 - 2.499" }
+          ];
+        }
+      }
+
+      const n = cleaned.length;
+      const minVal = cleaned[0];
+      const maxVal = cleaned[n - 1];
+
+      if (minVal === maxVal) {
+        const labelSingle = fmt(minVal);
+        const color = BIN_COLORS[0];
+        return [
+          { min: minVal, color, label: labelSingle },
+          { min: minVal, color, label: labelSingle },
+          { min: minVal, color, label: labelSingle },
+          { min: 0,      color, label: labelSingle }
+        ];
+      }
+
+      const idx = (p) => Math.floor(p * (n - 1));
+      const q1 = cleaned[idx(0.25)];
+      const q2 = cleaned[idx(0.5)];
+      const q3 = cleaned[idx(0.75)];
+
+      const t0 = Math.max(0, minVal);
+      const t1 = Math.max(t0, q1);
+      const t2 = Math.max(t1, q2);
+      const t3 = Math.max(t2, q3);
+
+      return [
+        {
+          min: t3,
+          color: BIN_COLORS[0],
+          label: `${fmt(t3)}+`
+        },
+        {
+          min: t2,
+          color: BIN_COLORS[1],
+          label: `${fmt(t2)} - ${fmt(t3)}`
+        },
+        {
+          min: t1,
+          color: BIN_COLORS[2],
+          label: `${fmt(t1)} - ${fmt(t2)}`
+        },
+        {
+          min: t0,
+          color: BIN_COLORS[3],
+          label: `${fmt(t0)} - ${fmt(t1)}`
+        }
+      ];
+    }
+
     function getMetricBin(value) {
-      const bins = currentMetric === "valor" ? VALUE_BINS : VOLUME_BINS;
+      const bins = currentMetric === "valor" ? currentValueBins : currentVolumeBins;
       for (const bin of bins) {
         if (value >= bin.min) return bin;
       }
@@ -731,6 +930,10 @@
           Faixa (${currentMetric === "valor" ? "Faturamento" : "Volume"}): ${bin.label}
         `
         );
+
+        marker.on("click", () => {
+          updateClientListForCity(c.estado, c.cidade);
+        });
 
         marker.addTo(cityLayer);
         bounds.push([c.lat, c.lon]);
@@ -825,11 +1028,152 @@
       totalClientsEl.textContent = totalClients.toLocaleString("pt-BR");
     }
 
+    function computeDynamicBinsFromAggregated(aggregated) {
+      const valuesValor = aggregated.map((c) => c.valor);
+      const valuesQtd = aggregated.map((c) => c.quantidade);
+
+      currentValueBins = buildDynamicBins(valuesValor, true);
+      currentVolumeBins = buildDynamicBins(valuesQtd, false);
+    }
+
+    function updateLegend() {
+      const bins = currentMetric === "valor" ? currentValueBins : currentVolumeBins;
+      bins.forEach((bin, idx) => {
+        const el = document.getElementById(`legend-bin-${idx}`);
+        const dot = document.getElementById(`legend-dot-${idx}`);
+        if (el) el.textContent = bin.label;
+        if (dot) dot.style.background = bin.color;
+      });
+    }
+
     function updateAll() {
       const { aggregated, totalMetric, totalCities, totalClients } = filterAndAggregate();
-      console.log("updateAll → cities:", aggregated.length, "totalMetric:", totalMetric);
+      computeDynamicBinsFromAggregated(aggregated);
+      updateLegend();
       updateSummary(totalMetric, totalCities, totalClients);
       updateMapMarkers(aggregated);
+      updateClientListFromSelected(); // mantém cidade selecionada atualizada
+    }
+
+    // ------------------------------
+    // Client list card
+    // ------------------------------
+    function clearClientList() {
+      selectedCity = null;
+      const subtitle = document.getElementById("clients-subtitle");
+      const meta = document.getElementById("clients-meta");
+      const tbody = document.getElementById("clients-table-body");
+      if (subtitle) {
+        subtitle.textContent = "Clique em um ponto no mapa para ver os clientes.";
+      }
+      if (meta) meta.textContent = "";
+      if (tbody) tbody.innerHTML = "";
+    }
+
+    function updateClientListForCity(estado, cidade) {
+      selectedCity = { estado, cidade };
+      updateClientListFromSelected();
+    }
+
+    function updateClientListFromSelected() {
+      const subtitle = document.getElementById("clients-subtitle");
+      const meta = document.getElementById("clients-meta");
+      const tbody = document.getElementById("clients-table-body");
+
+      if (!subtitle || !meta || !tbody) return;
+
+      if (!selectedCity) {
+        clearClientList();
+        return;
+      }
+
+      const { estado, cidade } = selectedCity;
+
+      const estadoFilterVal = document.getElementById("estado-filter").value || "";
+      const repFilterVal = document.getElementById("rep-filter").value || "";
+      const start = currentStartDate;
+      const end = currentEndDate;
+
+      const perClient = new Map();
+      let totalValor = 0;
+      let totalQuantidade = 0;
+
+      for (const row of rawSales) {
+        if (!row.date) continue;
+        if (start && row.date < start) continue;
+        if (end && row.date > end) continue;
+        if (estadoFilterVal && row.estado !== estadoFilterVal) continue;
+        if (repFilterVal && row.representante !== repFilterVal) continue;
+        if (row.estado !== estado || row.cidade !== cidade) continue;
+
+        const key = row.clienteCodigo || row.clienteNome || "SEM_CODIGO";
+        let item = perClient.get(key);
+        if (!item) {
+          item = {
+            codigo: row.clienteCodigo || "",
+            nome: row.clienteNome || "(sem nome)",
+            valor: 0,
+            quantidade: 0
+          };
+          perClient.set(key, item);
+        }
+        item.valor += row.valor;
+        item.quantidade += row.quantidade;
+        totalValor += row.valor;
+        totalQuantidade += row.quantidade;
+      }
+
+      const clients = Array.from(perClient.values());
+
+      if (!clients.length) {
+        subtitle.textContent = `${cidade} - ${estado}: nenhum cliente no período atual.`;
+        meta.textContent = "";
+        tbody.innerHTML = "";
+        return;
+      }
+
+      clients.sort((a, b) => {
+        const va = currentMetric === "valor" ? a.valor : a.quantidade;
+        const vb = currentMetric === "valor" ? b.valor : b.quantidade;
+        return vb - va;
+      });
+
+      const rowsHtml = clients
+        .map(
+          (c) => `
+        <tr>
+          <td class="cell-name">
+            <div class="client-name">${c.nome}</div>
+            ${
+              c.codigo
+                ? `<div class="client-code">#${c.codigo}</div>`
+                : ""
+            }
+          </td>
+          <td class="cell-number">
+            R$ ${c.valor.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}
+          </td>
+          <td class="cell-number">
+            ${c.quantidade.toLocaleString("pt-BR")}
+          </td>
+        </tr>
+      `
+        )
+        .join("");
+
+      tbody.innerHTML = rowsHtml;
+
+      subtitle.textContent = `${cidade} - ${estado}`;
+      meta.textContent =
+        `${clients.length.toLocaleString("pt-BR")} clientes · ` +
+        `Faturamento R$ ${totalValor.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })} · ` +
+        `Volume ${totalQuantidade.toLocaleString("pt-BR")}`;
     }
 
     // ------------------------------
@@ -903,7 +1247,6 @@
           document.querySelectorAll(".metric-btn").forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
           currentMetric = btn.dataset.metric === "quantidade" ? "quantidade" : "valor";
-          updateLegend();
           updateAll();
         });
       });
@@ -925,12 +1268,16 @@
       document.getElementById("reset-range").addEventListener("click", resetRange);
 
       // Estado & Representante
-      document.getElementById("estado-filter").addEventListener("change", updateAll);
-      document.getElementById("rep-filter").addEventListener("change", updateAll);
+      document.getElementById("estado-filter").addEventListener("change", () => {
+        updateAll();
+      });
+      document.getElementById("rep-filter").addEventListener("change", () => {
+        updateAll();
+      });
     }
 
     // ------------------------------
-    // Dropdowns & Legend
+    // Dropdowns
     // ------------------------------
     function populateEstadoFilter() {
       const select = document.getElementById("estado-filter");
@@ -1005,16 +1352,6 @@
       console.log("Linhas com coordenadas:", withGeo);
     }
 
-    function updateLegend() {
-      const bins = currentMetric === "valor" ? VALUE_BINS : VOLUME_BINS;
-      bins.forEach((bin, idx) => {
-        const el = document.getElementById(`legend-bin-${idx}`);
-        const dot = document.getElementById(`legend-dot-${idx}`);
-        if (el) el.textContent = bin.label;
-        if (dot) dot.style.background = bin.color;
-      });
-    }
-
     // ------------------------------
     // Data loading & init
     // ------------------------------
@@ -1035,7 +1372,6 @@
       computeDateRange();
       populateEstadoFilter();
       populateRepFilter();
-      updateLegend();
 
       const tudoBtn = document.querySelector('.pill-btn[data-period="TUDO"]');
       if (tudoBtn) tudoBtn.classList.add("active");

@@ -229,11 +229,10 @@ def load_geo() -> pd.DataFrame:
     # Auto-detecta separador
     df_geo = pd.read_csv(CITY_GEO_CSV_URL, sep=None, engine="python")
 
-    # Normaliza nomes (tira espaços e baixa caixa)
+    # Guardar nomes originais para debug
     original_cols = list(df_geo.columns)
     df_geo.columns = [str(c).strip() for c in df_geo.columns]
 
-    # Helper para buscar coluna por "apelidos"
     def find_col(candidates):
         for col in df_geo.columns:
             norm = str(col).strip().lower()
@@ -283,6 +282,7 @@ def load_geo() -> pd.DataFrame:
     )
 
     return df_geo[["key", "Estado", "Cidade", "lat", "lon"]]
+
 
 # ==========================
 # LOAD DATA

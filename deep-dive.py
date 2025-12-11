@@ -10,13 +10,14 @@ st.set_page_config(
     layout="wide",
 )
 
-# CSV direto do GitHub (ajustado para o seu arquivo real)
+# CSV direto do GitHub (layout real do seu arquivo)
 GITHUB_CSV_URL = (
     "https://raw.githubusercontent.com/"
     "cbeninatto/performance-moveleiro-v2/main/data/relatorio_faturamento.csv"
 )
 
-STATUS_COL = "StatusCarteira"  # por enquanto não existe, então será só placeholder
+# Nome da coluna de status (ainda não existe no CSV, então usamos como opcional)
+STATUS_COL = "StatusCarteira"
 
 
 # ==========================
@@ -52,6 +53,7 @@ def load_data() -> pd.DataFrame:
 
     # Tipagem básica
     df["Valor"] = pd.to_numeric(df["Valor"], errors="coerce").fillna(0.0)
+    df["Quantidade"] = pd.to_numeric(df["Quantidade"], errors="coerce").fillna(0.0)
     df["Ano"] = pd.to_numeric(df["Ano"], errors="coerce").astype("Int64")
     df["MesNum"] = pd.to_numeric(df["Mes"], errors="coerce").astype("Int64")
 
@@ -111,6 +113,15 @@ def compute_carteira_score(status_counts: pd.Series):
     return score_0_100, label
 
 
+# Mapeamento de meses
+MONTH_MAP_NUM_TO_NAME = {
+    1: "JAN", 2: "FEV", 3: "MAR", 4: "ABR",
+    5: "MAI", 6: "JUN", 7: "JUL", 8: "AGO",
+    9: "SET", 10: "OUT", 11: "NOV", 12: "DEZ",
+}
+MONTH_MAP_NAME_TO_NUM = {v: k for k, v in MONTH_MAP_NUM_TO_NAME.items()}
+
+
 # ==========================
 # LOAD DATA
 # ==========================
@@ -129,30 +140,85 @@ if df.empty:
 # ==========================
 st.sidebar.title("Filtros – Deep Dive")
 
-# Representante
+# Representantes
 reps = sorted(df["Representante"].dropna().unique())
 if not reps:
     st.error("Não foram encontrados representantes na base de dados.")
     st.stop()
-
 rep_selected = st.sidebar.selectbox("Representante", reps)
 
-# Período
-valid_comp = df["Competencia"].dropna().sort_values().unique()
-if len(valid_comp) == 0:
-    st.error("Não foi possível identificar as competências (Ano/Mês).")
+# ----- Filtro de período: dropdowns de mês e ano -----
+st.sidebar.markdown("### Período")
+
+anos_disponiveis = sorted(df["Ano"].dropna().unique())
+if not anos_disponiveis:
+    st.error("Não foi possível identificar anos na base de dados.")
     st.stop()
 
-default_start = valid_comp[max(0, len(valid_comp) - 12)]
-default_end = valid_comp[-1]
+# Sugestão default: último ano disponível, de JAN a DEZ
+last_year = int(anos_disponiveis[-1])
+default_start_year = last_year
+default_end_year = last_year
 
-start_comp, end_comp = st.sidebar.select_slider(
-    "Período (competência)",
-    options=list(valid_comp),
-    value=(default_start, default_end),
-    format_func=lambda x: x.strftime("%b %Y"),
-)
+# Para esse ano default, pega menor e maior mês existentes – se quiser
+meses_ano_default = df.loc[df["Ano"] == last_year, "MesNum"].dropna().unique()
+if len(meses_ano_default) > 0:
+    default_start_month_num = int(meses_ano_default.min())
+    default_end_month_num = int(meses_ano_default.max())
+else:
+    default_start_month_num = 1
+    default_end_month_num = 12
 
+month_names = [MONTH_MAP_NUM_TO_NAME[m] for m in range(1, 12 + 1)]
+
+# Mês / Ano inicial
+st.sidebar.caption("Período inicial")
+col_mi, col_ai = st.sidebar.columns(2)
+with col_mi:
+    start_month_name = st.selectbox(
+        "Mês",
+        options=month_names,
+        index=month_names.index(MONTH_MAP_NUM_TO_NAME[default_start_month_num]),
+        key="start_month",
+    )
+with col_ai:
+    start_year = st.selectbox(
+        "Ano",
+        options=[int(a) for a in anos_disponiveis],
+        index=list(anos_disponiveis).index(default_start_year),
+        key="start_year",
+    )
+
+# Mês / Ano final
+st.sidebar.caption("Período final")
+col_mf, col_af = st.sidebar.columns(2)
+with col_mf:
+    end_month_name = st.selectbox(
+        "Mês ",
+        options=month_names,
+        index=month_names.index(MONTH_MAP_NUM_TO_NAME[default_end_month_num]),
+        key="end_month",
+    )
+with col_af:
+    end_year = st.selectbox(
+        "Ano ",
+        options=[int(a) for a in anos_disponiveis],
+        index=list(anos_disponiveis).index(default_end_year),
+        key="end_year",
+    )
+
+start_month = MONTH_MAP_NAME_TO_NUM[start_month_name]
+end_month = MONTH_MAP_NAME_TO_NUM[end_month_name]
+
+# Converte para Timestamp (primeiro dia do mês)
+start_comp = pd.Timestamp(year=int(start_year), month=int(start_month), day=1)
+end_comp = pd.Timestamp(year=int(end_year), month=int(end_month), day=1)
+
+if start_comp > end_comp:
+    st.sidebar.error("Período inicial não pode ser maior que o período final.")
+    st.stop()
+
+# Aplica período
 mask_period = (df["Competencia"] >= start_comp) & (df["Competencia"] <= end_comp)
 df_period = df.loc[mask_period].copy()
 
@@ -210,7 +276,7 @@ if total_periodo_geral > 0:
 else:
     participacao = 0.0
 
-# Saúde da carteira (placeholder neutro, pois ainda não temos StatusCarteira)
+# Saúde da carteira (placeholder neutro por enquanto)
 carteira_score, carteira_label = 50.0, "Neutra"
 if STATUS_COL in df_rep.columns:
     clientes_rep = (
@@ -231,54 +297,160 @@ col5.metric("Saúde da carteira", f"{carteira_score:.0f} / 100", carteira_label)
 st.markdown("---")
 
 # ==========================
-# EVOLUÇÃO DE VENDAS
+# COMBO CHART – BARRAS (FATURAMENTO) + LINHA (VOLUME)
 # ==========================
-st.subheader("Evolução de vendas no período")
+st.subheader("Evolução – Faturamento (barras) e Volume (linha)")
 
 if df_rep.empty:
     st.info("Este representante não possui vendas no período selecionado.")
 else:
     ts_rep = (
         df_rep
-        .groupby("Competencia", as_index=False)["Valor"]
+        .groupby("Competencia", as_index=False)[["Valor", "Quantidade"]]
         .sum()
         .sort_values("Competencia")
     )
 
-    chart_ts = (
-        alt.Chart(ts_rep)
-        .mark_line(point=True)
-        .encode(
-            x=alt.X(
-                "Competencia:T",
-                axis=alt.Axis(title="Competência", format="%b %Y"),
-            ),
-            y=alt.Y(
-                "Valor:Q",
-                axis=alt.Axis(title="Faturamento"),
-            ),
-            tooltip=[
-                alt.Tooltip("Competencia:T", title="Competência", format="%b %Y"),
-                alt.Tooltip("Valor:Q", title="Faturamento", format=",.2f"),
-            ],
+    base = alt.Chart(ts_rep).encode(
+        x=alt.X(
+            "Competencia:T",
+            axis=alt.Axis(title="Competência", format="%b %Y"),
         )
-        .properties(height=260)
     )
 
-    st.altair_chart(chart_ts, use_container_width=True)
+    bars = base.mark_bar().encode(
+        y=alt.Y(
+            "Valor:Q",
+            axis=alt.Axis(title="Faturamento (R$)"),
+        ),
+        tooltip=[
+            alt.Tooltip("Competencia:T", title="Competência", format="%b %Y"),
+            alt.Tooltip("Valor:Q", title="Faturamento (R$)", format=",.2f"),
+            alt.Tooltip("Quantidade:Q", title="Volume"),
+        ],
+    )
+
+    line = base.mark_line(point=True).encode(
+        y=alt.Y(
+            "Quantidade:Q",
+            axis=alt.Axis(title="Volume", orient="right"),
+        ),
+        tooltip=[
+            alt.Tooltip("Competencia:T", title="Competência", format="%b %Y"),
+            alt.Tooltip("Valor:Q", title="Faturamento (R$)", format=",.2f"),
+            alt.Tooltip("Quantidade:Q", title="Volume"),
+        ],
+    )
+
+    combo_chart = alt.layer(bars, line).resolve_scale(
+        y="independent"
+    ).properties(
+        height=320,
+    )
+
+    st.altair_chart(combo_chart, use_container_width=True)
 
 st.markdown("---")
 
 # ==========================
-# SAÚDE DA CARTEIRA – DETALHES (placeholder)
+# SAÚDE DA CARTEIRA – DETALHES
 # ==========================
 st.subheader("Saúde da carteira – Detalhes")
 
-if STATUS_COL not in df_rep.columns:
-    st.info(
-        "Ainda não existe coluna `StatusCarteira` no CSV. "
-        "Quando você adicionar essa coluna (Novos, Perdidos, Crescendo, Caindo, Estáveis), "
-        "vamos montar aqui o gráfico de pizza e a lista detalhada de clientes."
+if STATUS_COL not in df.columns:
+    # Em vez de parecer erro, só um aviso leve
+    st.caption(
+        "Detalhamento da carteira ainda não está disponível, pois o CSV não contém a coluna "
+        f"`{STATUS_COL}`. Quando você incluir essa coluna (Novos / Perdidos / Crescendo / Caindo / Estáveis), "
+        "vamos montar aqui o gráfico de pizza e a lista de clientes."
     )
 else:
-    st.write("Aqui entrariam os detalhes (pizza + tabela) usando StatusCarteira.")
+    # (Aqui entraremos no dia que o CSV tiver StatusCarteira)
+    df_status_rep = df_rep.dropna(subset=[STATUS_COL, "Cliente"])
+    if df_status_rep.empty:
+        st.info("Não há clientes com status definido para este representante no período.")
+    else:
+        clientes_rep = (
+            df_status_rep
+            .groupby(["Cliente", STATUS_COL, "Estado", "Cidade"], as_index=False)
+            .agg({"Valor": "sum"})
+        )
+
+        status_counts = (
+            clientes_rep.groupby(STATUS_COL)["Cliente"]
+            .nunique()
+            .reset_index()
+            .rename(columns={"Cliente": "QtdClientes", STATUS_COL: "Status"})
+        )
+        total_clientes = status_counts["QtdClientes"].sum()
+        status_counts["%Clientes"] = (
+            status_counts["QtdClientes"] / total_clientes if total_clientes > 0 else 0
+        )
+
+        col_pie, col_table = st.columns([1, 1.2])
+
+        with col_pie:
+            st.caption("Distribuição de clientes por status")
+            if total_clientes == 0:
+                st.info("Nenhum cliente com status definido para este representante no período.")
+            else:
+                chart_pie = (
+                    alt.Chart(status_counts)
+                    .mark_arc(outerRadius=120)
+                    .encode(
+                        theta=alt.Theta("QtdClientes:Q"),
+                        color=alt.Color("Status:N", legend=alt.Legend(title="Status")),
+                        tooltip=[
+                            alt.Tooltip("Status:N", title="Status"),
+                            alt.Tooltip("QtdClientes:Q", title="Clientes"),
+                            alt.Tooltip("%Clientes:Q", title="% Clientes", format=".1%"),
+                        ],
+                    )
+                    .properties(height=320)
+                )
+                st.altair_chart(chart_pie, use_container_width=True)
+
+        with col_table:
+            st.caption("Resumo por status")
+            status_counts_display = status_counts.copy()
+            status_counts_display["%Clientes"] = status_counts_display["%Clientes"].map(
+                lambda x: f"{x:.1%}"
+            )
+            st.dataframe(
+                status_counts_display,
+                hide_index=True,
+                use_container_width=True,
+            )
+
+        st.markdown("### Lista de clientes da carteira")
+
+        status_options = sorted(clientes_rep[STATUS_COL].dropna().unique())
+        status_selected = st.multiselect(
+            "Filtrar por status",
+            options=status_options,
+            default=status_options,
+        )
+
+        df_clientes_view = clientes_rep.copy()
+        if status_selected:
+            df_clientes_view = df_clientes_view[df_clientes_view[STATUS_COL].isin(status_selected)]
+
+        df_clientes_view = df_clientes_view.rename(
+            columns={
+                "Valor": "Faturamento",
+                STATUS_COL: "StatusCarteira",
+            }
+        )
+        df_clientes_view["FaturamentoFmt"] = df_clientes_view["Faturamento"].map(format_brl)
+
+        df_clientes_view = df_clientes_view.sort_values(
+            "Faturamento", ascending=False
+        )[
+            ["Cliente", "Estado", "Cidade", "StatusCarteira", "FaturamentoFmt"]
+        ]
+
+        st.dataframe(
+            df_clientes_view,
+            hide_index=True,
+            use_container_width=True,
+        )

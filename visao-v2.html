@@ -1,467 +1,3137 @@
-import re
-import base64
-from io import BytesIO
-from pathlib import Path
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Openfield Moveleiro — Nova Visão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-import streamlit as st
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import mm
-from reportlab.lib.utils import ImageReader
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
 
+  <!-- Plotly & PapaParse -->
+  <script src="https://cdn.plot.ly/2.32.0/plotly.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-# ---------------- BASIC CONFIG ----------------
+  <style>
+    :root {
+      --bg-body: #dfe1e1;
+      --bg-card: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --accent-gold: #f5b95f;
+      --accent-gold-border: #e5be74;
+      --accent-gold-soft: #f9cf7f;
+      --border-subtle: rgba(15, 23, 42, 0.08);
+      --shadow-soft: 0 3px 10px rgba(0, 0, 0, 0.08);
+      --radius-card: 10px;
+      --transition-fast: 160ms ease-out;
+    }
 
-st.set_page_config(
-    page_title="Carelabel & SKU Label Generator",
-    layout="wide",
-)
+    * {
+      box-sizing: border-box;
+    }
 
-ASSETS_DIR = Path("assets")
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      background: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
 
-BRAND_LOGOS = {
-    "Arezzo": ASSETS_DIR / "logo_arezzo.png",
-    "Anacapri": ASSETS_DIR / "logo_anacapri.png",
-    "Schutz": ASSETS_DIR / "logo_schutz.png",
-    "Reserva": ASSETS_DIR / "logo_reserva.png",
-}
+    body {
+      display: flex;
+      flex-direction: column;
+    }
 
-CARE_ICONS_PATH = ASSETS_DIR / "carelabel_icons.png"
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
+    .content {
+      flex: 1;
+      padding: 18px 16px 40px;
+      display: flex;
+      justify-content: center;
+    }
 
-# ---------------- IMAGE HELPERS ----------------
+    .content-inner {
+      width: 100%;
+      max-width: 1400px;
+    }
 
-def load_image_base64(path: Path):
-    if not path.exists():
-        return None
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
+    /* Top bar */
+    .top-bar {
+      background: #000;
+      color: #fff;
+      border-bottom: 4px solid var(--accent-gold);
+      padding: 12px 16px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: var(--shadow-soft);
+    }
+    .top-bar-title {
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .top-bar-sub {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+    .top-bar-updated {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+    .top-bar-updated span {
+      font-weight: 600;
+      color: var(--accent-gold-soft);
+    }
 
+    .section {
+      margin-top: 16px;
+    }
 
-BRAND_LOGOS_B64 = {name: load_image_base64(p) for name, p in BRAND_LOGOS.items()}
-CARE_ICONS_B64 = load_image_base64(CARE_ICONS_PATH)
+    .titlebar {
+      background: #000;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px 10px 0 0;
+      font-weight: 700;
+      border-left: 6px solid var(--accent-gold);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
 
+    .card {
+      background: var(--bg-card);
+      border-radius: 0 0 10px 10px;
+      box-shadow: var(--shadow-soft);
+      padding: 14px;
+    }
 
-# ---------------- TRANSLATION / TEXT ----------------
+    /* Filters / buttons */
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 6px 0 10px;
+    }
 
-def translate_composition_to_pt(text: str) -> str:
-    """
-    Very simple EN -> PT-BR translator for compositions.
-    Extend as needed.
-    """
-    if not text:
-        return ""
+    .filters-row-secondary {
+      margin-top: 2px;
+      margin-bottom: 10px;
+    }
 
-    result = text.strip()
+    .filters-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
 
-    replacements = [
-        (r"polyvinyl chloride\s*\(?\s*pvc\s*\)?", "POLICLORETO DE VINILA (PVC)"),
-        (r"\bpvc\b", "POLICLORETO DE VINILA (PVC)"),
-        (r"polyurethane", "POLIURETANO (PU)"),
-        (r"\bpu\b", "POLIURETANO (PU)"),
-        (r"polyester", "POLIÉSTER"),
-        (r"polyamide", "POLIAMIDA"),
-        (r"nylon", "POLIAMIDA"),
-        (r"cotton", "ALGODÃO"),
-        (r"filler", "ENCHIMENTO"),
-        (r"base fabric", "TECIDO BASE"),
-        (r"leather", "COURO"),
-        (r"metal", "METAL"),
-    ]
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 140px;
+    }
 
-    for pattern, repl in replacements:
-        result = re.sub(pattern, repl, result, flags=re.IGNORECASE)
+    .field-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
 
-    return result.upper()
+    select {
+      appearance: none;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      padding: 4px 22px 4px 8px;
+      font-size: 0.78rem;
+      background:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='%236b7280' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E")
+        no-repeat right 6px center / 11px 11px,
+        #ffffff;
+      color: #111827;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 0 1px rgba(245, 185, 95, 0.6);
+    }
 
+    .compare-select {
+      min-width: 220px;
+      max-width: 360px;
+    }
 
-def build_carelabel_text(exterior_pt: str, forro_pt: str) -> str:
-    """
-    Fixed Portuguese body with dynamic EXTERIOR / FORRO.
-    """
-    text = f"""IMPORTADO POR BTG PACTUAL
-COMMODITIES SERTRADING S.A
-CNPJ: 04.626.426/0007-00
-DISTRIBUIDO POR:
-AZZAS 2154 S.A
-CNPJ: 16.590.234/0025-43
+    input[type="month"] {
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      padding: 4px 6px;
+      font-size: 0.78rem;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
 
-FABRICADO NA CHINA
-SACAREZZO@AREZZO.COM.BR
+    .range-buttons {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
 
-PRODUTO DE MATERIAL SINTÉTICO
-MATÉRIA-PRIMA
-EXTERIOR: {exterior_pt}
-FORRO: {forro_pt}
+    .range-btn {
+      background: var(--accent-gold);
+      color: #000;
+      border: 1px solid var(--accent-gold-border);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background var(--transition-fast),
+        color var(--transition-fast), border-color var(--transition-fast),
+        transform 90ms ease-out;
+    }
+    .range-btn span {
+      font-size: 0.78rem;
+    }
+    .range-btn:hover,
+    .range-btn.active {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+      transform: translateY(-0.3px);
+    }
 
-PROIBIDO LAVAR NA ÁGUA / NÃO ALVEJAR /
-PROIBIDO USAR SECADOR / NÃO PASSAR
-A FERRO / NÃO LAVAR A SECO /
-LIMPAR COM PANO SECO"""
-    return text
+    .btn-small {
+      background: #000;
+      color: #fff;
+      border: 1px solid #000;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background var(--transition-fast),
+        color var(--transition-fast), border-color var(--transition-fast),
+        transform 90ms ease-out;
+    }
+    .btn-small.secondary {
+      background: var(--accent-gold);
+      color: #000;
+      border-color: var(--accent-gold-border);
+    }
+    .btn-small:hover {
+      transform: translateY(-0.3px);
+    }
 
+    .top-right-wrap {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
 
-# ---------------- PDF GENERATION ----------------
+    /* Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 10px 0 14px;
+    }
+    .metric-card {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .metric-label {
+      font-size: 0.85rem;
+      color: #444;
+    }
+    .metric-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .metric-sub {
+      font-size: 0.75rem;
+      color: #666;
+    }
 
-def create_carelabel_pdf(brand: str, full_text: str) -> bytes:
-    """
-    Single-page carelabel PDF:
+    /* Chart */
+    .chart-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #fff;
+      padding: 4px;
+    }
+    .chart {
+      width: 100%;
+      height: 520px;
+    }
 
-    • Physical size: 30 x 80 mm (W x H)
-    • Logo centered at the top in a fixed band
-    • Text block with font size tuned to match reference
-    • Care icons at the bottom with fixed visual size
-    """
+    .status-line {
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .status-pill {
+      border-radius: 999px;
+      padding: 2px 8px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(15, 23, 42, 0.03);
+      font-size: 0.7rem;
+    }
 
-    # Page size (80 x 30 mm carelabel, vertical)
-    width = 30 * mm   # width in mm
-    height = 80 * mm  # height in mm
+    /* Rankings / Tendências */
+    .trend-header {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .trend-dim-wrap {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .trend-mode-wrap {
+      margin-left: auto;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .trend-info {
+      margin-top: 4px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
 
-    buf = BytesIO()
-    c = canvas.Canvas(buf, pagesize=(width, height))
+    .ranking-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .ranking-card {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+    }
+    .ranking-card h4 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .ranking-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .ranking-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+      cursor: pointer;
+    }
+    .ranking-list li.disabled {
+      cursor: default;
+    }
+    .ranking-label {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ranking-value {
+      font-weight: 600;
+      white-space: nowrap;
+    }
 
-    # Outer border
-    border_margin = 0.5 * mm
-    c.setLineWidth(0.5)
-    c.rect(
-        border_margin,
-        border_margin,
-        width - 2 * border_margin,
-        height - 2 * border_margin,
-    )
+    /* Deep Dive layout (single column) */
+    .deep-dive-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+    }
+    .deep-dive-kpi-item {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+    }
+    .deep-dive-kpi-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4b5563;
+      margin-bottom: 2px;
+    }
+    .deep-dive-kpi-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+    .deep-dive-kpi-label {
+      color: #6b7280;
+    }
+    .deep-dive-kpi-value {
+      font-weight: 600;
+      white-space: nowrap;
+      text-align: right;
+    }
+    .deep-dive-health-link {
+      font-size: 0.75rem;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-left: 4px;
+    }
 
-    inner_margin_x = 3 * mm
+    .deep-dive-trend-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #fff;
+      padding: 4px;
+      min-height: 280px;
+      max-height: 340px;
+      margin-bottom: 8px;
+    }
+    .deep-dive-trend {
+      width: 100%;
+      height: 100%;
+    }
 
-    # Logo band (top)
-    top_margin = 3 * mm          # distance from top border
-    logo_max_height = 14 * mm    # height of logo band (tuned to sample)
-    logo_max_width = width - 2 * inner_margin_x
+    .deep-dive-info {
+      font-size: 0.8rem;
+      color: var(--text-main);
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .deep-dive-info small {
+      color: var(--text-muted);
+    }
 
-    logo_path = BRAND_LOGOS.get(brand)
-    if logo_path and logo_path.exists():
-        logo_img = ImageReader(str(logo_path))
-        iw, ih = logo_img.getSize()
-        scale = min(logo_max_width / iw, logo_max_height / ih)
-        draw_w = iw * scale
-        draw_h = ih * scale
+    .deep-dive-health {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      margin-bottom: 8px;
+      max-height: 320px;
+      overflow: auto;
+    }
+    .deep-dive-health h5 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .deep-dive-health table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .deep-dive-health th,
+    .deep-dive-health td {
+      padding: 2px 4px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      white-space: nowrap;
+    }
+    .deep-dive-health th:nth-child(1),
+    .deep-dive-health td:nth-child(1) {
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-        x_logo = (width - draw_w) / 2.0
-        y_logo = height - top_margin - draw_h
+    .deep-dive-chart-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #fff;
+      padding: 6px;
+      min-height: 380px;
+      max-height: 460px;
+      margin-bottom: 8px;
+    }
+    .deep-dive-chart {
+      width: 100%;
+      height: 100%;
+    }
 
-        c.drawImage(
-            logo_img,
-            x_logo,
-            y_logo,
-            width=draw_w,
-            height=draw_h,
-            preserveAspectRatio=True,
-            mask="auto",
-        )
-        # Text starts a bit below the logo
-        text_top_y = y_logo - 2 * mm
-    else:
-        # If logo not found, reserve same band anyway
-        text_top_y = height - (top_margin + logo_max_height + 2 * mm)
+    .deep-dive-tables {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .deep-dive-table {
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      max-height: 260px;
+      overflow: auto;
+    }
+    .deep-dive-table h5 {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .deep-dive-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .deep-dive-table th,
+    .deep-dive-table td {
+      padding: 2px 4px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      white-space: nowrap;
+    }
+    .deep-dive-table th:nth-child(1),
+    .deep-dive-table td:nth-child(1) {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-    # Care icons (bottom)
-    icons_bottom_margin = 3 * mm
-    icons_max_height = 7 * mm          # controls icon height (match sample feel)
-    icons_max_width = width - 8 * mm   # leaves some side margin
+    @media (max-width: 900px) {
+      .chart {
+        height: 460px;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ranking-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .deep-dive-chart-wrapper {
+        min-height: 340px;
+        max-height: 420px;
+      }
+      .deep-dive-trend-wrapper {
+        min-height: 260px;
+        max-height: 320px;
+      }
+    }
+    @media (max-width: 720px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .ranking-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .content {
+        padding: 14px 10px 28px;
+      }
+      .filters-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .chart {
+        height: 380px;
+      }
+      .top-right-wrap {
+        margin-left: 0;
+      }
+    }
+    @media (max-width: 480px) {
+      .chart {
+        height: 340px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <main class="content">
+      <div class="content-inner">
+        <!-- TOP BAR -->
+        <header class="top-bar">
+          <div>
+            <div class="top-bar-title">OPENFIELD MOVELEIRO — Nova Visão</div>
+            <div class="top-bar-sub">
+              Faturamento / Volume com filtros por Cliente / Representante / Estado / Categoria / Linha + Visão por Estado / Cliente / Representante
+            </div>
+          </div>
+          <div class="top-bar-updated">
+            Atualizado: <span id="updatedAt">--/----</span>
+          </div>
+        </header>
 
-    text_bottom_limit = icons_bottom_margin  # fallback if no icons
+        <!-- MAIN VISÃO SECTION -->
+        <section class="section">
+          <div class="titlebar">
+            <span>📊 Nova Visão Temporal</span>
+          </div>
+          <div class="card">
+            <!-- PERIOD + MÉTRICA (TOP) -->
+            <div class="filters-row">
+              <span class="filters-label">Período</span>
 
-    if CARE_ICONS_PATH.exists():
-        icons_img = ImageReader(str(CARE_ICONS_PATH))
-        iw, ih = icons_img.getSize()
-        scale_i = min(icons_max_width / iw, icons_max_height / ih)
-        draw_w_i = iw * scale_i
-        draw_h_i = ih * scale_i
+              <div class="range-buttons" id="rangeButtons">
+                <button class="range-btn" data-range="3M"><span>3M</span></button>
+                <button class="range-btn" data-range="6M"><span>6M</span></button>
+                <button class="range-btn" data-range="9M"><span>9M</span></button>
+                <button class="range-btn" data-range="1A"><span>1A</span></button>
+                <button class="range-btn" data-range="2A"><span>2A</span></button>
+                <button class="range-btn" data-range="3A"><span>3A</span></button>
+                <button class="range-btn" data-range="5A"><span>5A</span></button>
+                <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
+              </div>
 
-        x_icons = (width - draw_w_i) / 2.0
-        y_icons = icons_bottom_margin  # fixed distance from bottom border
+              <div class="top-right-wrap">
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="fromPeriod" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="toPeriod" />
+                <button class="btn-small" id="applyCustom">Aplicar</button>
+                <button class="btn-small secondary" id="resetCustom">Reset</button>
 
-        c.drawImage(
-            icons_img,
-            x_icons,
-            y_icons,
-            width=draw_w_i,
-            height=draw_h_i,
-            preserveAspectRatio=True,
-            mask="auto",
-        )
+                <span class="field-label" style="margin-left:8px;">Métrica</span>
+                <button class="btn-small" id="btnFaturamento">Faturamento</button>
+                <button class="btn-small secondary" id="btnVolume">Volume</button>
+              </div>
+            </div>
 
-        # Text must stay above the icon band
-        text_bottom_limit = y_icons + draw_h_i + 2 * mm
+            <!-- VISÃO BUTTONS (inclui GERAL) -->
+            <div class="filters-row">
+              <span class="filters-label">Visão</span>
+              <button class="btn-small secondary" id="btnViewGeral">Geral</button>
+              <button class="btn-small" id="btnViewCategoria">Categoria</button>
+              <button class="btn-small secondary" id="btnViewEstado">Estado</button>
+              <button class="btn-small secondary" id="btnViewCliente">Cliente</button>
+              <button class="btn-small secondary" id="btnViewRep">Representante</button>
+            </div>
 
-    # Text block (middle)
-    font_size = 7          # tuned to look like your sample
-    leading = 8            # line spacing (points)
+            <!-- INCLUDE FILTERS -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Filtros</span>
 
-    text_obj = c.beginText()
-    text_obj.setFont("Helvetica", font_size)
-    text_obj.setLeading(leading)
-    text_obj.setTextOrigin(inner_margin_x, text_top_y)
+              <div class="field-group">
+                <label class="field-label" for="filterClient">Cliente</label>
+                <select id="filterClient"></select>
+              </div>
 
-    for line in full_text.splitlines():
-        # Stop if we are about to overlap the icons
-        if text_obj.getY() <= text_bottom_limit:
-            break
-        text_obj.textLine(line)
+              <div class="field-group">
+                <label class="field-label" for="filterRep">Representante</label>
+                <select id="filterRep"></select>
+              </div>
 
-    c.drawText(text_obj)
+              <div class="field-group">
+                <label class="field-label" for="filterState">Estado</label>
+                <select id="filterState"></select>
+              </div>
 
-    c.showPage()
-    c.save()
-    pdf_bytes = buf.getvalue()
-    buf.close()
-    return pdf_bytes
+              <div class="field-group">
+                <label class="field-label" for="filterCategory">Categoria</label>
+                <select id="filterCategory"></select>
+              </div>
 
+              <div class="field-group">
+                <label class="field-label" for="filterLinha">Linha</label>
+                <select id="filterLinha"></select>
+              </div>
+            </div>
 
-def create_sku_labels_pdf(skus: list[str]) -> bytes:
-    """
-    Multi-page PDF.
-    Each page = 50 x 10 mm, border, SKU centered.
-    """
-    width = 50 * mm
-    height = 10 * mm
+            <!-- EXCLUDE FILTERS -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Excluir</span>
 
-    buf = BytesIO()
-    c = canvas.Canvas(buf, pagesize=(width, height))
+              <div class="field-group">
+                <label class="field-label" for="excludeClient">Cliente</label>
+                <select id="excludeClient"></select>
+              </div>
 
-    for sku in skus:
-        sku = sku.strip()
-        if not sku:
-            continue
+              <div class="field-group">
+                <label class="field-label" for="excludeRep">Representante</label>
+                <select id="excludeRep"></select>
+              </div>
 
-        # Border
-        border_margin = 0.5 * mm
-        c.setLineWidth(0.5)
-        c.rect(
-            border_margin,
-            border_margin,
-            width - 2 * border_margin,
-            height - 2 * border_margin,
-        )
+              <div class="field-group">
+                <label class="field-label" for="excludeState">Estado</label>
+                <select id="excludeState"></select>
+              </div>
 
-        # SKU centered
-        c.setFont("Helvetica", 10)
-        c.drawCentredString(width / 2.0, height / 2.0 - 3, sku)
+              <div class="field-group">
+                <label class="field-label" for="excludeCategory">Categoria</label>
+                <select id="excludeCategory"></select>
+              </div>
 
-        c.showPage()
+              <div class="field-group">
+                <label class="field-label" for="excludeLinha">Linha</label>
+                <select id="excludeLinha"></select>
+              </div>
+            </div>
 
-    c.save()
-    pdf_bytes = buf.getvalue()
-    buf.close()
-    return pdf_bytes
+            <!-- METRICS -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">Média mensal</div>
+                <div class="metric-value" id="metricChange">—</div>
+                <div class="metric-sub" id="metricChangeSub">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Total no período</div>
+                <div class="metric-value" id="metricMean">—</div>
+                <div class="metric-sub" id="metricMeanSub">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Destaques</div>
+                <div class="metric-value" id="metricVol">—</div>
+                <div class="metric-sub" id="metricVolSub">—</div>
+              </div>
+            </div>
 
+            <!-- CHART -->
+            <div class="chart-wrapper">
+              <div id="chart" class="chart"></div>
+            </div>
 
-# ---------------- HTML PREVIEWS (UI ONLY) ----------------
+            <!-- TENDÊNCIAS HEADER -->
+            <div class="trend-header">
+              <span class="filters-label">Tendências</span>
 
-def carelabel_preview_html(full_text: str, brand: str) -> str:
-    """
-    Carelabel preview (approximate on-screen view).
-    """
-    logo_b64 = BRAND_LOGOS_B64.get(brand)
-    icons_b64 = CARE_ICONS_B64
+              <span class="trend-dim-wrap">
+                <button class="btn-small" id="trendDimRep">Representante</button>
+                <button class="btn-small secondary" id="trendDimCli">Cliente</button>
+                <button class="btn-small secondary" id="trendDimEst">Estado</button>
+                <button class="btn-small secondary" id="trendDimCat">Categoria</button>
+                <button class="btn-small secondary" id="trendReset">Reset</button>
+              </span>
 
-    logo_html = (
-        f'<img src="data:image/png;base64,{logo_b64}" '
-        f'style="max-width:140px; max-height:90px; margin-bottom:6px;" />'
-        if logo_b64
-        else ""
-    )
+              <span class="trend-mode-wrap">
+                <span class="field-label" style="margin-right:4px;">Métrica</span>
+                <button class="btn-small" id="trendModeFat">Faturamento</button>
+                <button class="btn-small secondary" id="trendModeVol">Volume</button>
+              </span>
+            </div>
+            <div class="trend-info">
+              Comparando a soma da segunda metade do período selecionado com a soma da primeira metade para cada dimensão.
+              Clique em um item para focar. Use o seletor de comparação no Deep Dive para comparar até 3 outros itens.
+            </div>
 
-    icons_html = (
-        f'<img src="data:image/png;base64,{icons_b64}" '
-        f'style="width:75%; max-height:60px; margin-top:8px;" />'
-        if icons_b64
-        else ""
-    )
+            <!-- RANKINGS -->
+            <div class="ranking-grid" id="rankingGrid">
+              <div class="ranking-card">
+                <h4 id="rankingTopTitle">Maiores no período — Representante</h4>
+                <ul class="ranking-list" id="rankingTop"></ul>
+              </div>
+              <div class="ranking-card">
+                <h4 id="rankingRisingTitle">Ganhando espaço — Representante</h4>
+                <ul class="ranking-list" id="rankingRising"></ul>
+              </div>
+              <div class="ranking-card">
+                <h4 id="rankingFallingTitle">Perdendo espaço — Representante</h4>
+                <ul class="ranking-list" id="rankingFalling"></ul>
+              </div>
+            </div>
 
-    return f"""
-    <div style="
-        border:1px solid #000;
-        padding:8px 10px;
-        width:260px;
-        min-height:520px;
-        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-        ">
-        <div style="text-align:center; margin-bottom:8px;">
-            {logo_html}
+            <div class="status-line">
+              <div id="statusInfo">Carregando dados...</div>
+              <div class="status-pill" id="statusRange">Período: --</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DEEP DIVE SECTION -->
+        <section class="section">
+          <div class="titlebar">
+            <span>🔎 Deep Dive</span>
+          </div>
+          <div class="card">
+
+            <!-- Deep Dive filters: period + metric -->
+            <div class="filters-row">
+              <span class="filters-label">Período</span>
+              <div class="range-buttons" id="ddRangeButtons">
+                <button class="range-btn" data-range="3M"><span>3M</span></button>
+                <button class="range-btn" data-range="6M"><span>6M</span></button>
+                <button class="range-btn" data-range="9M"><span>9M</span></button>
+                <button class="range-btn" data-range="1A"><span>1A</span></button>
+                <button class="range-btn" data-range="2A"><span>2A</span></button>
+                <button class="range-btn" data-range="3A"><span>3A</span></button>
+                <button class="range-btn" data-range="5A"><span>5A</span></button>
+                <button class="range-btn active" data-range="ALL"><span>Tudo</span></button>
+              </div>
+
+              <div class="top-right-wrap">
+                <span>De</span>
+                <input type="month" lang="pt-BR" id="ddFromPeriod" />
+                <span>até</span>
+                <input type="month" lang="pt-BR" id="ddToPeriod" />
+                <button class="btn-small" id="ddApplyCustom">Aplicar</button>
+                <button class="btn-small secondary" id="ddResetCustom">Reset</button>
+
+                <span class="field-label" style="margin-left:8px;">Métrica</span>
+                <button class="btn-small" id="ddBtnFaturamento">Faturamento</button>
+                <button class="btn-small secondary" id="ddBtnVolume">Volume</button>
+              </div>
+            </div>
+
+            <!-- Deep Dive compare selector -->
+            <div class="filters-row filters-row-secondary">
+              <span class="filters-label">Comparar</span>
+              <div class="field-group">
+                <label class="field-label" for="deepDiveCompare">Comparar com (máx. 3)</label>
+                <select id="deepDiveCompare" class="compare-select" multiple></select>
+              </div>
+            </div>
+
+            <p style="font-size:0.8rem;color:#4b5563;margin:0 0 6px;">
+              Selecione um item nas listas de Tendências para definir o foco principal.
+              Use o seletor acima para comparar até 3 outros itens da mesma dimensão (Representante, Cliente, Estado ou Categoria).
+            </p>
+
+            <div class="deep-dive-kpis" id="deepDiveKpis"></div>
+
+            <div class="deep-dive-trend-wrapper">
+              <div id="deepDiveTrend" class="deep-dive-trend"></div>
+            </div>
+
+            <div class="deep-dive-info" id="deepDiveInfo">
+              <div><strong>Nenhum item selecionado.</strong></div>
+              <small>
+                Use as listas de Tendências para escolher um foco
+                (representante, cliente, estado ou categoria). O gráfico de linha
+                mostrará a evolução ao longo do tempo; o gráfico de pizza e as tabelas
+                mostram a composição interna (clientes / categorias) do foco principal.
+              </small>
+            </div>
+
+            <div class="deep-dive-health" id="deepDiveHealth">
+              <em>Saúde da carteira detalhada será exibida aqui quando você clicar em “Saúde da carteira” para um representante.</em>
+            </div>
+
+            <div class="deep-dive-chart-wrapper">
+              <div id="deepDiveChart" class="deep-dive-chart"></div>
+            </div>
+
+            <div class="deep-dive-tables">
+              <div class="deep-dive-table" id="deepDiveTableClientes"></div>
+              <div class="deep-dive-table" id="deepDiveTableCategorias"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /* ========= CONFIG ========= */
+
+    const CSV_MAIN = "data/relatorio_faturamento.csv";
+    const CSV_FAMILIAS = "data/produtos_categorias_familias.csv";
+
+    const ARIZONA_PALETTE = [
+      "#264653","#2a9d8f","#e9c46a","#f4a261","#e76f51",
+      "#1d3557","#457b9d","#a8dadc","#606c38","#dda15e",
+      "#fb8500","#8ecae6","#ffb703","#219ebc","#023047",
+      "#ff595e","#ffca3a","#8ac926","#1982c4","#6a4c93",
+      "#ff7f51","#ff9f1c","#2ec4b6","#5c6ac4","#cb997e",
+      "#6d597a","#355070","#b56576","#003f5c","#ffa600"
+    ];
+
+    const familiesMap = new Map();
+    const colorMap = new Map();
+    let colorIndex = 0;
+
+    function getColorForName(name) {
+      if (!colorMap.has(name)) {
+        const c = ARIZONA_PALETTE[colorIndex % ARIZONA_PALETTE.length];
+        colorMap.set(name, c);
+        colorIndex++;
+      }
+      return colorMap.get(name);
+    }
+
+    const state = {
+      rows: [],
+      allKeysSorted: [],
+      keyToLabel: new Map(),
+      range: "ALL",
+      customFrom: null,
+      customTo: null,
+      valueMode: "FATURAMENTO",
+      valueLabel: "Faturamento",
+      viewMode: "CATEGORIA", // GERAL, CATEGORIA, ESTADO, CLIENTE, REPRESENTANTE
+      filterClient: "ALL",
+      filterRep: "ALL",
+      filterState: "ALL",
+      filterCategory: "ALL",
+      filterLinha: "ALL",
+      excludeClient: "NONE",
+      excludeRep: "NONE",
+      excludeState: "NONE",
+      excludeCategory: "NONE",
+      excludeLinha: "NONE",
+      rankingDimension: "REPRESENTANTE",
+      currentChart: null,
+      deepDiveFocus: null,
+      deepDiveComparisons: []
+    };
+
+    /* ========= HELPERS ========= */
+
+    function normalizeDesc(str) {
+      return (str || "").toString().trim().toUpperCase();
+    }
+
+    function formatCurrencyBRL(v) {
+      if (!isFinite(v)) return "—";
+      return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function formatNumberBR(v) {
+      if (!isFinite(v)) return "—";
+      return v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+    }
+
+    function labelFromKey(key) {
+      const [y, mStr] = key.split("-");
+      const m = parseInt(mStr, 10);
+      const shortYear = y.slice(-2);
+      const months = [
+        "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
+        "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"
+      ];
+      return (months[m - 1] || mStr) + " " + shortYear;
+    }
+
+    function detectDelimiter(text) {
+      const sample = text.slice(0, 1000);
+      const commas = (sample.match(/,/g) || []).length;
+      const semis = (sample.match(/;/g) || []).length;
+      return semis > commas ? ";" : ",";
+    }
+
+    function uniqueSorted(values) {
+      return Array.from(new Set(values)).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
+    }
+
+    /* ========= LOAD CSVs ========= */
+
+    function loadFamilies() {
+      return fetch(CSV_FAMILIAS, { cache: "no-cache" })
+        .then((res) => {
+          if (!res.ok) throw new Error("familias CSV not found");
+          return res.text();
+        })
+        .then((text) => {
+          const delimiter = detectDelimiter(text);
+          Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            delimiter,
+            complete: (results) => {
+              (results.data || []).forEach((row) => {
+                const descKey = normalizeDesc(row["Descricao"]);
+                if (!descKey) return;
+                const fam =
+                  (row["FAMILIA_PRODUTO"] || "").toString().trim() ||
+                  "Sem Linha";
+                familiesMap.set(descKey, fam);
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn("Falha ao carregar familias:", err);
+        });
+    }
+
+    function loadMainCSV() {
+      fetch(CSV_MAIN, { cache: "no-cache" })
+        .then((res) => {
+          if (!res.ok) throw new Error("Erro ao carregar CSV principal");
+          return res.text();
+        })
+        .then((text) => {
+          const delimiter = detectDelimiter(text);
+          Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            delimiter,
+            complete: (results) => processData(results.data || []),
+            error: (err) => {
+              console.error(err);
+              document.getElementById("statusInfo").textContent =
+                "Erro ao processar o CSV.";
+            }
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          document.getElementById("statusInfo").textContent =
+            "Erro ao carregar o arquivo de dados.";
+        });
+    }
+
+    /* ========= PROCESS DATA ========= */
+
+    function processData(rows) {
+      if (!rows.length) {
+        document.getElementById("statusInfo").textContent =
+          "Nenhum dado encontrado.";
+        return;
+      }
+
+      const keySet = new Set();
+      const keyToLabel = new Map();
+      const normalized = [];
+
+      for (const row of rows) {
+        const ano = parseInt(row["Ano"], 10);
+        const mes = parseInt(row["Mes"], 10);
+        if (!ano || !mes) continue;
+
+        const key = `${ano}-${String(mes).padStart(2, "0")}`;
+        const label = labelFromKey(key);
+        keySet.add(key);
+        if (!keyToLabel.has(key)) keyToLabel.set(key, label);
+
+        const rawValor = (row["Valor"] ?? "0").toString().replace(",", ".");
+        const rawQtd = (row["Quantidade"] ?? "0").toString().replace(",", ".");
+        const valor = parseFloat(rawValor);
+        const quantidade = parseFloat(rawQtd);
+
+        const categoria =
+          (row["Categoria"] || "").toString().trim() || "Sem Categoria";
+        const cliente =
+          (row["Cliente"] || "").toString().trim() || "Sem Cliente";
+        const representante =
+          (row["Representante"] || "").toString().trim() ||
+          "Sem Representante";
+        const estado =
+          (row["Estado"] || "").toString().trim() || "Sem Estado";
+
+        const descKey = normalizeDesc(row["Descricao"]);
+        const linha =
+          familiesMap.get(descKey) || "Sem Linha";
+
+        normalized.push({
+          key,
+          label,
+          ano,
+          mes,
+          categoria,
+          cliente,
+          representante,
+          estado,
+          linha,
+          valor: isNaN(valor) ? 0 : valor,
+          quantidade: isNaN(quantidade) ? 0 : quantidade
+        });
+      }
+
+      const allKeysSorted = Array.from(keySet).sort();
+      if (!allKeysSorted.length) {
+        document.getElementById("statusInfo").textContent =
+          "Nenhum dado válido para exibir.";
+        return;
+      }
+
+      state.rows = normalized;
+      state.allKeysSorted = allKeysSorted;
+      state.keyToLabel = keyToLabel;
+
+      initUI();
+      updateAll();
+    }
+
+    /* ========= FILTER HELPERS ========= */
+
+    function rowPassesDimensionFilters(r) {
+      if (state.filterClient !== "ALL" && r.cliente !== state.filterClient) return false;
+      if (state.filterRep !== "ALL" && r.representante !== state.filterRep) return false;
+      if (state.filterState !== "ALL" && r.estado !== state.filterState) return false;
+      if (state.filterCategory !== "ALL" && r.categoria !== state.filterCategory) return false;
+      if (state.filterLinha !== "ALL" && r.linha !== state.filterLinha) return false;
+
+      if (state.excludeClient !== "NONE" && r.cliente === state.excludeClient) return false;
+      if (state.excludeRep !== "NONE" && r.representante === state.excludeRep) return false;
+      if (state.excludeState !== "NONE" && r.estado === state.excludeState) return false;
+      if (state.excludeCategory !== "NONE" && r.categoria === state.excludeCategory) return false;
+      if (state.excludeLinha !== "NONE" && r.linha === state.excludeLinha) return false;
+
+      return true;
+    }
+
+    function matchesDim(r, dimType, name) {
+      if (dimType === "REPRESENTANTE") return r.representante === name;
+      if (dimType === "CLIENTE") return r.cliente === name;
+      if (dimType === "ESTADO") return r.estado === name;
+      if (dimType === "CATEGORIA") return r.categoria === name;
+      return false;
+    }
+
+    /* ========= UI INIT ========= */
+
+    function initUI() {
+      const keys = state.allKeysSorted;
+      const firstKey = keys[0];
+      const lastKey = keys[keys.length - 1];
+
+      const fromInputTop = document.getElementById("fromPeriod");
+      const toInputTop = document.getElementById("toPeriod");
+      const fromInputDD = document.getElementById("ddFromPeriod");
+      const toInputDD = document.getElementById("ddToPeriod");
+
+      fromInputTop.min = firstKey;
+      fromInputTop.max = lastKey;
+      toInputTop.min = firstKey;
+      toInputTop.max = lastKey;
+
+      fromInputDD.min = firstKey;
+      fromInputDD.max = lastKey;
+      toInputDD.min = firstKey;
+      toInputDD.max = lastKey;
+
+      state.customFrom = firstKey;
+      state.customTo = lastKey;
+
+      function syncDateInputs() {
+        const fromVal = state.customFrom || firstKey;
+        const toVal = state.customTo || lastKey;
+        fromInputTop.value = fromVal;
+        toInputTop.value = toVal;
+        fromInputDD.value = fromVal;
+        toInputDD.value = toVal;
+      }
+      syncDateInputs();
+
+      const lastLabel =
+        state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+      document.getElementById("updatedAt").textContent = lastLabel;
+
+      const rangeButtonsMain = document.querySelectorAll(
+        "#rangeButtons .range-btn"
+      );
+      const rangeButtonsDD = document.querySelectorAll(
+        "#ddRangeButtons .range-btn"
+      );
+
+      function updateActiveRangeButtons() {
+        const allBtns = [...rangeButtonsMain, ...rangeButtonsDD];
+        allBtns.forEach((b) => {
+          if (!b.dataset.range) return;
+          if (state.range === "CUSTOM") {
+            b.classList.remove("active");
+          } else {
+            b.classList.toggle("active", b.dataset.range === state.range);
+          }
+        });
+      }
+
+      function applyRange(rangeCode) {
+        state.range = rangeCode;
+        updateActiveRangeButtons();
+        updateAll();
+      }
+
+      rangeButtonsMain.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          applyRange(btn.dataset.range || "ALL");
+        });
+      });
+      rangeButtonsDD.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          applyRange(btn.dataset.range || "ALL");
+        });
+      });
+
+      function handleCustomApply(fromVal, toVal) {
+        if (!fromVal || !toVal) {
+          alert("Selecione mês/ano inicial e final.");
+          return;
+        }
+        const all = state.allKeysSorted;
+        const fromIdx = all.indexOf(fromVal);
+        const toIdx = all.indexOf(toVal);
+        if (fromIdx === -1 || toIdx === -1 || fromIdx > toIdx) {
+          alert("Período inválido.");
+          return;
+        }
+        state.customFrom = fromVal;
+        state.customTo = toVal;
+        state.range = "CUSTOM";
+        updateActiveRangeButtons();
+        syncDateInputs();
+        updateAll();
+      }
+
+      document
+        .getElementById("applyCustom")
+        .addEventListener("click", () => {
+          handleCustomApply(fromInputTop.value, toInputTop.value);
+        });
+      document
+        .getElementById("ddApplyCustom")
+        .addEventListener("click", () => {
+          handleCustomApply(fromInputDD.value, toInputDD.value);
+        });
+
+      function resetCustom() {
+        state.customFrom = firstKey;
+        state.customTo = lastKey;
+        state.range = "ALL";
+        syncDateInputs();
+        updateActiveRangeButtons();
+        updateAll();
+      }
+
+      document
+        .getElementById("resetCustom")
+        .addEventListener("click", resetCustom);
+      document
+        .getElementById("ddResetCustom")
+        .addEventListener("click", resetCustom);
+
+      const btnFat = document.getElementById("btnFaturamento");
+      const btnVol = document.getElementById("btnVolume");
+      const btnFat2 = document.getElementById("trendModeFat");
+      const btnVol2 = document.getElementById("trendModeVol");
+      const btnFat3 = document.getElementById("ddBtnFaturamento");
+      const btnVol3 = document.getElementById("ddBtnVolume");
+
+      function setMode(mode) {
+        state.valueMode = mode;
+        state.valueLabel =
+          mode === "FATURAMENTO" ? "Faturamento" : "Volume";
+
+        const isFat = mode === "FATURAMENTO";
+
+        [btnFat, btnFat2, btnFat3].forEach((b) => {
+          if (!b) return;
+          b.classList.toggle("secondary", !isFat);
+        });
+        [btnVol, btnVol2, btnVol3].forEach((b) => {
+          if (!b) return;
+          b.classList.toggle("secondary", isFat);
+        });
+
+        updateAll();
+      }
+
+      btnFat.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol.addEventListener("click", () => setMode("VOLUME"));
+      btnFat2.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol2.addEventListener("click", () => setMode("VOLUME"));
+      btnFat3.addEventListener("click", () => setMode("FATURAMENTO"));
+      btnVol3.addEventListener("click", () => setMode("VOLUME"));
+
+      const btnViewGeral = document.getElementById("btnViewGeral");
+      const btnViewCat = document.getElementById("btnViewCategoria");
+      const btnViewEst = document.getElementById("btnViewEstado");
+      const btnViewCli = document.getElementById("btnViewCliente");
+      const btnViewRep = document.getElementById("btnViewRep");
+
+      function setView(mode) {
+        state.viewMode = mode;
+
+        const mapping = [
+          ["GERAL", btnViewGeral],
+          ["CATEGORIA", btnViewCat],
+          ["ESTADO", btnViewEst],
+          ["CLIENTE", btnViewCli],
+          ["REPRESENTANTE", btnViewRep]
+        ];
+        mapping.forEach(([val, btn]) => {
+          if (!btn) return;
+          btn.classList.toggle("secondary", mode !== val);
+        });
+
+        updateAll();
+      }
+
+      btnViewGeral.addEventListener("click", () => setView("GERAL"));
+      btnViewCat.addEventListener("click", () => setView("CATEGORIA"));
+      btnViewEst.addEventListener("click", () => setView("ESTADO"));
+      btnViewCli.addEventListener("click", () => setView("CLIENTE"));
+      btnViewRep.addEventListener("click", () => setView("REPRESENTANTE"));
+
+      document
+        .getElementById("filterClient")
+        .addEventListener("change", (e) => {
+          state.filterClient = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterRep")
+        .addEventListener("change", (e) => {
+          state.filterRep = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterState")
+        .addEventListener("change", (e) => {
+          state.filterState = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterCategory")
+        .addEventListener("change", (e) => {
+          state.filterCategory = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("filterLinha")
+        .addEventListener("change", (e) => {
+          state.filterLinha = e.target.value;
+          updateAll();
+        });
+
+      document
+        .getElementById("excludeClient")
+        .addEventListener("change", (e) => {
+          state.excludeClient = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeRep")
+        .addEventListener("change", (e) => {
+          state.excludeRep = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeState")
+        .addEventListener("change", (e) => {
+          state.excludeState = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeCategory")
+        .addEventListener("change", (e) => {
+          state.excludeCategory = e.target.value;
+          updateAll();
+        });
+      document
+        .getElementById("excludeLinha")
+        .addEventListener("change", (e) => {
+          state.excludeLinha = e.target.value;
+          updateAll();
+        });
+
+      const btnTrendRep = document.getElementById("trendDimRep");
+      const btnTrendCli = document.getElementById("trendDimCli");
+      const btnTrendEst = document.getElementById("trendDimEst");
+      const btnTrendCat = document.getElementById("trendDimCat");
+      const btnTrendReset = document.getElementById("trendReset");
+
+      function setRankingDimension(dim) {
+        state.rankingDimension = dim;
+
+        btnTrendRep.classList.toggle("secondary", dim !== "REPRESENTANTE");
+        btnTrendCli.classList.toggle("secondary", dim !== "CLIENTE");
+        btnTrendEst.classList.toggle("secondary", dim !== "ESTADO");
+        btnTrendCat.classList.toggle("secondary", dim !== "CATEGORIA");
+
+        const dimLabel =
+          dim === "CLIENTE"
+            ? "Cliente"
+            : dim === "ESTADO"
+            ? "Estado"
+            : dim === "CATEGORIA"
+            ? "Categoria"
+            : "Representante";
+
+        document.getElementById("rankingTopTitle").textContent =
+          "Maiores no período — " + dimLabel;
+        document.getElementById("rankingRisingTitle").textContent =
+          "Ganhando espaço — " + dimLabel;
+        document.getElementById("rankingFallingTitle").textContent =
+          "Perdendo espaço — " + dimLabel;
+
+        state.deepDiveFocus = null;
+        state.deepDiveComparisons = [];
+        renderDeepDive();
+
+        updateAll();
+      }
+
+      btnTrendRep.addEventListener("click", () =>
+        setRankingDimension("REPRESENTANTE")
+      );
+      btnTrendCli.addEventListener("click", () =>
+        setRankingDimension("CLIENTE")
+      );
+      btnTrendEst.addEventListener("click", () =>
+        setRankingDimension("ESTADO")
+      );
+      btnTrendCat.addEventListener("click", () =>
+        setRankingDimension("CATEGORIA")
+      );
+
+      btnTrendReset.addEventListener("click", () => {
+        state.deepDiveFocus = null;
+        state.deepDiveComparisons = [];
+        setRankingDimension("REPRESENTANTE");
+        renderDeepDive();
+      });
+
+      const ddCompareSelect = document.getElementById("deepDiveCompare");
+      ddCompareSelect.addEventListener("change", (e) => {
+        const options = Array.from(e.target.options);
+        let selected = options.filter((o) => o.selected).map((o) => o.value);
+
+        if (selected.length > 3) {
+          alert("Selecione no máximo 3 itens para comparação.");
+          selected = selected.slice(0, 3);
+          options.forEach((o) => {
+            o.selected = selected.includes(o.value);
+          });
+        }
+
+        if (state.deepDiveFocus) {
+          const focusName = state.deepDiveFocus.name;
+          selected = selected.filter((n) => n !== focusName);
+        }
+
+        state.deepDiveComparisons = selected.slice(0, 3);
+        renderDeepDive();
+      });
+
+      setView("CATEGORIA");
+      setMode("FATURAMENTO");
+      setRankingDimension("REPRESENTANTE");
+      updateActiveRangeButtons();
+    }
+
+    /* ========= FILTER OPTIONS (CASCADING) ========= */
+
+    function refillSelect(selectId, values, allLabel, keyName, allValue = "ALL") {
+      const select = document.getElementById(selectId);
+      const currentValue = state[keyName];
+      select.innerHTML = "";
+
+      const optAll = document.createElement("option");
+      optAll.value = allValue;
+      optAll.textContent = allLabel;
+      select.appendChild(optAll);
+
+      values.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      });
+
+      if (currentValue !== allValue && values.includes(currentValue)) {
+        select.value = currentValue;
+      } else {
+        select.value = allValue;
+        state[keyName] = allValue;
+      }
+    }
+
+    function getFilteredKeys() {
+      const keys = state.allKeysSorted;
+      if (!keys.length) return [];
+
+      if (state.range === "CUSTOM") {
+        const from = state.customFrom || keys[0];
+        const to = state.customTo || keys[keys.length - 1];
+        const fi = keys.indexOf(from);
+        const ti = keys.indexOf(to);
+        if (fi === -1 || ti === -1 || fi > ti) return [];
+        return keys.slice(fi, ti + 1);
+      }
+
+      if (
+        ["3M", "6M", "9M", "1A", "2A", "3A", "5A"].includes(state.range)
+      ) {
+        let n = 0;
+        if (state.range === "3M") n = 3;
+        else if (state.range === "6M") n = 6;
+        else if (state.range === "9M") n = 9;
+        else if (state.range === "1A") n = 12;
+        else if (state.range === "2A") n = 24;
+        else if (state.range === "3A") n = 36;
+        else if (state.range === "5A") n = 60;
+
+        if (keys.length <= n) return keys.slice();
+        return keys.slice(keys.length - n);
+      }
+
+      return keys.slice();
+    }
+
+    function updateFilterOptions(filteredKeys) {
+      const rows = state.rows;
+      const keySet = new Set(filteredKeys);
+      const rowsBase = rows.filter((r) => keySet.has(r.key));
+
+      const rowsForClients = rowsBase.filter(
+        (r) =>
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const clientValues = uniqueSorted(rowsForClients.map((r) => r.cliente));
+      refillSelect(
+        "filterClient",
+        clientValues,
+        "Todos os clientes",
+        "filterClient",
+        "ALL"
+      );
+
+      const rowsForReps = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const repValues = uniqueSorted(rowsForReps.map((r) => r.representante));
+      refillSelect(
+        "filterRep",
+        repValues,
+        "Todos os representantes",
+        "filterRep",
+        "ALL"
+      );
+
+      const rowsForStates = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const stateValues = uniqueSorted(rowsForStates.map((r) => r.estado));
+      refillSelect(
+        "filterState",
+        stateValues,
+        "Todos os estados",
+        "filterState",
+        "ALL"
+      );
+
+      const rowsForCats = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterLinha === "ALL" || r.linha === state.filterLinha)
+      );
+      const catValues = uniqueSorted(rowsForCats.map((r) => r.categoria));
+      refillSelect(
+        "filterCategory",
+        catValues,
+        "Todas as categorias",
+        "filterCategory",
+        "ALL"
+      );
+
+      const rowsForLinha = rowsBase.filter(
+        (r) =>
+          (state.filterClient === "ALL" || r.cliente === state.filterClient) &&
+          (state.filterRep === "ALL" || r.representante === state.filterRep) &&
+          (state.filterState === "ALL" || r.estado === state.filterState) &&
+          (state.filterCategory === "ALL" || r.categoria === state.filterCategory)
+      );
+      const linhaValues = uniqueSorted(rowsForLinha.map((r) => r.linha));
+      refillSelect(
+        "filterLinha",
+        linhaValues,
+        "Todas as linhas",
+        "filterLinha",
+        "ALL"
+      );
+
+      refillSelect(
+        "excludeClient",
+        clientValues,
+        "Nenhum cliente",
+        "excludeClient",
+        "NONE"
+      );
+      refillSelect(
+        "excludeRep",
+        repValues,
+        "Nenhum representante",
+        "excludeRep",
+        "NONE"
+      );
+      refillSelect(
+        "excludeState",
+        stateValues,
+        "Nenhum estado",
+        "excludeState",
+        "NONE"
+      );
+      refillSelect(
+        "excludeCategory",
+        catValues,
+        "Nenhuma categoria",
+        "excludeCategory",
+        "NONE"
+      );
+      refillSelect(
+        "excludeLinha",
+        linhaValues,
+        "Nenhuma linha",
+        "excludeLinha",
+        "NONE"
+      );
+    }
+
+    /* ========= SERIES BUILDING & METRICS ========= */
+
+    function buildSeriesForCurrentFilters(filteredKeys) {
+      const keySet = new Set(filteredKeys);
+      const byGroup = new Map();
+      const useFaturamento = state.valueMode === "FATURAMENTO";
+
+      for (const r of state.rows) {
+        if (!keySet.has(r.key)) continue;
+        if (!rowPassesDimensionFilters(r)) continue;
+
+        let group;
+        if (state.viewMode === "GERAL") {
+          group = "Geral";
+        } else if (state.viewMode === "ESTADO") {
+          group = r.estado;
+        } else if (state.viewMode === "CLIENTE") {
+          group = r.cliente;
+        } else if (state.viewMode === "REPRESENTANTE") {
+          group = r.representante;
+        } else {
+          group = r.categoria;
+        }
+
+        const val = useFaturamento ? r.valor : r.quantidade;
+        if (!byGroup.has(group)) byGroup.set(group, new Map());
+        const m = byGroup.get(group);
+        m.set(r.key, (m.get(r.key) || 0) + (isNaN(val) ? 0 : val));
+      }
+
+      return byGroup;
+    }
+
+    function computeBasicStats(totals) {
+      const n = totals.length;
+      if (!n) {
+        return {
+          mean: NaN,
+          total: NaN,
+          bestIdx: -1,
+          worstIdx: -1,
+          count: 0
+        };
+      }
+
+      let total = 0;
+      for (let i = 0; i < n; i++) {
+        const v = totals[i];
+        total += isFinite(v) ? v : 0;
+      }
+      const mean = total / n;
+
+      let bestIdx = 0;
+      let worstIdx = 0;
+      for (let i = 1; i < n; i++) {
+        if (totals[i] > totals[bestIdx]) bestIdx = i;
+        if (totals[i] < totals[worstIdx]) worstIdx = i;
+      }
+
+      return {
+        mean,
+        total,
+        bestIdx,
+        worstIdx,
+        count: n
+      };
+    }
+
+    function recalcMetricsFromLegend() {
+      const chart = state.currentChart;
+      if (!chart || !chart.keys.length) return;
+
+      const gd = document.getElementById("chart");
+      const visibleNames = new Set();
+
+      if (gd && gd.data && gd.data.length) {
+        gd.data.forEach((trace) => {
+          if (trace.visible === "legendonly") return;
+          if (!trace.name || trace.name === "Total") return;
+          visibleNames.add(trace.name);
+        });
+      }
+
+      if (!visibleNames.size) {
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        return;
+      }
+
+      const totals = [];
+      for (let i = 0; i < chart.keys.length; i++) {
+        let sum = 0;
+        chart.series.forEach((s) => {
+          if (visibleNames.has(s.name)) {
+            sum += s.values[i] || 0;
+          }
+        });
+        totals.push(sum);
+      }
+
+      const stats = computeBasicStats(totals);
+      const isFat = state.valueMode === "FATURAMENTO";
+      const formatVal = (v) => {
+        if (!isFinite(v)) return "—";
+        return isFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+      };
+
+      document.getElementById("metricChange").textContent =
+        formatVal(stats.mean);
+      document.getElementById("metricChangeSub").textContent =
+        stats.count ? `Em ${stats.count} meses` : "Sem dados suficientes";
+
+      document.getElementById("metricMean").textContent =
+        formatVal(stats.total);
+      document.getElementById("metricMeanSub").textContent =
+        stats.count ? `Soma de ${stats.count} meses` : "Sem dados suficientes";
+
+      if (stats.count && stats.bestIdx >= 0 && stats.worstIdx >= 0) {
+        const bestLabel =
+          state.keyToLabel.get(chart.keys[stats.bestIdx]) ||
+          labelFromKey(chart.keys[stats.bestIdx]);
+        const worstLabel =
+          state.keyToLabel.get(chart.keys[stats.worstIdx]) ||
+          labelFromKey(chart.keys[stats.worstIdx]);
+
+        const bestVal = formatVal(totals[stats.bestIdx]);
+        const worstVal = formatVal(totals[stats.worstIdx]);
+
+        document.getElementById("metricVol").textContent =
+          `Melhor: ${bestLabel} — ${bestVal}`;
+        document.getElementById("metricVolSub").textContent =
+          `Pior: ${worstLabel} — ${worstVal}`;
+      } else {
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+      }
+    }
+
+    /* ========= RANKINGS ========= */
+
+    function clearRankings() {
+      ["rankingTop", "rankingRising", "rankingFalling"].forEach((id) => {
+        const ul = document.getElementById(id);
+        if (!ul) return;
+        ul.innerHTML = "";
+        const li = document.createElement("li");
+        li.textContent = "Sem dados";
+        li.classList.add("disabled");
+        ul.appendChild(li);
+      });
+    }
+
+    function setDeepDive(dimType, name) {
+      state.deepDiveFocus = { dimType, name };
+      state.deepDiveComparisons = [];
+
+      const select = document.getElementById("deepDiveCompare");
+      if (select) {
+        Array.from(select.options).forEach((o) => (o.selected = false));
+      }
+
+      renderDeepDive();
+    }
+
+    function computeEntitiesList(filteredKeys, dimType) {
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+      const names = new Set();
+      rows.forEach((r) => {
+        if (dimType === "REPRESENTANTE") {
+          if (r.representante) names.add(r.representante);
+        } else if (dimType === "CLIENTE") {
+          if (r.cliente) names.add(r.cliente);
+        } else if (dimType === "ESTADO") {
+          if (r.estado) names.add(r.estado);
+        } else if (dimType === "CATEGORIA") {
+          if (r.categoria) names.add(r.categoria);
+        }
+      });
+      return Array.from(names).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
+    }
+
+    function updateDeepDiveCompareSelect(filteredKeys) {
+      const select = document.getElementById("deepDiveCompare");
+      if (!select) return;
+
+      const dim = state.rankingDimension;
+      const names = computeEntitiesList(filteredKeys, dim);
+      const focus = state.deepDiveFocus;
+      const selected = new Set(state.deepDiveComparisons);
+
+      select.innerHTML = "";
+      names.forEach((name) => {
+        if (!name) return;
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        if (focus && name === focus.name) {
+          opt.selected = false;
+        } else {
+          opt.selected = selected.has(name);
+        }
+        select.appendChild(opt);
+      });
+    }
+
+    function updateRankings(filteredKeys) {
+      const ulTop = document.getElementById("rankingTop");
+      const ulRising = document.getElementById("rankingRising");
+      const ulFalling = document.getElementById("rankingFalling");
+      ulTop.innerHTML = "";
+      ulRising.innerHTML = "";
+      ulFalling.innerHTML = "";
+
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+
+      if (!rows.length || filteredKeys.length === 0) {
+        clearRankings();
+        return;
+      }
+
+      const useFat = state.valueMode === "FATURAMENTO";
+      const valKey = useFat ? "valor" : "quantidade";
+
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, idx) => keyIndex.set(k, idx));
+      const nKeys = filteredKeys.length;
+      const mid = Math.floor(nKeys / 2) || 1;
+
+      const statsMap = new Map();
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        if (idx == null) return;
+
+        let dimVal;
+        if (state.rankingDimension === "CLIENTE") {
+          dimVal = r.cliente;
+        } else if (state.rankingDimension === "ESTADO") {
+          dimVal = r.estado;
+        } else if (state.rankingDimension === "CATEGORIA") {
+          dimVal = r.categoria;
+        } else {
+          dimVal = r.representante;
+        }
+
+        const v = r[valKey] || 0;
+        if (!statsMap.has(dimVal)) {
+          statsMap.set(dimVal, {
+            total: 0,
+            totalA: 0,
+            totalB: 0,
+            clients: new Set()
+          });
+        }
+        const st = statsMap.get(dimVal);
+        st.total += v;
+        if (idx < mid) st.totalA += v;
+        else st.totalB += v;
+        st.clients.add(r.cliente);
+      });
+
+      const trendFloor = useFat ? 1000 : 50;
+      const entities = [];
+      statsMap.forEach((st, name) => {
+        if (!name || !name.toString().trim()) return;
+        const total = st.total;
+        if (!total) return;
+
+        const varAbs = st.totalB - st.totalA;
+        const clientsCount = st.clients.size;
+        if (st.totalA + st.totalB < trendFloor) {
+          entities.push({
+            name,
+            total,
+            totalA: st.totalA,
+            totalB: st.totalB,
+            varAbs: 0,
+            clientsCount
+          });
+        } else {
+          entities.push({
+            name,
+            total,
+            totalA: st.totalA,
+            totalB: st.totalB,
+            varAbs,
+            clientsCount
+          });
+        }
+      });
+
+      if (!entities.length) {
+        clearRankings();
+        return;
+      }
+
+      const maxItems = state.rankingDimension === "CLIENTE" ? 20 : 10;
+
+      const grandTotal = entities.reduce((acc, e) => acc + e.total, 0);
+      const topArr = [...entities]
+        .sort((a, b) => b.total - a.total)
+        .slice(0, maxItems);
+
+      const dimLabelTop =
+        state.rankingDimension === "CLIENTE"
+          ? "Cliente"
+          : state.rankingDimension === "ESTADO"
+          ? "Estado"
+          : state.rankingDimension === "CATEGORIA"
+          ? "Categoria"
+          : "Representante";
+
+      if (state.rankingDimension === "CLIENTE") {
+        document.getElementById("rankingTopTitle").textContent =
+          `Maiores no período — Cliente (${topArr.length} / ${entities.length})`;
+      } else {
+        document.getElementById("rankingTopTitle").textContent =
+          `Maiores no período — ${dimLabelTop}`;
+      }
+
+      topArr.forEach((e, idx) => {
+        const li = document.createElement("li");
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "ranking-label";
+        labelSpan.textContent =
+          state.rankingDimension === "REPRESENTANTE"
+            ? `${idx + 1}. ${e.name} (${e.clientsCount} clientes)`
+            : `${idx + 1}. ${e.name}`;
+        const valSpan = document.createElement("span");
+        valSpan.className = "ranking-value";
+
+        const valueText = useFat
+          ? formatCurrencyBRL(e.total)
+          : formatNumberBR(e.total) + " un";
+
+        const pct = grandTotal > 0 ? Math.round((e.total / grandTotal) * 100) : 0;
+        valSpan.textContent = `${valueText}  • ${pct}%`;
+
+        li.appendChild(labelSpan);
+        li.appendChild(valSpan);
+
+        li.addEventListener("click", () => {
+          setDeepDive(state.rankingDimension, e.name);
+        });
+
+        ulTop.appendChild(li);
+      });
+
+      const risingArr = entities
+        .filter((e) => e.varAbs > 0)
+        .sort((a, b) => b.varAbs - a.varAbs)
+        .slice(0, maxItems);
+
+      if (!risingArr.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem dados relevantes";
+        li.classList.add("disabled");
+        ulRising.appendChild(li);
+      } else {
+        risingArr.forEach((e, idx) => {
+          const li = document.createElement("li");
+          const labelSpan = document.createElement("span");
+          labelSpan.className = "ranking-label";
+          labelSpan.textContent = `${idx + 1}. ${e.name}`;
+          const valSpan = document.createElement("span");
+          valSpan.className = "ranking-value";
+
+          const deltaVal = Math.abs(e.varAbs);
+          const valueText = useFat
+            ? formatCurrencyBRL(deltaVal)
+            : formatNumberBR(deltaVal) + " un";
+          const pctNum =
+            e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
+          const pctTxt = `${Math.round(pctNum)}%`;
+
+          valSpan.textContent = `+${valueText}  • +${pctTxt}`;
+
+          li.appendChild(labelSpan);
+          li.appendChild(valSpan);
+
+          li.addEventListener("click", () => {
+            setDeepDive(state.rankingDimension, e.name);
+          });
+
+          ulRising.appendChild(li);
+        });
+      }
+
+      const fallingArr = entities
+        .filter((e) => e.varAbs < 0)
+        .sort((a, b) => a.varAbs - b.varAbs)
+        .slice(0, maxItems);
+
+      if (!fallingArr.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem dados relevantes";
+        li.classList.add("disabled");
+        ulFalling.appendChild(li);
+      } else {
+        fallingArr.forEach((e, idx) => {
+          const li = document.createElement("li");
+          const labelSpan = document.createElement("span");
+          labelSpan.className = "ranking-label";
+          labelSpan.textContent = `${idx + 1}. ${e.name}`;
+          const valSpan = document.createElement("span");
+          valSpan.className = "ranking-value";
+
+          const deltaVal = Math.abs(e.varAbs);
+          const valueText = useFat
+            ? formatCurrencyBRL(deltaVal)
+            : formatNumberBR(deltaVal) + " un";
+          const pctNum =
+            e.totalA ? (e.varAbs / Math.abs(e.totalA)) * 100 : 0;
+          const pctTxt = `${Math.round(Math.abs(pctNum))}%`;
+
+          valSpan.textContent = `-${valueText}  • -${pctTxt}`;
+
+          li.appendChild(labelSpan);
+          li.appendChild(valSpan);
+
+          li.addEventListener("click", () => {
+            setDeepDive(state.rankingDimension, e.name);
+          });
+
+          ulFalling.appendChild(li);
+        });
+      }
+    }
+
+    /* ========= MAIN CHART ========= */
+
+    function renderChart(filteredKeys, seriesMap) {
+      const labels = filteredKeys.map(
+        (k) => state.keyToLabel.get(k) || labelFromKey(k)
+      );
+
+      let entries = Array.from(seriesMap.entries());
+      entries.sort((a, b) => {
+        const sumA = filteredKeys.reduce(
+          (acc, k) => acc + (a[1].get(k) || 0),
+          0
+        );
+        const sumB = filteredKeys.reduce(
+          (acc, k) => acc + (b[1].get(k) || 0),
+          0
+        );
+        return sumB - sumA;
+      });
+
+      if (state.viewMode === "CLIENTE" && entries.length > 10) {
+        entries = entries.slice(0, 10);
+      }
+
+      const totalPerKey = filteredKeys.map((key) => {
+        let sum = 0;
+        entries.forEach(([_, map]) => {
+          sum += map.get(key) || 0;
+        });
+        return sum;
+      });
+
+      const traces = [];
+      const chartSeries = [];
+      const isFat = state.valueMode === "FATURAMENTO";
+
+      entries.forEach(([groupName, map]) => {
+        const vals = filteredKeys.map((k) => map.get(k) || 0);
+        const legendName = isFat
+          ? `${groupName} (R$)`
+          : `${groupName} (un)`;
+
+        chartSeries.push({ name: legendName, values: vals });
+
+        const baseTemplate = isFat
+          ? `<b>${groupName}</b><br>R$ %{y:,.2f}<extra></extra>`
+          : `<b>${groupName}</b><br>%{y:,.0f} un<extra></extra>`;
+
+        traces.push({
+          x: labels,
+          y: vals,
+          type: "scatter",
+          mode: "lines+markers",
+          name: legendName,
+          line: {
+            shape: "spline",
+            width: 3,
+            color: getColorForName(groupName)
+          },
+          marker: {
+            size: 7,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: baseTemplate
+        });
+      });
+
+      if (filteredKeys.length) {
+        traces.push({
+          x: labels,
+          y: totalPerKey,
+          type: "scatter",
+          mode: "lines",
+          name: "Total",
+          line: { width: 0 },
+          marker: { size: 0 },
+          opacity: 0,
+          showlegend: false,
+          hovertemplate: isFat
+            ? `<br><b>Total: R$ %{y:,.2f}</b><extra></extra>`
+            : `<br><b>Total: %{y:,.0f} un</b><extra></extra>`
+        });
+      }
+
+      state.currentChart = {
+        keys: filteredKeys.slice(),
+        series: chartSeries
+      };
+
+      let tickVals = labels.slice();
+      let tickText = labels.slice();
+      if (labels.length > 18) {
+        const step = labels.length > 36 ? 3 : 2;
+        tickVals = [];
+        tickText = [];
+        for (let i = 0; i < labels.length; i += step) {
+          tickVals.push(labels[i]);
+          tickText.push(labels[i]);
+        }
+      }
+
+      const layout = {
+        margin: { l: 60, r: 30, t: 30, b: 80 },
+        paper_bgcolor: "#ffffff",
+        plot_bgcolor: "#ffffff",
+        showlegend: true,
+        legend: {
+          orientation: "h",
+          yanchor: "bottom",
+          y: 1.1,
+          xanchor: "center",
+          x: 0.5,
+          font: { size: 10 }
+        },
+        hovermode: "x unified",
+        xaxis: {
+          type: "category",
+          categoryorder: "array",
+          categoryarray: labels,
+          tickvals: tickVals,
+          ticktext: tickText,
+          tickangle: -35,
+          tickfont: { size: 11 },
+          showgrid: false,
+          zeroline: false
+        },
+        yaxis: {
+          title: "",
+          tickformat: ",.0f",
+          gridcolor: "#e9ecef",
+          zeroline: false,
+          automargin: true,
+          tickfont: { size: 11 },
+          autorange: true,
+          rangemode: "normal"
+        }
+      };
+
+      const chartDiv = document.getElementById("chart");
+
+      Plotly.react(chartDiv, traces, layout, {
+        responsive: true
+      });
+
+      Plotly.relayout(chartDiv, { "yaxis.autorange": true });
+
+      if (!chartDiv._metricsHooked) {
+        chartDiv.on("plotly_restyle", () => {
+          recalcMetricsFromLegend();
+        });
+        chartDiv.on("plotly_legendclick", () => {
+          setTimeout(recalcMetricsFromLegend, 0);
+        });
+        chartDiv._metricsHooked = true;
+      }
+
+      recalcMetricsFromLegend();
+    }
+
+    /* ========= DEEP DIVE HELPERS ========= */
+
+    function computeClientHealthFullForRep(name, filteredKeys) {
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, i) => keyIndex.set(k, i));
+      const nKeys = filteredKeys.length;
+      if (!nKeys) {
+        return {
+          summary: {
+            novos: 0,
+            perdidos: 0,
+            crescendo: 0,
+            caindo: 0,
+            estaveis: 0,
+            total: 0
+          },
+          details: []
+        };
+      }
+
+      const mid = Math.floor(nKeys / 2) || 1;
+      const valKey = state.valueMode === "FATURAMENTO" ? "valor" : "quantidade";
+      const keySet = new Set(filteredKeys);
+
+      const rows = state.rows.filter(
+        (r) =>
+          keySet.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          r.representante === name
+      );
+
+      const clients = new Map();
+
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        if (idx == null) return;
+        const v = r[valKey] || 0;
+        const cli =
+          (r.cliente || "Sem Cliente").toString().trim() || "Sem Cliente";
+        if (!clients.has(cli)) clients.set(cli, { A: 0, B: 0 });
+        const st = clients.get(cli);
+        if (idx < mid) st.A += v;
+        else st.B += v;
+      });
+
+      let novos = 0;
+      let perdidos = 0;
+      let crescendo = 0;
+      let caindo = 0;
+      let estaveis = 0;
+      const threshold = 0.15;
+      const details = [];
+
+      clients.forEach((st, cliente) => {
+        const A = st.A;
+        const B = st.B;
+        let status = "Estável";
+
+        if (A === 0 && B > 0) {
+          status = "Novo";
+          novos++;
+        } else if (A > 0 && B === 0) {
+          status = "Perdido";
+          perdidos++;
+        } else if (A > 0 && B > 0) {
+          if (B > A * (1 + threshold)) {
+            status = "Crescendo";
+            crescendo++;
+          } else if (B < A * (1 - threshold)) {
+            status = "Caindo";
+            caindo++;
+          } else {
+            status = "Estável";
+            estaveis++;
+          }
+        } else {
+          estaveis++;
+        }
+
+        const total = A + B;
+        details.push({ cliente, status, A, B, total });
+      });
+
+      details.sort((a, b) => b.total - a.total);
+
+      return {
+        summary: {
+          novos,
+          perdidos,
+          crescendo,
+          caindo,
+          estaveis,
+          total: clients.size
+        },
+        details
+      };
+    }
+
+    function buildEntitySeries(dimType, name, filteredKeys) {
+      const keyIndex = new Map();
+      filteredKeys.forEach((k, i) => keyIndex.set(k, i));
+      const n = filteredKeys.length;
+      const vals = new Array(n).fill(0);
+      const valKey = state.valueMode === "FATURAMENTO" ? "valor" : "quantidade";
+
+      const keySet = new Set(filteredKeys);
+      const rows = state.rows.filter(
+        (r) =>
+          keySet.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          matchesDim(r, dimType, name)
+      );
+
+      rows.forEach((r) => {
+        const idx = keyIndex.get(r.key);
+        if (idx == null) return;
+        const v = r[valKey] || 0;
+        vals[idx] += v;
+      });
+
+      return vals;
+    }
+
+    function computeSeriesKpis(vals, filteredKeys) {
+      const n = vals.length;
+      if (!n) return { total: 0, mean: 0, active: 0, months: 0 };
+
+      let total = 0;
+      let active = 0;
+      for (let i = 0; i < n; i++) {
+        const v = vals[i] || 0;
+        total += v;
+        if (v > 0) active++;
+      }
+      const mean = n ? total / n : 0;
+      return { total, mean, active, months: n };
+    }
+
+    function renderDeepDiveHealth(repName, health, useFat) {
+      const healthDiv = document.getElementById("deepDiveHealth");
+      if (!health) {
+        healthDiv.innerHTML =
+          "<em>Não foi possível calcular a saúde da carteira para este representante.</em>";
+        return;
+      }
+
+      const fmtVal = (v) =>
+        useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      let html = `<h5>Saúde da carteira — ${repName}</h5>`;
+      html += `<p style="margin:0 0 4px;font-size:0.78rem;">
+        Novos: <strong>${health.summary.novos}</strong> • 
+        Perdidos: <strong>${health.summary.perdidos}</strong> • 
+        Crescendo: <strong>${health.summary.crescendo}</strong> • 
+        Caindo: <strong>${health.summary.caindo}</strong> • 
+        Estáveis: <strong>${health.summary.estaveis}</strong> 
+        (total de ${health.summary.total} clientes)
+      </p>`;
+
+      if (!health.details.length) {
+        html += "<em>Sem clientes para detalhar neste período.</em>";
+      } else {
+        html += `<table><thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Status</th>
+            <th>Período A</th>
+            <th>Período B</th>
+            <th>Total</th>
+          </tr>
+        </thead><tbody>`;
+        const totalRep = health.details.reduce((acc, d) => acc + d.total, 0);
+        health.details.forEach((d) => {
+          const pct =
+            totalRep > 0
+              ? (d.total / totalRep) * 100
+              : 0;
+          html += `<tr>
+            <td>${d.cliente}</td>
+            <td>${d.status}</td>
+            <td>${fmtVal(d.A)}</td>
+            <td>${fmtVal(d.B)}</td>
+            <td>${fmtVal(d.total)} (${pct
+            .toFixed(1)
+            .replace(".", ",")}%)</td>
+          </tr>`;
+        });
+        html += "</tbody></table>";
+      }
+
+      healthDiv.innerHTML = html;
+    }
+
+    /* ========= DEEP DIVE RENDER ========= */
+
+    function renderDeepDive() {
+      const info = document.getElementById("deepDiveInfo");
+      const chartDiv = document.getElementById("deepDiveChart");
+      const trendDiv = document.getElementById("deepDiveTrend");
+      const kpiDiv = document.getElementById("deepDiveKpis");
+      const tblCli = document.getElementById("deepDiveTableClientes");
+      const tblCat = document.getElementById("deepDiveTableCategorias");
+      const healthDiv = document.getElementById("deepDiveHealth");
+
+      kpiDiv.innerHTML = "";
+      tblCli.innerHTML = "";
+      tblCat.innerHTML = "";
+      healthDiv.innerHTML =
+        "<em>Saúde da carteira detalhada será exibida aqui quando você clicar em “Saúde da carteira” para um representante.</em>";
+
+      const focus = state.deepDiveFocus;
+
+      const filteredKeys = getFilteredKeys();
+      if (!focus || !focus.name || !filteredKeys.length) {
+        info.innerHTML = `
+          <div><strong>Nenhum item selecionado.</strong></div>
+          <small>
+            Use as listas de Tendências para escolher um foco
+            (representante, cliente, estado ou categoria). O gráfico de linha
+            mostrará a evolução ao longo do tempo; o gráfico de pizza e as tabelas
+            mostram a composição interna (clientes / categorias) do foco principal.
+          </small>
+        `;
+        Plotly.purge(trendDiv);
+        Plotly.purge(chartDiv);
+        return;
+      }
+
+      const keySet = new Set(filteredKeys);
+      const useFat = state.valueMode === "FATURAMENTO";
+      const valKey = useFat ? "valor" : "quantidade";
+
+      const companyRows = state.rows.filter(
+        (r) => keySet.has(r.key) && rowPassesDimensionFilters(r)
+      );
+      let companyTotal = 0;
+      companyRows.forEach((r) => {
+        companyTotal += r[valKey] || 0;
+      });
+
+      const seriesPrimary = buildEntitySeries(
+        focus.dimType,
+        focus.name,
+        filteredKeys
+      );
+      const statsPrimary = computeSeriesKpis(
+        seriesPrimary,
+        filteredKeys
+      );
+
+      const compNames = (state.deepDiveComparisons || []).filter(
+        (n) => n && n !== focus.name
+      );
+      const compSeries = [];
+      const compStats = [];
+
+      compNames.forEach((name) => {
+        const sVals = buildEntitySeries(
+          focus.dimType,
+          name,
+          filteredKeys
+        );
+        compSeries.push(sVals);
+        compStats.push(computeSeriesKpis(sVals, filteredKeys));
+      });
+
+      const dimLabel = (dimType) =>
+        dimType === "REPRESENTANTE"
+          ? "Representante"
+          : dimType === "CLIENTE"
+          ? "Cliente"
+          : dimType === "ESTADO"
+          ? "Estado"
+          : "Categoria";
+
+      const formatVal = (v) =>
+        useFat ? formatCurrencyBRL(v) : formatNumberBR(v) + " un";
+
+      const healthByRep = new Map();
+      if (focus.dimType === "REPRESENTANTE") {
+        const hMain = computeClientHealthFullForRep(focus.name, filteredKeys);
+        healthByRep.set(focus.name, hMain);
+        compNames.forEach((name) => {
+          const h = computeClientHealthFullForRep(name, filteredKeys);
+          healthByRep.set(name, h);
+        });
+      }
+
+      const kpiCards = [];
+
+      const primaryShare =
+        companyTotal > 0
+          ? ((statsPrimary.total / companyTotal) * 100).toFixed(1).replace(".", ",") +
+            "%"
+          : "—";
+
+      let primaryHealthLine = "";
+      if (focus.dimType === "REPRESENTANTE") {
+        const h = healthByRep.get(focus.name);
+        if (h) {
+          primaryHealthLine = `Novos ${h.summary.novos} • Perdidos ${h.summary.perdidos} • Crescendo ${h.summary.crescendo} • Caindo ${h.summary.caindo} • Estáveis ${h.summary.estaveis} (${h.summary.total} clientes)`;
+        }
+      }
+
+      kpiCards.push(`
+        <div class="deep-dive-kpi-item">
+          <div class="deep-dive-kpi-title">${dimLabel(focus.dimType)}: ${focus.name}</div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Total período</span>
+            <span class="deep-dive-kpi-value">${formatVal(
+              statsPrimary.total
+            )}</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Média mensal</span>
+            <span class="deep-dive-kpi-value">${formatVal(
+              statsPrimary.mean
+            )}</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Meses com venda</span>
+            <span class="deep-dive-kpi-value">${statsPrimary.active} / ${
+        statsPrimary.months
+      }</span>
+          </div>
+          <div class="deep-dive-kpi-line">
+            <span class="deep-dive-kpi-label">Participação</span>
+            <span class="deep-dive-kpi-value">${primaryShare}</span>
+          </div>
+          ${
+            focus.dimType === "REPRESENTANTE"
+              ? `<div class="deep-dive-kpi-line">
+                  <span class="deep-dive-kpi-label">Saúde da carteira</span>
+                  <span class="deep-dive-kpi-value">
+                    <span class="deep-dive-health-link" data-rep="${focus.name}">Ver detalhes</span>
+                    ${primaryHealthLine ? "<br/>" + primaryHealthLine : ""}
+                  </span>
+                </div>`
+              : ""
+          }
         </div>
-        <div style="font-size:9px; line-height:1.35; white-space:pre-wrap;">
-            {full_text}
-        </div>
-        <div style="margin-top:8px; text-align:center;">
-            {icons_html}
-        </div>
-    </div>
-    """
+      `);
 
+      compNames.forEach((name, idx) => {
+        const st = compStats[idx];
+        const share =
+          companyTotal > 0
+            ? ((st.total / companyTotal) * 100).toFixed(1).replace(".", ",") +
+              "%"
+            : "—";
 
-def sku_label_preview_html(sku: str) -> str:
-    """
-    Simple bordered horizontal SKU preview.
-    """
-    return f"""
-    <div style="
-        border:1px solid #000;
-        width:300px;
-        height:60px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-        font-size:20px;
-        letter-spacing:2px;
-        margin-bottom:8px;
-        ">
-        {sku}
-    </div>
-    """
+        let healthLine = "";
+        let healthLinkHtml = "";
+        if (focus.dimType === "REPRESENTANTE") {
+          const h = healthByRep.get(name);
+          if (h) {
+            healthLine = `Novos ${h.summary.novos} • Perdidos ${h.summary.perdidos} • Crescendo ${h.summary.crescendo} • Caindo ${h.summary.caindo} • Estáveis ${h.summary.estaveis} (${h.summary.total} clientes)`;
+            healthLinkHtml = `
+              <div class="deep-dive-kpi-line">
+                <span class="deep-dive-kpi-label">Saúde da carteira</span>
+                <span class="deep-dive-kpi-value">
+                  <span class="deep-dive-health-link" data-rep="${name}">Ver detalhes</span>
+                  ${healthLine ? "<br/>" + healthLine : ""}
+                </span>
+              </div>`;
+          }
+        }
 
+        kpiCards.push(`
+          <div class="deep-dive-kpi-item">
+            <div class="deep-dive-kpi-title">Comparar: ${name}</div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Total período</span>
+              <span class="deep-dive-kpi-value">${formatVal(
+                st.total
+              )}</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Média mensal</span>
+              <span class="deep-dive-kpi-value">${formatVal(
+                st.mean
+              )}</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Meses com venda</span>
+              <span class="deep-dive-kpi-value">${st.active} / ${
+          st.months
+        }</span>
+            </div>
+            <div class="deep-dive-kpi-line">
+              <span class="deep-dive-kpi-label">Participação</span>
+              <span class="deep-dive-kpi-value">${share}</span>
+            </div>
+            ${healthLinkHtml || ""}
+          </div>
+        `);
+      });
 
-# ---------------- SIDEBAR ----------------
+      kpiDiv.innerHTML = kpiCards.join("");
 
-st.sidebar.title("Carelabel Generator")
+      info.innerHTML = `
+        <div><strong>${dimLabel(focus.dimType)} selecionado: ${
+        focus.name
+      }</strong></div>
+        <small>
+          O gráfico de linha acima mostra a evolução deste ${
+            dimLabel(focus.dimType).toLowerCase()
+          } ao longo do tempo (e dos itens selecionados em “Comparar”).
+          O gráfico de pizza e as tabelas abaixo mostram a composição interna
+          (clientes / categorias) para o foco principal, respeitando o mesmo período
+          e filtros da Nova Visão.
+        </small>
+      `;
 
-brand = st.sidebar.selectbox("Brand", list(BRAND_LOGOS.keys()))
+      if (focus.dimType === "REPRESENTANTE") {
+        const links = document.querySelectorAll(".deep-dive-health-link");
+        links.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const repName = link.getAttribute("data-rep");
+            let h = healthByRep.get(repName);
+            if (!h) {
+              h = computeClientHealthFullForRep(repName, filteredKeys);
+              healthByRep.set(repName, h);
+            }
+            renderDeepDiveHealth(repName, h, useFat);
+          });
+        });
+      } else {
+        healthDiv.innerHTML =
+          "<em>Saúde da carteira detalhada está disponível apenas para a visão por Representante.</em>";
+      }
 
-st.sidebar.markdown("---")
-st.sidebar.caption(
-    "Carelabel PDF: 80×30 mm (vertical).\n"
-    "SKU labels PDF: 10×50 mm (horizontal, 1 SKU por página)."
-)
+      const labels = filteredKeys.map(
+        (k) => state.keyToLabel.get(k) || labelFromKey(k)
+      );
+      const tracesTrend = [];
 
+      tracesTrend.push({
+        x: labels,
+        y: seriesPrimary,
+        type: "scatter",
+        mode: "lines+markers",
+        name: `${dimLabel(focus.dimType)} ${focus.name}`,
+        line: {
+          shape: "spline",
+          width: 3,
+          color: getColorForName(
+            `DD:${focus.dimType}:${focus.name}`
+          )
+        },
+        marker: {
+          size: 6,
+          line: { width: 1, color: "#ffffff" }
+        },
+        hovertemplate: useFat
+          ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+          : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
+      });
 
-# ---------------- MAIN UI ----------------
-
-st.title("Carelabel & SKU Label Generator")
-
-tab_care, tab_sku = st.tabs(["Carelabel (80×30 mm)", "SKU labels (10×50 mm)"])
-
-
-# ---- CARELABEL TAB ----
-with tab_care:
-    col_left, col_right = st.columns([1.1, 1.4])
-
-    with col_left:
-        st.subheader("Carelabel – Composição")
-
-        family_code = st.text_input(
-            "Product family (para nome do arquivo)",
-            value="",
-            help="Ex.: C500390016 – todas as cores/SKUs desta família usam a mesma carelabel.",
-        )
-
-        st.write("### Composition")
-        exterior_en = st.text_input(
-            "EXTERIOR",
-            value="100% PVC",
-            help="English ou Português. Ex.: '75% Polyester, 25% Polyvinyl Chloride (PVC)'",
-        )
-        forro_en = st.text_input(
-            "FORRO / LINING",
-            value="100% Polyester",
-            help="English ou Português. Ex.: '100% Polyester'",
-        )
-
-        already_pt = st.checkbox(
-            "Composition already in Portuguese (skip auto-translation)",
-            value=False,
-        )
-
-        generate_care = st.button("Generate carelabel PDF")
-
-    with col_right:
-        st.subheader("Preview & PDF")
-
-        if generate_care:
-            # Store family in session for optional use in SKU tab
-            st.session_state["family_code"] = family_code.strip()
-
-            if already_pt:
-                exterior_pt = exterior_en.strip().upper()
-                forro_pt = forro_en.strip().upper()
-            else:
-                exterior_pt = translate_composition_to_pt(exterior_en)
-                forro_pt = translate_composition_to_pt(forro_en)
-
-            full_text = build_carelabel_text(exterior_pt, forro_pt)
-
-            # HTML preview
-            st.markdown(
-                carelabel_preview_html(full_text, brand),
-                unsafe_allow_html=True,
+      compNames.forEach((name, idx) => {
+        const vals = compSeries[idx];
+        tracesTrend.push({
+          x: labels,
+          y: vals,
+          type: "scatter",
+          mode: "lines+markers",
+          name: `Comparar: ${name}`,
+          line: {
+            shape: "spline",
+            width: 3,
+            color: getColorForName(
+              `DD:${focus.dimType}:${name}`
             )
+          },
+          marker: {
+            size: 6,
+            line: { width: 1, color: "#ffffff" }
+          },
+          hovertemplate: useFat
+            ? "<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"
+            : "<b>%{x}</b><br>%{y:,.0f} un<extra></extra>"
+        });
+      });
 
-            # PDF
-            pdf_bytes = create_carelabel_pdf(brand, full_text)
-            pdf_name_base = family_code.strip() or "CARELABEL"
-            st.download_button(
-                "Download carelabel PDF",
-                data=pdf_bytes,
-                file_name=f"{pdf_name_base} - CARE LABEL.pdf",
-                mime="application/pdf",
-            )
-        else:
-            st.info("Preencha a composição e clique em **Generate carelabel PDF**.")
+      let ddTickVals = labels.slice();
+      let ddTickText = labels.slice();
+      if (labels.length > 18) {
+        const step = labels.length > 36 ? 3 : 2;
+        ddTickVals = [];
+        ddTickText = [];
+        for (let i = 0; i < labels.length; i += step) {
+          ddTickVals.push(labels[i]);
+          ddTickText.push(labels[i]);
+        }
+      }
 
+      Plotly.react(
+        trendDiv,
+        tracesTrend,
+        {
+          margin: { l: 50, r: 20, t: 20, b: 50 },
+          paper_bgcolor: "#ffffff",
+          plot_bgcolor: "#ffffff",
+          showlegend: true,
+          legend: {
+            orientation: "h",
+            yanchor: "bottom",
+            y: 1.02,
+            xanchor: "center",
+            x: 0.5,
+            font: { size: 10 }
+          },
+          hovermode: "x unified",
+          xaxis: {
+            type: "category",
+            categoryorder: "array",
+            categoryarray: labels,
+            tickvals: ddTickVals,
+            ticktext: ddTickText,
+            showgrid: false,
+            tickangle: -30,
+            tickfont: { size: 10 }
+          },
+          yaxis: {
+            title: "",
+            gridcolor: "#e9ecef",
+            zeroline: false,
+            automargin: true,
+            autorange: true
+          }
+        },
+        { responsive: true }
+      );
+      Plotly.relayout(trendDiv, { "yaxis.autorange": true });
 
-# ---- SKU LABELS TAB ----
-with tab_sku:
-    if "sku_count" not in st.session_state:
-        st.session_state["sku_count"] = 4  # start with 4 fields
+      const rows = state.rows.filter(
+        (r) =>
+          keySet.has(r.key) &&
+          rowPassesDimensionFilters(r) &&
+          matchesDim(r, focus.dimType, focus.name)
+      );
 
-    col_left, col_right = st.columns([1.1, 1.6])
+      if (!rows.length) {
+        tblCli.innerHTML = "<em>Sem dados para os filtros atuais.</em>";
+        tblCat.innerHTML = "<em>Sem dados para os filtros atuais.</em>";
+        Plotly.purge(chartDiv);
+        return;
+      }
 
-    with col_left:
-        st.subheader("SKUs para esta carelabel")
+      let groupField, groupLabel;
+      if (focus.dimType === "REPRESENTANTE") {
+        groupField = "cliente";
+        groupLabel = "clientes";
+      } else if (focus.dimType === "CLIENTE") {
+        groupField = "categoria";
+        groupLabel = "categorias";
+      } else if (focus.dimType === "ESTADO") {
+        groupField = "categoria";
+        groupLabel = "categorias";
+      } else {
+        groupField = "cliente";
+        groupLabel = "clientes";
+      }
 
-        # Suggest family from carelabel tab, if filled
-        default_family = st.session_state.get("family_code", "")
-        family_code_sku = st.text_input(
-            "Product family (para nome do PDF)",
-            value=default_family,
-            help="Ex.: C500390016 – usada apenas para nome do PDF.",
+      const groupMap = new Map();
+      let totalVal = 0;
+
+      rows.forEach((r) => {
+        const keyG =
+          (r[groupField] || "Outros").toString().trim() || "Outros";
+        const v = r[valKey] || 0;
+        totalVal += v;
+        groupMap.set(keyG, (groupMap.get(keyG) || 0) + v);
+      });
+
+      const groups = Array.from(groupMap.entries()).sort(
+        (a, b) => b[1] - a[1]
+      );
+
+      const maxSlices = 15;
+      const labelsPie = [];
+      const valuesPie = [];
+      let othersTotal = 0;
+
+      groups.forEach(([gName, gVal], idx) => {
+        if (idx < maxSlices) {
+          labelsPie.push(gName);
+          valuesPie.push(gVal);
+        } else {
+          othersTotal += gVal;
+        }
+      });
+
+      if (othersTotal > 0) {
+        labelsPie.push("Outros");
+        valuesPie.push(othersTotal);
+      }
+
+      const pieColors = labelsPie.map((lab) =>
+        getColorForName(
+          `DDpie:${focus.dimType}:${focus.name}:${lab}`
         )
+      );
 
-        if st.button("Add another SKU field"):
-            st.session_state["sku_count"] += 1
+      Plotly.react(
+        chartDiv,
+        [
+          {
+            type: "pie",
+            labels: labelsPie,
+            values: valuesPie,
+            textinfo: "label+percent",
+            insidetextorientation: "radial",
+            hovertemplate: useFat
+              ? "<b>%{label}</b><br>R$ %{value:,.2f} (%{percent})<extra></extra>"
+              : "<b>%{label}</b><br>%{value:,.0f} un (%{percent})<extra></extra>",
+            marker: {
+              colors: pieColors
+            }
+          }
+        ],
+        {
+          margin: { t: 30, l: 20, r: 20, b: 20 },
+          paper_bgcolor: "#ffffff",
+          plot_bgcolor: "#ffffff",
+          showlegend: false,
+          title: {
+            text: `Distribuição por ${groupLabel}`,
+            font: { size: 14 }
+          }
+        },
+        { responsive: true }
+      );
 
-        sku_values = []
-        for i in range(st.session_state["sku_count"]):
-            sku_val = st.text_input(
-                f"SKU {i + 1}",
-                key=f"sku_{i+1}",
-                placeholder="Ex.: C5003900160001",
-            )
-            if sku_val.strip():
-                sku_values.append(sku_val.strip())
+      function renderTableClientes() {
+        if (focus.dimType === "REPRESENTANTE") {
+          const cliMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.cliente || "Sem Cliente").toString().trim() ||
+              "Sem Cliente";
+            const v = r[valKey] || 0;
+            cliMap.set(c, (cliMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(cliMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCli.innerHTML = "<em>Sem clientes neste período.</em>";
+            return;
+          }
+          let html = `<h5>Clientes do representante</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCli.innerHTML = html;
+        } else if (focus.dimType === "CLIENTE") {
+          tblCli.innerHTML = `<h5>Cliente selecionado</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
+        } else if (focus.dimType === "ESTADO") {
+          tblCli.innerHTML = `<h5>Estado selecionado</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
+        } else {
+          tblCli.innerHTML = `<h5>Categoria selecionada</h5><table><tbody><tr><td>${focus.name}</td></tr></tbody></table>`;
+        }
+      }
 
-        generate_skus = st.button("Generate SKU labels PDF")
+      function renderTableCategorias() {
+        if (focus.dimType === "REPRESENTANTE") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias (todos os clientes)</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else if (focus.dimType === "CLIENTE") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias deste cliente</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else if (focus.dimType === "ESTADO") {
+          const catMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.categoria || "Sem Categoria").toString().trim() ||
+              "Sem Categoria";
+            const v = r[valKey] || 0;
+            catMap.set(c, (catMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(catMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem categorias neste período.</em>";
+            return;
+          }
+          let html = `<h5>Categorias neste estado</h5><table><thead><tr><th>Categoria</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        } else {
+          const cliMap = new Map();
+          rows.forEach((r) => {
+            const c =
+              (r.cliente || "Sem Cliente").toString().trim() ||
+              "Sem Cliente";
+            const v = r[valKey] || 0;
+            cliMap.set(c, (cliMap.get(c) || 0) + v);
+          });
+          const arr = Array.from(cliMap.entries()).sort(
+            (a, b) => b[1] - a[1]
+          );
+          if (!arr.length) {
+            tblCat.innerHTML = "<em>Sem clientes nesta categoria.</em>";
+            return;
+          }
+          let html = `<h5>Clientes desta categoria</h5><table><thead><tr><th>Cliente</th><th>Valor</th><th>%</th></tr></thead><tbody>`;
+          arr.forEach(([cName, v]) => {
+            const pct = totalVal > 0 ? (v / totalVal) * 100 : 0;
+            const vt = useFat
+              ? formatCurrencyBRL(v)
+              : formatNumberBR(v) + " un";
+            html += `<tr><td>${cName}</td><td>${vt}</td><td>${pct
+              .toFixed(1)
+              .replace(".", ",")}%</td></tr>`;
+          });
+          html += "</tbody></table>";
+          tblCat.innerHTML = html;
+        }
+      }
 
-    with col_right:
-        st.subheader("Preview & PDF")
+      renderTableClientes();
+      renderTableCategorias();
+    }
 
-        if generate_skus:
-            if not sku_values:
-                st.warning("Informe pelo menos um SKU.")
-            else:
-                # HTML previews
-                for sku in sku_values:
-                    st.markdown(sku_label_preview_html(sku), unsafe_allow_html=True)
+    /* ========= MAIN UPDATE LOOP ========= */
 
-                # PDF
-                sku_pdf = create_sku_labels_pdf(sku_values)
-                sku_pdf_name = family_code_sku.strip() or "SKUS"
-                st.download_button(
-                    "Download SKU labels PDF",
-                    data=sku_pdf,
-                    file_name=f"{sku_pdf_name} - SKU LABELS.pdf",
-                    mime="application/pdf",
-                )
-        else:
-            st.info(
-                "Digite os SKUs (vários, se quiser) e clique em "
-                "**Generate SKU labels PDF**."
-            )
+    function updateAll() {
+      const filteredKeys = getFilteredKeys();
+      updateFilterOptions(filteredKeys);
+
+      const statusInfo = document.getElementById("statusInfo");
+      const statusRange = document.getElementById("statusRange");
+      const chartDiv = document.getElementById("chart");
+
+      if (!filteredKeys.length) {
+        statusInfo.textContent = "Nenhum dado para o período selecionado.";
+        statusRange.textContent = "Período: --";
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        clearRankings();
+        Plotly.purge(chartDiv);
+        updateDeepDiveCompareSelect(filteredKeys);
+        renderDeepDive();
+        return;
+      }
+
+      const seriesMap = buildSeriesForCurrentFilters(filteredKeys);
+
+      if (!seriesMap.size) {
+        statusInfo.textContent = "Nenhum dado para os filtros selecionados.";
+        const firstKey = filteredKeys[0];
+        const lastKey = filteredKeys[filteredKeys.length - 1];
+        const labelFrom =
+          state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
+        const labelTo =
+          state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+        statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
+        document.getElementById("metricMean").textContent = "—";
+        document.getElementById("metricChange").textContent = "—";
+        document.getElementById("metricVol").textContent = "—";
+        document.getElementById("metricMeanSub").textContent = "—";
+        document.getElementById("metricChangeSub").textContent = "—";
+        document.getElementById("metricVolSub").textContent = "—";
+        clearRankings();
+        Plotly.purge(chartDiv);
+        updateDeepDiveCompareSelect(filteredKeys);
+        renderDeepDive();
+        return;
+      }
+
+      if (state.viewMode === "CLIENTE") {
+        statusInfo.textContent =
+          "Dados carregados • Top 10 clientes no período";
+      } else if (state.viewMode === "ESTADO") {
+        statusInfo.textContent = "Dados carregados • Visão por estado";
+      } else if (state.viewMode === "REPRESENTANTE") {
+        statusInfo.textContent =
+          "Dados carregados • Visão por representante";
+      } else if (state.viewMode === "GERAL") {
+        statusInfo.textContent = "Dados carregados • Visão geral";
+      } else {
+        statusInfo.textContent =
+          "Dados carregados • Visão por categoria";
+      }
+
+      const firstKey = filteredKeys[0];
+      const lastKey = filteredKeys[filteredKeys.length - 1];
+      const labelFrom =
+        state.keyToLabel.get(firstKey) || labelFromKey(firstKey);
+      const labelTo =
+        state.keyToLabel.get(lastKey) || labelFromKey(lastKey);
+      statusRange.textContent = "Período: " + labelFrom + " – " + labelTo;
+
+      updateRankings(filteredKeys);
+      updateDeepDiveCompareSelect(filteredKeys);
+      renderChart(filteredKeys, seriesMap);
+      renderDeepDive();
+    }
+
+    /* ========= STARTUP ========= */
+
+    // Direct init (no DOMContentLoaded wrapper) – matches your working pattern
+    loadFamilies()
+      .then(() => {
+        loadMainCSV();
+      })
+      .catch(() => {
+        // even if familias fail, still load main CSV
+        loadMainCSV();
+      });
+  </script>
+</body>
+</html>

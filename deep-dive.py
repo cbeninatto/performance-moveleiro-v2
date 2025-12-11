@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import folium
+from streamlit_folium import st_folium
 
 # ==========================
 # CONFIG
@@ -14,6 +16,11 @@ st.set_page_config(
 GITHUB_CSV_URL = (
     "https://raw.githubusercontent.com/"
     "cbeninatto/performance-moveleiro-v2/main/data/relatorio_faturamento.csv"
+)
+
+CITY_GEO_CSV_URL = (
+    "https://raw.githubusercontent.com/"
+    "cbeninatto/performance-moveleiro-v2/main/data/cidades_br_geo.csv"
 )
 
 # Nome lógico da coluna de status calculado
@@ -210,6 +217,57 @@ def build_carteira_status(df_all: pd.DataFrame,
     return clientes
 
 
+@st.cache_data(show_spinner=True)
+def load_geo() -> pd.DataFrame:
+    """
+    Carrega o CSV de coordenadas de cidades (cidades_br_geo.csv) do GitHub
+    e normaliza colunas de Estado, Cidade, lat, lon.
+    """
+    df_geo = pd.read_csv(CITY_GEO_CSV_URL)
+
+    # Detecta colunas estado/cidade ignorando caixa
+    estado_col = next((c for c in df_geo.columns if c.lower() == "estado"), None)
+    cidade_col = next((c for c in df_geo.columns if c.lower() == "cidade"), None)
+
+    if estado_col is None or cidade_col is None:
+        raise ValueError("cidades_br_geo.csv precisa ter colunas 'Estado' e 'Cidade'.")
+
+    # Detecta colunas de latitude e longitude com nomes comuns
+    lat_col = next(
+        (c for c in df_geo.columns if c.lower() in ("lat", "latitude")),
+        None,
+    )
+    lon_col = next(
+        (c for c in df_geo.columns if c.lower() in ("lon", "longitude", "long")),
+        None,
+    )
+
+    if lat_col is None or lon_col is None:
+        raise ValueError("cidades_br_geo.csv precisa ter colunas de latitude/longitude.")
+
+    df_geo = df_geo[[estado_col, cidade_col, lat_col, lon_col]].rename(
+        columns={
+            estado_col: "Estado",
+            cidade_col: "Cidade",
+            lat_col: "lat",
+            lon_col: "lon",
+        }
+    )
+
+    df_geo["lat"] = pd.to_numeric(df_geo["lat"], errors="coerce")
+    df_geo["lon"] = pd.to_numeric(df_geo["lon"], errors="coerce")
+
+    df_geo = df_geo.dropna(subset=["lat", "lon"])
+
+    df_geo["key"] = (
+        df_geo["Estado"].astype(str).str.strip().str.upper()
+        + "|"
+        + df_geo["Cidade"].astype(str).str.strip().str.upper()
+    )
+
+    return df_geo[["key", "Estado", "Cidade", "lat", "lon"]]
+
+
 # ==========================
 # LOAD DATA
 # ==========================
@@ -360,11 +418,29 @@ if meses_com_venda > 0:
 else:
     media_mensal = 0.0
 
-total_periodo_geral = df_period["Valor"].sum()
-if total_periodo_geral > 0:
-    participacao = total_rep / total_periodo_geral
+# Distribuição por clientes: participação do Top 10
+if not df_rep.empty and total_rep > 0:
+    df_clientes_tot = (
+        df_rep.groupby("Cliente", as_index=False)["Valor"]
+        .sum()
+        .sort_values("Valor", ascending=False)
+    )
+    num_clientes_rep = df_clientes_tot["Cliente"].nunique()
+    top10_valor = df_clientes_tot["Valor"].iloc[:10].sum()
+    top10_share = top10_valor / total_rep
 else:
-    participacao = 0.0
+    num_clientes_rep = 0
+    top10_share = 0.0
+
+# Cobertura de carteira (clientes / cidades / estados)
+clientes_atendidos = num_clientes_rep
+cidades_atendidas = (
+    df_rep[["Estado", "Cidade"]]
+    .dropna()
+    .drop_duplicates()
+    .shape[0]
+)
+estados_atendidos = df_rep["Estado"].dropna().nunique()
 
 # Saúde da carteira usando o DF calculado
 if not clientes_carteira.empty:
@@ -378,8 +454,162 @@ else:
 col1.metric("Total período", format_brl(total_rep))
 col2.metric("Média mensal", format_brl(media_mensal))
 col3.metric("Meses com venda", f"{meses_com_venda} / {total_meses_periodo}")
-col4.metric("Participação", f"{participacao:.1%}")
+col4.metric(
+    "Distribuição por clientes",
+    f"Top 10: {top10_share:.0%}",
+    f"{clientes_atendidos} clientes",
+)
 col5.metric("Saúde da carteira", f"{carteira_score:.0f} / 100", carteira_label)
+
+# Linha extra com cobertura
+cov1, cov2, cov3 = st.columns(3)
+cov1.metric("Clientes atendidos", f"{clientes_atendidos}")
+cov2.metric("Cidades atendidas", f"{cidades_atendidas}")
+cov3.metric("Estados atendidos", f"{estados_atendidos}")
+
+st.markdown("---")
+
+# ==========================
+# DESTAQUES DO PERÍODO
+# ==========================
+st.subheader("Destaques do período")
+
+if df_rep.empty:
+    st.info("Este representante não possui vendas no período selecionado.")
+else:
+    mensal_rep = (
+        df_rep
+        .groupby(["Ano", "MesNum"], as_index=False)[["Valor", "Quantidade"]]
+        .sum()
+    )
+    mensal_rep["Competencia"] = pd.to_datetime(
+        dict(year=mensal_rep["Ano"], month=mensal_rep["MesNum"], day=1)
+    )
+    mensal_rep["MesLabel"] = mensal_rep["Competencia"].dt.strftime("%b %Y")
+
+    best_fat = mensal_rep.loc[mensal_rep["Valor"].idxmax()]
+    worst_fat = mensal_rep.loc[mensal_rep["Valor"].idxmin()]
+    best_vol = mensal_rep.loc[mensal_rep["Quantidade"].idxmax()]
+    worst_vol = mensal_rep.loc[mensal_rep["Quantidade"].idxmin()]
+
+    col_d1, col_d2 = st.columns(2)
+
+    with col_d1:
+        st.markdown("**Faturamento**")
+        st.write(
+            f"• Melhor mês: **{best_fat['MesLabel']}** — {format_brl(best_fat['Valor'])}"
+        )
+        st.write(
+            f"• Pior mês: **{worst_fat['MesLabel']}** — {format_brl(worst_fat['Valor'])}"
+        )
+
+    with col_d2:
+        st.markdown("**Volume**")
+        st.write(
+            f"• Melhor mês: **{best_vol['MesLabel']}** — "
+            f"{int(best_vol['Quantidade']):,}".replace(",", ".")
+        )
+        st.write(
+            f"• Pior mês: **{worst_vol['MesLabel']}** — "
+            f"{int(worst_vol['Quantidade']):,}".replace(",", ".")
+        )
+
+st.markdown("---")
+
+# ==========================
+# MAPA DE CIDADES
+# ==========================
+st.subheader("Mapa de cidades")
+
+if df_rep.empty:
+    st.info("Este representante não possui vendas no período selecionado.")
+else:
+    try:
+        df_geo = load_geo()
+
+        df_cities = (
+            df_rep.groupby(["Estado", "Cidade"], as_index=False)
+            .agg(
+                Valor=("Valor", "sum"),
+                Quantidade=("Quantidade", "sum"),
+                Clientes=("Cliente", "nunique"),
+            )
+        )
+        df_cities["key"] = (
+            df_cities["Estado"].astype(str).str.strip().str.upper()
+            + "|"
+            + df_cities["Cidade"].astype(str).str.strip().str.upper()
+        )
+        df_map = df_cities.merge(df_geo, on="key", how="inner")
+
+        if df_map.empty:
+            st.info("Não há coordenadas de cidades para exibir no mapa.")
+        else:
+            # Escolha de métrica
+            metric_choice = st.radio(
+                "Métrica do mapa",
+                ["Faturamento", "Volume"],
+                horizontal=True,
+            )
+            if metric_choice == "Faturamento":
+                metric_col = "Valor"
+                metric_label = "Faturamento (R$)"
+            else:
+                metric_col = "Quantidade"
+                metric_label = "Volume"
+
+            if df_map[metric_col].max() <= 0:
+                st.info("Sem dados para exibir no mapa nesse período.")
+            else:
+                # Bins em 4 quantis, com fallback
+                values = df_map[metric_col]
+                try:
+                    df_map["bin"], bins = pd.qcut(
+                        values, q=4, labels=False, retbins=True, duplicates="drop"
+                    )
+                except ValueError:
+                    df_map["bin"] = 0
+                    bins = [values.min(), values.max()]
+
+                colors = ["#22c55e", "#eab308", "#f97316", "#ef4444"]
+
+                # Métricas de cobertura (reforço aqui)
+                cov1, cov2, cov3 = st.columns(3)
+                cov1.metric("Cidades atendidas", f"{cidades_atendidas}")
+                cov2.metric("Estados atendidos", f"{estados_atendidos}")
+                cov3.metric("Clientes atendidos", f"{clientes_atendidos}")
+
+                center = [df_map["lat"].mean(), df_map["lon"].mean()]
+                m = folium.Map(location=center, zoom_start=4, tiles="cartodbpositron")
+
+                for _, row in df_map.iterrows():
+                    bin_idx = int(row["bin"]) if pd.notna(row["bin"]) else 0
+                    color = colors[bin_idx % len(colors)]
+
+                    if metric_col == "Valor":
+                        metric_val_str = format_brl(row["Valor"])
+                    else:
+                        metric_val_str = f"{int(row['Quantidade']):,}".replace(",", ".")
+
+                    popup_html = (
+                        f"<b>{row['Cidade']} - {row['Estado']}</b><br>"
+                        f"{metric_label}: {metric_val_str}<br>"
+                        f"Clientes: {int(row['Clientes'])}"
+                    )
+
+                    folium.CircleMarker(
+                        location=[row["lat"], row["lon"]],
+                        radius=6,
+                        color=color,
+                        fill=True,
+                        fill_color=color,
+                        fill_opacity=0.8,
+                        popup=folium.Popup(popup_html, max_width=300),
+                    ).add_to(m)
+
+                st_folium(m, width=None, height=450)
+    except Exception as e:
+        st.info(f"Mapa de cidades ainda não disponível: {e}")
 
 st.markdown("---")
 
@@ -436,6 +666,70 @@ else:
     )
 
     st.altair_chart(combo_chart, use_container_width=True)
+
+st.markdown("---")
+
+# ==========================
+# DISTRIBUIÇÃO POR CLIENTES (SEÇÃO NOVA)
+# ==========================
+st.subheader("Distribuição por clientes")
+
+if df_rep.empty or clientes_atendidos == 0:
+    st.info("Nenhum cliente com vendas no período selecionado.")
+else:
+    df_clientes = (
+        df_rep.groupby("Cliente", as_index=False)[["Valor", "Quantidade"]]
+        .sum()
+        .sort_values("Valor", ascending=False)
+    )
+
+    top1_share = (
+        df_clientes["Valor"].iloc[:1].sum() / total_rep if total_rep > 0 else 0.0
+    )
+    top5_share = (
+        df_clientes["Valor"].iloc[:5].sum() / total_rep if total_rep > 0 else 0.0
+    )
+    top10_share_sec = (
+        df_clientes["Valor"].iloc[:10].sum() / total_rep if total_rep > 0 else 0.0
+    )
+
+    if top10_share_sec >= 0.7:
+        dist_label = "Alta concentração (carteira concentrada)"
+    elif top10_share_sec >= 0.5:
+        dist_label = "Concentração moderada"
+    else:
+        dist_label = "Bem distribuída"
+
+    st.caption(
+        f"{clientes_atendidos} clientes no período selecionado. "
+        f"A carteira está **{dist_label}**."
+    )
+
+    col_dc1, col_dc2 = st.columns([1.3, 1])
+
+    with col_dc1:
+        st.caption("Top 20 clientes por faturamento")
+        chart_clients = (
+            alt.Chart(df_clientes.head(20))
+            .mark_bar()
+            .encode(
+                x=alt.X("Valor:Q", title="Faturamento (R$)"),
+                y=alt.Y("Cliente:N", sort="-x", title="Cliente"),
+                tooltip=[
+                    alt.Tooltip("Cliente:N", title="Cliente"),
+                    alt.Tooltip("Valor:Q", title="Faturamento", format=",.2f"),
+                    alt.Tooltip("Quantidade:Q", title="Volume"),
+                ],
+            )
+            .properties(height=420)
+        )
+        st.altair_chart(chart_clients, use_container_width=True)
+
+    with col_dc2:
+        st.caption("Concentração da carteira")
+        st.metric("Top 1 cliente", f"{top1_share:.1%}")
+        st.metric("Top 5 clientes", f"{top5_share:.1%}")
+        st.metric("Top 10 clientes", f"{top10_share_sec:.1%}")
 
 st.markdown("---")
 

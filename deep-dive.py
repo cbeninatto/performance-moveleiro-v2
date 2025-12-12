@@ -820,7 +820,6 @@ else:
         )
         st.altair_chart(chart_clients, use_container_width=True)
 
-    # Pizza com todos os clientes, Top 10 destacados
         # Pizza com todos os clientes, Top 10 destacados
     with col_dc2:
         st.caption("Participação dos clientes (Top 10 destacados)")
@@ -841,29 +840,33 @@ else:
         )
         dist_df["Share"] = dist_df["Valor"] / total_rep_safe
 
-        # Label do LEGEND: nome + percentual (ordenado de maior para menor)
-        dist_df["GrupoLabel"] = dist_df.apply(
+        # Ordena por participação (maior -> menor)
+        dist_df = dist_df.sort_values("Share", ascending=False)
+
+        # Label da LEGENDA: nome + percentual
+        dist_df["Legenda"] = dist_df.apply(
             lambda r: f"{r['Grupo']} {r['Share']*100:.1f}%",
             axis=1,
         )
 
-        # Texto DENTRO da fatia: nome + percentual, só para fatias ≥ 7%
+        # Texto DENTRO da fatia: só o percentual, para fatias ≥ 5%
         dist_df["LabelText"] = dist_df.apply(
-            lambda r: f"{r['Grupo']}\n{r['Share']*100:.1f}%"
-            if r["Share"] >= 0.07 else "",
+            lambda r: f"{r['Share']*100:.1f}%"
+            if r["Share"] >= 0.05 else "",
             axis=1,
         )
 
         # Base: mesmo theta para arco e texto (centro da fatia)
-        base_pie = alt.Chart(dist_df).encode(
+        base = alt.Chart(dist_df).encode(
             theta=alt.Theta("Share:Q", stack=True)
         )
 
         # Arcos
-        pie = base_pie.mark_arc().encode(
+        pie = base.mark_arc().encode(
             color=alt.Color(
-                "GrupoLabel:N",
-                sort=alt.SortField(field="Share", order="descending"),
+                "Legenda:N",
+                # usa a ordem atual do dataframe (já está em ordem decrescente)
+                sort=list(dist_df["Legenda"]),
                 legend=alt.Legend(title="Cliente (Top 10) / Outros"),
             ),
             tooltip=[
@@ -872,9 +875,9 @@ else:
             ],
         )
 
-        # Texto no MEIO da fatia (radius menor que o raio do círculo)
-        text = base_pie.mark_text(
-            radius=70,        # puxa o texto para dentro da fatia
+        # Texto no MEIO da fatia (somente %)
+        text = base.mark_text(
+            radius=80,          # puxa o texto para dentro da fatia
             size=11,
             align="center",
             baseline="middle",

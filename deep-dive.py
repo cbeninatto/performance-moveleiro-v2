@@ -82,49 +82,102 @@ def load_data() -> pd.DataFrame:
     return df
 
 
-def compute_carteira_score(status_counts: pd.Series):
-    if status_counts is None or status_counts.empty:
+def compute_carteira_score(clientes_carteira: pd.DataFrame):
+    """
+    Calcula o Índice de Saúde da Carteira (ISC) de 0 a 100 usando receita por status.
+
+    Lógica:
+      - Para cada cliente, define um "PesoReceita" = max(ValorAtual, ValorAnterior)
+      - Soma PesoReceita por StatusCarteira
+      - Converte em % da carteira (p_status)
+      - Aplica pesos:
+          Crescendo: +2
+          Novos:     +1
+          Estáveis:  +1
+          Caindo:    -1
+          Perdidos:  -2
+      - Normaliza para 0–100:
+          ISC = (score_bruto + 2) / 4 * 100
+      - Regra extra: se churn de receita > 20%, não deixa o índice ficar em "Saudável"
+    """
+    if clientes_carteira is None or clientes_carteira.empty:
         return 50.0, "Neutra"
 
-    weights = {
-        "Novo": 1,
+    df = clientes_carteira.copy()
+
+    # Garantir colunas numéricas
+    for col in ["ValorAtual", "ValorAnterior"]:
+        df[col] = pd.to_numeric(df.get(col, 0.0), errors="coerce").fillna(0.0)
+
+    # Peso da receita de cada cliente = tamanho típico dele na carteira
+    df["PesoReceita"] = df[["ValorAtual", "ValorAnterior"]].max(axis=1)
+    df["PesoReceita"] = df["PesoReceita"].clip(lower=0)
+
+    # Soma por status
+    if STATUS_COL not in df.columns:
+        return 50.0, "Neutra"
+
+    receita_status = df.groupby(STATUS_COL)["PesoReceita"].sum()
+    R_total = float(receita_status.sum())
+
+    if R_total <= 0:
+        return 50.0, "Neutra"
+
+    # Pesos por status (mais focado em receita do que em quantidade de clientes)
+    pesos = {
         "Novos": 1,
+        "Novo": 1,
         "Crescendo": 2,
         "CRESCENDO": 2,
+        "Estáveis": 1,
+        "Estável": 1,
+        "ESTAVEIS": 1,
         "Caindo": -1,
         "CAINDO": -1,
-        "Estável": 1,
-        "Estáveis": 1,
-        "ESTAVEL": 1,
-        "ESTAVEIS": 1,
-        "Perdido": -2,
         "Perdidos": -2,
-        "PERDIDO": -2,
+        "Perdido": -2,
         "PERDIDOS": -2,
     }
 
-    score_total = 0
-    n_clients = 0
-    for status, qty in status_counts.items():
-        w = weights.get(str(status), 0)
-        score_total += w * qty
-        n_clients += qty
+    # Score bruto ponderado pela receita de cada status
+    score_bruto = 0.0
+    for status, receita in receita_status.items():
+        w = pesos.get(str(status), 0)
+        share = receita / R_total
+        score_bruto += w * share
 
-    if n_clients == 0:
-        return 50.0, "Neutra"
+    # Normaliza para 0–100
+    isc = (score_bruto + 2) / 4 * 100
+    isc = max(0.0, min(100.0, isc))
 
-    avg = score_total / n_clients  # [-2, 2]
-    score_0_100 = (avg + 2) / 4 * 100
-    score_0_100 = max(0, min(100, score_0_100))
+    # --------- Regra extra: churn de receita ----------
+    # Considera como "base anterior" quem tinha ValorAnterior > 0
+    base_anterior = df[df["ValorAnterior"] > 0].copy()
+    base_total = float(base_anterior["PesoReceita"].sum())
 
-    if score_0_100 < 40:
+    # Receita perdida (status = Perdidos)
+    perdidos_mask = df[STATUS_COL].astype(str).str.upper().isin(["PERDIDOS", "PERDIDO"])
+    receita_perdida = float(df.loc[perdidos_mask, "PesoReceita"].sum())
+
+    churn_receita = 0.0
+    if base_total > 0:
+        churn_receita = receita_perdida / base_total
+
+    # Se churn > 20%, não permitir que a carteira seja classificada como "Saudável"
+    if churn_receita > 0.20 and isc >= 70:
+        isc = 69.0  # força ficar no máximo em "Neutra/Atenção"
+
+    # --------- Traduz ISC em rótulo ----------
+    if isc < 30:
         label = "Crítica"
-    elif score_0_100 < 60:
+    elif isc < 50:
+        label = "Alerta"
+    elif isc < 70:
         label = "Neutra"
     else:
         label = "Saudável"
 
-    return score_0_100, label
+    return float(isc), label
 
 
 MONTH_MAP_NUM_TO_NAME = {
@@ -408,7 +461,7 @@ if df_period.empty:
     st.warning("Nenhuma venda no período selecionado.")
     st.stop()
 
-# 🔹 Representantes disponíveis APENAS no período selecionado
+# Representantes disponíveis APENAS no período selecionado
 reps_period = sorted(df_period["Representante"].dropna().unique())
 if not reps_period:
     st.error("Não há representantes com vendas no período selecionado.")
@@ -523,10 +576,7 @@ cidades_atendidas = (
 estados_atendidos = df_rep["Estado"].dropna().nunique()
 
 if not clientes_carteira.empty:
-    status_counts_series = (
-        clientes_carteira.groupby(STATUS_COL)["Cliente"].nunique()
-    )
-    carteira_score, carteira_label = compute_carteira_score(status_counts_series)
+    carteira_score, carteira_label = compute_carteira_score(clientes_carteira)
 else:
     carteira_score, carteira_label = 50.0, "Neutra"
 
@@ -657,7 +707,7 @@ else:
                     df_map["bin"] = 0
                     bins = [values.min(), values.max()]
 
-                # 🔄 Invertido: vermelho = menor valor, verde = maior valor
+                # Invertido: vermelho = menor valor, verde = maior valor
                 colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"]  # low → high
 
                 # monta legenda das cores (quartis)
@@ -770,8 +820,6 @@ else:
                         border-bottom: 1px solid rgba(255,255,255,0.08);
                         white-space: nowrap;
                     }
-                    /* Permite que o nome do cliente quebre linha,
-                       mas mantém os demais em uma linha só */
                     table.clientes-table th:nth-child(1),
                     table.clientes-table td:nth-child(1) {
                         white-space: normal;

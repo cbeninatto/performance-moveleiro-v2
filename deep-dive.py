@@ -839,10 +839,10 @@ else:
         )
         dist_df["Share"] = dist_df["Valor"] / total_rep_safe
 
-        # label interno só para fatias grandes (não "Outros")
+        # label interno: nome + percentual em 2 linhas (só para fatias ≥ 7%)
         dist_df["LabelText"] = dist_df.apply(
-            lambda r: r["Grupo"]
-            if (r["Grupo"] != "Outros" and r["Share"] >= 0.07)
+            lambda r: f"{r['Grupo']}\n{r['Share']*100:.1f}%"
+            if r["Share"] >= 0.07
             else "",
             axis=1,
         )

@@ -763,61 +763,76 @@ else:
     col_dc1, col_dc2 = st.columns([1.4, 1])
 
     with col_dc1:
-        st.caption("Top 20 clientes por faturamento")
-        chart_clients = (
-            alt.Chart(df_clientes.head(20))
-            .mark_bar()
-            .encode(
-                x=alt.X("Valor:Q", title="Faturamento (R$)"),
-                y=alt.Y("Cliente:N", sort="-x", title="Cliente"),
-                tooltip=[
-                    alt.Tooltip("Cliente:N", title="Cliente"),
-                    alt.Tooltip("Valor:Q", title="Faturamento", format=",.2f"),
-                    alt.Tooltip("Quantidade:Q", title="Volume"),
-                ],
-            )
-            .properties(height=420)
+    st.caption("Top 10 clientes por faturamento")
+    chart_clients = (
+        alt.Chart(df_clientes.head(10))
+        .mark_bar()
+        .encode(
+            x=alt.X("Valor:Q", title="Faturamento (R$)"),
+            y=alt.Y("Cliente:N", sort="-x", title="Cliente"),
+            tooltip=[
+                alt.Tooltip("Cliente:N", title="Cliente"),
+                alt.Tooltip("Valor:Q", title="Faturamento", format=",.2f"),
+                alt.Tooltip("Quantidade:Q", title="Volume"),
+            ],
         )
-        st.altair_chart(chart_clients, use_container_width=True)
-
+        .properties(height=420)
+    )
+    st.altair_chart(chart_clients, use_container_width=True)
+    
     # Pizza com clientes
     with col_dc2:
-        st.caption("Participação dos clientes (Top 20 destacados)")
+    st.caption("Participação dos clientes (Top 10 destacados)")
 
-        # Usa TODOS os clientes no cálculo da pizza,
-        # mas só destaca os 20 maiores no rótulo (Outros = resto)
-        df_pie = df_clientes.copy()
-        df_pie["Rank"] = df_pie["Valor"].rank(method="first", ascending=False)
+    # Usa TODOS os clientes no cálculo (100%),
+    # mas só destaca os 10 maiores por nome (resto = "Outros")
+    df_pie = df_clientes.copy()
+    df_pie["Rank"] = df_pie["Valor"].rank(method="first", ascending=False)
 
-        df_pie["Grupo"] = df_pie.apply(
-            lambda r: r["Cliente"] if r["Rank"] <= 20 else "Outros",
-            axis=1,
-        )
+    df_pie["Grupo"] = df_pie.apply(
+        lambda r: r["Cliente"] if r["Rank"] <= 10 else "Outros",
+        axis=1,
+    )
 
-        dist_df = (
-            df_pie.groupby("Grupo", as_index=False)["Valor"]
-            .sum()
-            .sort_values("Valor", ascending=False)
-        )
-        dist_df["Share"] = dist_df["Valor"] / total_rep_safe
+    dist_df = (
+        df_pie.groupby("Grupo", as_index=False)["Valor"]
+        .sum()
+        .sort_values("Valor", ascending=False)
+    )
+    dist_df["Share"] = dist_df["Valor"] / total_rep_safe
 
-        chart_pie = (
-            alt.Chart(dist_df)
-            .mark_arc()
-            .encode(
-                theta=alt.Theta("Share:Q"),
-                color=alt.Color(
-                    "Grupo:N",
-                    legend=alt.Legend(title="Cliente (Top 20) / Outros"),
-                ),
-                tooltip=[
-                    alt.Tooltip("Grupo:N", title="Cliente / Grupo"),
-                    alt.Tooltip("Share:Q", title="% Faturamento", format=".1%"),
-                ],
-            )
-            .properties(height=320)
-        )
-        st.altair_chart(chart_pie, use_container_width=True)
+    # Só escreve o nome dentro das fatias grandes e que NÃO são "Outros"
+    dist_df["LabelText"] = dist_df.apply(
+        lambda r: r["Grupo"]
+        if (r["Grupo"] != "Outros" and r["Share"] >= 0.07)
+        else "",
+        axis=1,
+    )
+
+    base_pie = alt.Chart(dist_df)
+
+    pie = base_pie.mark_arc().encode(
+        theta=alt.Theta("Share:Q"),
+        color=alt.Color(
+            "Grupo:N",
+            legend=alt.Legend(title="Cliente (Top 10) / Outros"),
+        ),
+        tooltip=[
+            alt.Tooltip("Grupo:N", title="Cliente / Grupo"),
+            alt.Tooltip("Share:Q", title="% Faturamento", format=".1%"),
+        ],
+    )
+
+    # Nomes dentro das fatias (para as maiores)
+    text = base_pie.mark_text(radius=110, size=11).encode(
+        theta=alt.Theta("Share:Q"),
+        text="LabelText:N",
+    )
+
+    chart_pie = (pie + text).properties(height=320)
+
+    st.altair_chart(chart_pie, use_container_width=True)
+
         
 st.markdown("---")
 

@@ -52,9 +52,35 @@ def format_brl_compact(value: float) -> str:
 
 
 def load_data() -> pd.DataFrame:
+    """Carrega SEM cache para sempre pegar a versão mais recente do CSV do GitHub."""
     df = pd.read_csv(GITHUB_CSV_URL)
-    ...
+
+    expected = [
+        "Codigo", "Descricao", "Quantidade", "Valor", "Mes", "Ano",
+        "ClienteCodigo", "Cliente", "Estado", "Cidade",
+        "RepresentanteCodigo", "Representante", "Categoria", "SourcePDF",
+    ]
+    missing = [c for c in expected if c not in df.columns]
+    if missing:
+        raise ValueError(
+            "CSV do GitHub não tem as colunas esperadas: "
+            + ", ".join(missing)
+        )
+
+    df["Valor"] = pd.to_numeric(df["Valor"], errors="coerce").fillna(0.0)
+    df["Quantidade"] = pd.to_numeric(df["Quantidade"], errors="coerce").fillna(0.0)
+    df["Ano"] = pd.to_numeric(df["Ano"], errors="coerce").astype("Int64")
+
+    # MesNum SEMPRE criado aqui
+    df["MesNum"] = pd.to_numeric(df["Mes"], errors="coerce").astype("Int64")
+
+    df["Competencia"] = pd.to_datetime(
+        dict(year=df["Ano"], month=df["MesNum"], day=1),
+        errors="coerce",
+    )
+
     return df
+
 
 def compute_carteira_score(status_counts: pd.Series):
     if status_counts is None or status_counts.empty:
@@ -593,20 +619,11 @@ else:
         if df_map.empty:
             st.info("Não há coordenadas de cidades para exibir no mapa.")
         else:
-            # Cabeçalho: métrica do mapa (esq.) e cobertura (dir.)
-            header_left, header_right = st.columns([1.2, 1])
-            with header_left:
-                metric_choice = st.radio(
-                    "Métrica do mapa",
-                    ["Faturamento", "Volume"],
-                    horizontal=True,
-                )
-            with header_right:
-                st.markdown("**Cobertura**")
-                cov1, cov2, cov3 = st.columns(3)
-                cov1.metric("Cidades atendidas", f"{cidades_atendidas}")
-                cov2.metric("Estados atendidos", f"{estados_atendidos}")
-                cov3.metric("Clientes atendidos", f"{clientes_atendidos}")
+            metric_choice = st.radio(
+                "Métrica do mapa",
+                ["Faturamento", "Volume"],
+                horizontal=True,
+            )
 
             if metric_choice == "Faturamento":
                 metric_col = "Valor"
@@ -629,8 +646,7 @@ else:
 
                 colors = ["#22c55e", "#eab308", "#f97316", "#ef4444"]
 
-                # Segunda linha: mapa mais estreito + stats com tabela
-                col_map, col_stats = st.columns([1.1, 1])
+                col_map, col_stats = st.columns([0.8, 1.2])
 
                 with col_map:
                     center = [df_map["lat"].mean(), df_map["lon"].mean()]
@@ -664,6 +680,12 @@ else:
                     st_folium(m, width=None, height=800)
 
                 with col_stats:
+                    st.markdown("**Cobertura**")
+                    cov1, cov2, cov3 = st.columns(3)
+                    cov1.metric("Cidades atendidas", f"{cidades_atendidas}")
+                    cov2.metric("Estados atendidos", f"{estados_atendidos}")
+                    cov3.metric("Clientes atendidos", f"{clientes_atendidos}")
+
                     st.markdown("**Principais clientes**")
 
                     df_top_clients = (
@@ -676,7 +698,38 @@ else:
                     df_top_display = df_top_clients[
                         ["Cliente", "Cidade", "Estado", "Faturamento"]
                     ]
-                    st.table(df_top_display)
+
+                    clientes_table_css = """
+                    <style>
+                    table.clientes-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    table.clientes-table th,
+                    table.clientes-table td {
+                        padding: 0.25rem 0.5rem;
+                        font-size: 0.85rem;
+                        text-align: left;
+                        border-bottom: 1px solid rgba(255,255,255,0.08);
+                        white-space: nowrap;
+                    }
+                    table.clientes-table th:nth-child(1),
+                    table.clientes-table td:nth-child(1) {
+                        white-space: normal;
+                    }
+                    </style>
+                    """
+                    st.markdown(clientes_table_css, unsafe_allow_html=True)
+
+                    cols = list(df_top_display.columns)
+                    html = "<table class='clientes-table'><thead><tr>"
+                    html += "".join(f"<th>{c}</th>" for c in cols)
+                    html += "</tr></thead><tbody>"
+                    for _, row in df_top_display.iterrows():
+                        html += "<tr>" + "".join(f"<td>{row[c]}</td>" for c in cols) + "</tr>"
+                    html += "</tbody></table>"
+
+                    st.markdown(html, unsafe_allow_html=True)
 
     except Exception as e:
         st.info(f"Mapa de clientes ainda não disponível: {e}")
@@ -765,7 +818,6 @@ else:
     total_rep_safe = total_rep if total_rep > 0 else 1.0
     df_clientes["Share"] = df_clientes["Valor"] / total_rep_safe
 
-    # Mini KPIs (5 colunas)
     k1, k2, k3, k4, k5 = st.columns(5)
     k1.metric("N80", f"{n80_count}", f"{n80_ratio:.0%} da carteira")
     k2.metric("Índice de concentração", hhi_label_short, f"HHI {hhi_value:.3f}")
@@ -797,47 +849,39 @@ else:
         )
         st.altair_chart(chart_clients, width="stretch")
 
-    # Pizza com todos os clientes, Top 10 destacados (usando Plotly)
+    # Pizza com todos os clientes, Top 10 destacados (Plotly 6.5 compatível)
     with col_dc2:
         st.caption("Participação dos clientes (Top 10 destacados)")
 
         df_pie = df_clientes.copy()
         df_pie["Rank"] = df_pie["Valor"].rank(method="first", ascending=False)
 
-        # Top 10 por nome, resto vira "Outros"
         df_pie["Grupo"] = df_pie.apply(
             lambda r: r["Cliente"] if r["Rank"] <= 10 else "Outros",
             axis=1,
         )
 
-        # Agrega por grupo e calcula share
         dist_df = (
             df_pie.groupby("Grupo", as_index=False)["Valor"]
             .sum()
         )
         dist_df["Share"] = dist_df["Valor"] / total_rep_safe
-
-        # Ordena do maior pro menor
         dist_df = dist_df.sort_values("Share", ascending=False)
 
-        # Label da LEGENDA: nome + percentual
         dist_df["Legenda"] = dist_df.apply(
             lambda r: f"{r['Grupo']} {r['Share']*100:.1f}%",
             axis=1,
         )
 
-        # Texto DENTRO da fatia: nome + percentual para fatias ≥ 7%
         def make_text(row):
-            if row["Share"] >= 0.07:  # 7% ou mais
+            if row["Share"] >= 0.07:
                 return f"{row['Grupo']}<br>{row['Share']*100:.1f}%"
             else:
                 return ""
         dist_df["Text"] = dist_df.apply(make_text, axis=1)
 
-        # Ordem explícita da legenda (maior -> menor)
         order_legenda = dist_df["Legenda"].tolist()
 
-        # Pie com Plotly (sem argumento 'text', que não existe mais no 6.5.0)
         fig = px.pie(
             dist_df,
             values="Valor",
@@ -845,7 +889,6 @@ else:
             category_orders={"Legenda": order_legenda},
         )
 
-        # Define o texto interno depois
         fig.update_traces(
             text=dist_df["Text"],
             textposition="inside",
@@ -872,7 +915,6 @@ st.subheader("Saúde da carteira – Detalhes")
 if clientes_carteira.empty:
     st.info("Não há clientes com movimento nos períodos atual / anterior para calcular a carteira.")
 else:
-    # --- Resumo numérico por status (clientes + % + delta de faturamento) ---
     status_counts = (
         clientes_carteira.groupby(STATUS_COL)["Cliente"]
         .nunique()
@@ -880,7 +922,6 @@ else:
         .rename(columns={"Cliente": "QtdClientes", STATUS_COL: "Status"})
     )
 
-    # Soma dos dois períodos para calcular diferença (Atual - Anterior)
     fat_status = (
         clientes_carteira.groupby(STATUS_COL)[["ValorAtual", "ValorAnterior"]]
         .sum()
@@ -890,7 +931,6 @@ else:
     fat_status["Faturamento"] = fat_status["ValorAtual"] - fat_status["ValorAnterior"]
     fat_status = fat_status[["Status", "Faturamento"]]
 
-    # Junta clientes + delta de faturamento
     status_counts = status_counts.merge(fat_status, on="Status", how="left")
 
     total_clientes = status_counts["QtdClientes"].sum()
@@ -898,7 +938,6 @@ else:
         status_counts["QtdClientes"] / total_clientes if total_clientes > 0 else 0
     )
 
-    # Ordenação personalizada
     status_order = ["Novos", "Crescendo", "Estáveis", "Caindo", "Perdidos"]
     status_counts["Status"] = pd.Categorical(
         status_counts["Status"], categories=status_order, ordered=True
@@ -963,9 +1002,6 @@ else:
             width="stretch",
         )
 
-    # ==========================
-    # STATUS DOS CLIENTES – TABELAS ALINHADAS
-    # ==========================
     st.markdown("### Status dos clientes")
 
     table_css = """

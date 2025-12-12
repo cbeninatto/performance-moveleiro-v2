@@ -839,7 +839,7 @@ else:
         )
         dist_df["Share"] = dist_df["Valor"] / total_rep_safe
 
-        # label interno: nome + percentual em 2 linhas (só para fatias ≥ 7%)
+        # label interno: nome + percentual em 2 linhas (para fatias ≥ 7%)
         dist_df["LabelText"] = dist_df.apply(
             lambda r: f"{r['Grupo']}\n{r['Share']*100:.1f}%"
             if r["Share"] >= 0.07
@@ -880,7 +880,7 @@ st.subheader("Saúde da carteira – Detalhes")
 if clientes_carteira.empty:
     st.info("Não há clientes com movimento nos períodos atual / anterior para calcular a carteira.")
 else:
-    # --- Resumo numérico por status (clientes + % + faturamento) ---
+    # --- Resumo numérico por status (clientes + % + delta de faturamento) ---
     status_counts = (
         clientes_carteira.groupby(STATUS_COL)["Cliente"]
         .nunique()
@@ -888,21 +888,30 @@ else:
         .rename(columns={"Cliente": "QtdClientes", STATUS_COL: "Status"})
     )
 
-    # Faturamento do período atual por status
+    # Soma dos dois períodos para calcular diferença (Atual - Anterior)
     fat_status = (
-        clientes_carteira.groupby(STATUS_COL)["ValorAtual"]
+        clientes_carteira.groupby(STATUS_COL)[["ValorAtual", "ValorAnterior"]]
         .sum()
         .reset_index()
-        .rename(columns={STATUS_COL: "Status", "ValorAtual": "Faturamento"})
+        .rename(columns={STATUS_COL: "Status"})
     )
+    fat_status["Faturamento"] = fat_status["ValorAtual"] - fat_status["ValorAnterior"]
+    fat_status = fat_status[["Status", "Faturamento"]]
 
-    # Junta clientes + faturamento
+    # Junta clientes + delta de faturamento
     status_counts = status_counts.merge(fat_status, on="Status", how="left")
 
     total_clientes = status_counts["QtdClientes"].sum()
     status_counts["%Clientes"] = (
         status_counts["QtdClientes"] / total_clientes if total_clientes > 0 else 0
     )
+
+    # Ordenação personalizada
+    status_order = ["Novos", "Crescendo", "Estáveis", "Caindo", "Perdidos"]
+    status_counts["Status"] = pd.Categorical(
+        status_counts["Status"], categories=status_order, ordered=True
+    )
+    status_counts = status_counts.sort_values("Status")
 
     resumo_text = " • ".join(
         f"{row.Status} {int(row.QtdClientes)}"

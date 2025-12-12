@@ -781,7 +781,7 @@ else:
         st.altair_chart(chart_clients, use_container_width=True)
 
     # Pizza com clientes
-       with col_dc2:
+    with col_dc2:
         st.caption("Participação dos clientes (Top 20 destacados)")
 
         # Usa TODOS os clientes no cálculo da pizza,
@@ -818,7 +818,7 @@ else:
             .properties(height=320)
         )
         st.altair_chart(chart_pie, use_container_width=True)
-
+        
 st.markdown("---")
 
 # ==========================

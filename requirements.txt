@@ -5,3 +5,4 @@ openpyxl
 folium
 streamlit-folium
 altair
+plotly
